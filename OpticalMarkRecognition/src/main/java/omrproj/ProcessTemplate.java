@@ -19,7 +19,6 @@ import java.io.IOException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.uva.itast.blended.omr.ImageManipulation;
 
 import sun.awt.image.ImageFormatException;
 

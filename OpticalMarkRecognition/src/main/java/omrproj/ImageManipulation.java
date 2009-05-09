@@ -7,11 +7,8 @@
  * and open the template in the editor.
  */
 
-package org.uva.itast.blended.omr;
+package omrproj;
 
-import omrproj.ConcentricCircle;
-import omrproj.ImageUtil;
-import omrproj.SolidMark;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

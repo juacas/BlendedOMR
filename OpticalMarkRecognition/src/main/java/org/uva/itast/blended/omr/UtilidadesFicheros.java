@@ -8,6 +8,7 @@
 package org.uva.itast.blended.omr;
 
 import omrproj.ConcentricCircle;
+import omrproj.ImageManipulation;
 import omrproj.ImageUtil;
 import omrproj.SolidMark;
 
