@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>PFC_OpticalMarkRecognition</groupId>
+  <artifactId>PFC_OpticalMarkRecognition</artifactId>
+  <name>Blended OMR</name>
+  <version>0.0.1-SNAPSHOT</version>
+  <description>Optical Mark Recognition for Moodle Blended elearning</description>
+  <organization>
+  	<name>ITAST Group (University of Valladolid)</name>
+  	<url>http://www.itnt.uva.es</url>
+  </organization>
+  <build>
+  	<resources>
+  	</resources>
+  	<testResources>
+  		<testResource>
+  			<directory>src/test/resources/form_test</directory>
+  			<includes>
+  				<include>*.png</include>
+  				<include>*.gif</include>
+  				<include>*.pdf</include>
+  				<include>*.fields</include>
+  			</includes>
+  		</testResource>
+  	</testResources>
+  	<plugins>
+  		<plugin>
+  			<groupId>org.apache.maven.plugins</groupId>
+  			<artifactId>maven-compiler-plugin</artifactId>
+  			<version>2.0.2</version>
+  			<configuration>
+  	
+          <source>1.5</source>
+          <target>1.5</target>
+     
+  				
+  			</configuration>
+  		</plugin>
+  	</plugins>
+  	<extensions>
+  	</extensions>
+  </build>
+  <repositories>
+  	<repository>
+  		<id>ITAST</id>
+  		<name>ITASTMain Maven</name>
+  		<url>http://itastmain.tel.uva.es/nexus/content/groups/public/</url>
+  	</repository>
+  </repositories>
+  <dependencies>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>1.1</version>
+    </dependency>
+      <dependency>
+      <groupId>net.sourceforge.jiu</groupId>
+      <artifactId>JIU</artifactId>
+      <version>0.14.2</version>
+    </dependency>
+     <dependency>
+  <groupId>com.sun</groupId>
+  <artifactId>PDFGenerator</artifactId>
+  <version>1.0</version>
+</dependency>
+     <dependency>
+     	<groupId>com.google.zxing</groupId>
+     	<artifactId>clientjavase</artifactId>
+     	<version>0.0.1-SNAPSHOT</version>
+     	<scope>compile</scope>
+     </dependency>
+     <dependency>
+     	<groupId>junit</groupId>
+     	<artifactId>junit</artifactId>
+     	<version>4.5</version>
+     	<type>jar</type>
+     	<scope>test</scope>
+     </dependency>
+  </dependencies>
+  <url>http://www.itnt.uva.es</url>
+   <scm>
+    <connection>scm:svn:https://itastmain.tel.uva.es/svn/PFC/PFC_OpticalMarkRecognition</connection>
+    <developerConnection>scm:svn:https://itastmain.tel.uva.es/svn/PFC/PFC_OpticalMarkRecognition</developerConnection>
+    <tag>HEAD</tag>
+    <url>https://itastmain.tel.uva.es/svn/PFC/PFC_OpticalMarkRecognition</url>
+  </scm>
+   <distributionManagement>
+   </distributionManagement>
+  
+</project>
