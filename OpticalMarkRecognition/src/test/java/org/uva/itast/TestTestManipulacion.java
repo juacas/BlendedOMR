@@ -122,6 +122,7 @@ public class TestTestManipulacion extends TestCase
 		       						//se lee la línea de comandos
 		errores= procesartest.leerPaginas(args[1]);        		//se leen las páginas escaneadas
 		assertTrue("Errors encountered",errores.isEmpty());
+		
 	}
 
 }
