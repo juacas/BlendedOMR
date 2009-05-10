@@ -20,7 +20,17 @@ public class Campo {
 	//1 herencia que herede para ser barcode o circle
 	//2 único campo de valor
 	
-    private String nombre;
+    /* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		
+		return this.nombre+" at ("+coordenadas[0]+", "+coordenadas[1]+")";
+	}
+
+	private String nombre;
     private int tipo, numeroPagina;
     private String[] coords;
     private double[] coordenadas=new double[4];
