@@ -236,6 +236,7 @@ public class UtilidadesFicheros
 		for (int i = 0; i < numpages; i++)
 		{
 			imagen = col.getPageImage(i);
+			
 			processPageAndSaveResults(inputpath, align, medianfilter,
 					outputdir, plantilla, imagen);
 		}
@@ -273,7 +274,7 @@ public class UtilidadesFicheros
 	 * @param imagen
 	 * @param align
 	 * @param outputdir
-	 * @param plantilla
+	 * @param plantilla devuelve los valores reconocidos
 	 * @throws FileNotFoundException
 	 */
 	public static void procesarPagina(BufferedImage imagen, boolean align,
@@ -282,22 +283,12 @@ public class UtilidadesFicheros
 	{
 		long taskStart = System.currentTimeMillis();
 		long funcStart = taskStart;
-		Gray8Image grayimage = convertirAGrayImage(imagen); // se transforma el
-															// BufferedImage en
-															// Gray8Image
-		logger
-				.debug("\tImage converted to GrayImage in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
-
-		if (align == true)
-		{
-			taskStart = System.currentTimeMillis();
-			alignImage(grayimage);
-			logger
-					.debug("\tImage alligned in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
-		}
-
+		PageImage pageImage=new PageImage(imagen,align); //encapsula procesamiento y representación
+		
+		
+		
 		taskStart = System.currentTimeMillis();
-		buscarMarcas(outputdir, plantilla, grayimage, imagen, medianfilter); // se
+		buscarMarcas(outputdir, plantilla, pageImage, medianfilter); // se
 																				// buscan
 																				// las
 																				// marcas
@@ -334,22 +325,21 @@ public class UtilidadesFicheros
 	 * 
 	 * @param outputdir
 	 * @param plantilla
+	 * @param pageImage 
 	 * @param imagen
 	 * @param medianfilter
 	 * @return plantilla
 	 * @throws FileNotFoundException
 	 */
 	public static PlantillaOMR buscarMarcas(String outputdir,
-			PlantillaOMR plantilla, Gray8Image grayimage, BufferedImage imagen,
+			PlantillaOMR plantilla,  PageImage pageImage, 
 			boolean medianfilter) throws FileNotFoundException
 	{
 		// Campo campo = new Campo();
-
-		//TODO: la marca debe tener el tamaño adecuado 
-		SolidMark mark = new SolidMark(grayimage,
-				TestManipulation._IMAGEWIDTHPIXEL / ConcentricCircle.a4width,
-				TestManipulation._IMAGEHEIGTHPIXEL / ConcentricCircle.a4height);
-		Gray8Image markedImage = (Gray8Image) (grayimage.createCopy());
+		Gray8Image grayimage=pageImage.getGrayImage();
+		
+		 
+	Gray8Image markedImage = (Gray8Image) (grayimage.createCopy());
 
 		for (int i = 0; i < plantilla.getNumPaginas(); i++)
 		{
@@ -367,9 +357,9 @@ public class UtilidadesFicheros
 											// entre si es un barcode o un
 											// circle
 				if (tipo == Campo.CIRCLE)
-					buscarMarcaCircle(i, mark, markedImage, campo, medianfilter);
+					buscarMarcaCircle(i, pageImage ,markedImage, campo, medianfilter);
 				else if (tipo == Campo.CODEBAR)
-					buscarMarcaCodebar(imagen, campo, medianfilter);
+					buscarMarcaCodebar(pageImage, campo, medianfilter);
 			}
 			if (logger.isDebugEnabled())
 			{
@@ -378,6 +368,9 @@ public class UtilidadesFicheros
 				{
 					debugImagePath = File.createTempFile("OMR_marksfound", ".png", new File(outputdir));
 					ImageUtil.saveImage(markedImage,debugImagePath.getAbsolutePath());
+					
+					debugImagePath = File.createTempFile("OMR_original_marked", ".jpg", new File(outputdir));
+					ImageIO.write(pageImage.getImagen(), "JPG", debugImagePath);
 				}
 				catch (IOException e)
 				{
@@ -394,11 +387,11 @@ public class UtilidadesFicheros
 	/**
 	 * Método que busca marcas de tipo codebar en un objeto tipo BufferedImage
 	 * 
-	 * @param imagen
+	 * @param pageImage
 	 * @param campo
 	 * @param medianfilter
 	 */
-	private static void buscarMarcaCodebar(BufferedImage imagen, Campo campo,
+	private static void buscarMarcaCodebar(PageImage pageImage, Campo campo,
 			boolean medianfilter)
 	{
 
@@ -407,7 +400,7 @@ public class UtilidadesFicheros
 		String userid;
 		try
 		{
-			campo.setValue(BarcodeManipulation.leerBarcode(campo, imagen,
+			campo.setValue(BarcodeManipulation.leerBarcode(campo, pageImage.getImagen(),
 					medianfilter));
 		}
 		catch (ReaderException e)
@@ -425,13 +418,16 @@ public class UtilidadesFicheros
 	 * Método que busca marcas de tipo circle en un objeto tipo Gray8Image
 	 * 
 	 * @param i
+	 * @param medianfilter 
+	 * @param campo 
+	 * @param markedImage 
 	 * @param mark
 	 * @param markedImage
 	 * @param campo
 	 * @param medianfilter
 	 */
-	private static void buscarMarcaCircle(int i, SolidMark mark,
-			Gray8Image markedImage, Campo campo, boolean medianfilter)
+	private static void buscarMarcaCircle(int i, 
+			PageImage pageImage, Gray8Image markedImage, Campo campo, boolean medianfilter)
 	{
 		double x;
 		double y;
@@ -442,8 +438,9 @@ public class UtilidadesFicheros
 		double markradYmm;
 		double[] coords = campo.getCoordenadas();
 		// "x" será la primera coordenada, "y" la segunda
-		x = coords[0];
-		y = coords[1];
+		//centra las coordenadas
+		x = coords[0]+coords[2]/2;
+		y = coords[1]+coords[3]/2;
 		// Pasamos el tamaño a píxeles _IMAGEWIDTHPIXELx_IMAGEHEIGTHPIXEL
 		xpixel = (int) (x * TestManipulation._IMAGEWIDTHPIXEL / ConcentricCircle.a4width);
 		ypixel = (int) (y * TestManipulation._IMAGEHEIGTHPIXEL / ConcentricCircle.a4height);
@@ -451,19 +448,28 @@ public class UtilidadesFicheros
 		// leemos la anchura de las marcas y las pasamos a píxeles
 		markradXmm = coords[2];
 		markradYmm = coords[3];
-		mark.markradX = Math.max(5, (int) (markradXmm * TestManipulation._IMAGEWIDTHPIXEL / ConcentricCircle.a4width));
-		mark.markradY = Math.max(5,(int) (markradYmm * TestManipulation._IMAGEHEIGTHPIXEL / ConcentricCircle.a4height));
+		int markWidth = Math.max(5, (int) (markradXmm * TestManipulation._IMAGEWIDTHPIXEL / ConcentricCircle.a4width));
+		int markHeight = Math.max(5,(int) (markradYmm * TestManipulation._IMAGEHEIGTHPIXEL / ConcentricCircle.a4height));
+		SolidCircleMark mark = new SolidCircleMark(pageImage,
+				markWidth,
+				markHeight, TestManipulation._IMAGEWIDTHPIXEL / ConcentricCircle.a4width, TestManipulation._IMAGEHEIGTHPIXEL / ConcentricCircle.a4height);
 
-		if (mark.isMark(xpixel, ypixel)) // se busca la marca que se desea
+		if (logger.isDebugEnabled())
+		{
+			logger.debug("buscarMarcaCircle - campo=" + campo); //$NON-NLS-1$
+		}
+
+		if (mark.isMark(xpixel, ypixel,false)) // se busca la marca que se desea
 											// encontrar
 		{
-			System.out.println("*** " + i + ":" + campo.getNombre() + ":"
-					+ campo);
-			System.out.println("Found mark at " + x + "," + y + ":"
-					+ campo.getNombre() + ":" + campo);
+			if (logger.isDebugEnabled())
+			{
+				logger.debug("buscarMarcaCircle - >>>>>>>Found mark at " + x + "," + y + ":" + campo); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+			}
 			campo.setValue("true");
 			mark.putMarkOnImage(markedImage); // se hace una cruz en markedImage
 												// si se ha encontrado la marca
+			mark.putMarkOnImage(pageImage);
 		} else
 		{
 			campo.setValue("false");

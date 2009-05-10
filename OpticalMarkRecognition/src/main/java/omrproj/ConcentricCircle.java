@@ -330,34 +330,44 @@ public class ConcentricCircle
 			Gray8Image template, boolean dump)
 	{
 		int diff = 0, total = 0;
+
+		if (dump && logger.isDebugEnabled())
+		{
+			logger.debug("templateXOR - Testing XOR Width="+template.getWidth()+"from upper-left x=" + x + ", y=" + y); //$NON-NLS-1$ //$NON-NLS-2$
+		
+		for (int j = y; j < y + template.getHeight() && j < img.getHeight(); j++)
+		{
+			for (int i = x; i < x + template.getWidth() && i < img.getWidth(); i++)
+			{
+				boolean isblack = (img.getSample(i, j) < 125 ? true : false);
+				boolean tempIsBlack=template.isBlack(i-x, j-y);
+				System.out.print(isblack?"*":(tempIsBlack?"O":"_"));
+			}
+			System.out.println("<-");
+		}
+		}
+		
 		for (int j = y; j < y + template.getHeight() && j < img.getHeight(); j++)
 		{
 			for (int i = x; i < x + template.getWidth() && i < img.getWidth(); i++)
 			{
 				boolean isblack = (img.getSample(i, j) < 125 ? true : false); // XXX
-				if (dump)
-				{
-					if (logger.isDebugEnabled())
-					{
-						logger
-								.debug("templateXOR(Gray8Image, int, int, Gray8Image, boolean) - " + (isblack & template.isWhite(i - x, j - y) ? "1" : ((!isblack) & template.isBlack(i - x, j - y)) ? "-" : "0")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-					}
-				}
-				if ((isblack & template.isWhite(i - x, j - y) | (!isblack)
-						& template.isBlack(i - x, j - y)))
+				
+				
+				if ((isblack & template.isWhite(i - x, j - y)) | 
+					((!isblack)& template.isBlack(i - x, j - y)) )
 				{
 					diff++;
 				}
 				total++;
 			}
-			if (dump)
-			{
-				if (logger.isDebugEnabled())
-				{
-					logger
-							.debug("templateXOR(Gray8Image, int, int, Gray8Image, boolean)"); //$NON-NLS-1$
-				}
-			}
+			
+			
+			
+		}
+		if (dump && logger.isDebugEnabled())
+		{
+			logger.debug("templateXOR- Diffs="+diff+ " out of "+ total); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		return ((double) diff) / total;
 	}

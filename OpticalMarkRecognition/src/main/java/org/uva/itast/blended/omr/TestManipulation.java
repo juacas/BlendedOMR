@@ -7,6 +7,9 @@
 
 package org.uva.itast.blended.omr;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,6 +25,10 @@ import java.util.Vector;
  */
 public class TestManipulation
 {
+	/**
+	 * Logger for this class
+	 */
+	private static final Log	logger				= LogFactory.getLog(TestManipulation.class);
 
 	public static final int	_IMAGEHEIGTHPIXEL	= 2339/2;	// valor en píxeles
 															// de la altura de
@@ -423,6 +430,11 @@ public class TestManipulation
 			catch (Exception e)
 			{
 				// report files with errors
+
+				if (logger.isDebugEnabled())
+				{
+					logger.debug("processFileList(File[]) - Can't process file  - inputPath=" + inputPath + ", file=" + files[i] + ", e=" + e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				}
 				errors.add(files[i]);
 			}
 		}
