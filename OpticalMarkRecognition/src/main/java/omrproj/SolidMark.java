@@ -71,7 +71,7 @@ public class SolidMark {
                 if(maxsim == -1 || maxsim < similarity) {
                     maxsim = similarity;
                     maxsimX = i;
-                    maxsimY = j + markradY * 2;     // XXX
+                    maxsimY = j + markradY * 2;    
                 }
             }
         }
