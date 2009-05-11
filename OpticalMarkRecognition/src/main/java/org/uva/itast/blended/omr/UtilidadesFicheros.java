@@ -86,9 +86,8 @@ public class UtilidadesFicheros
 		imagenObjeto = ImageIO.read(imagenLeer);
 
 		imagenSalida = new BufferedImage(resizeWidth, resizeHeight,
-				BufferedImage.TYPE_BYTE_GRAY); // se configura la imagen con las
-												// medidas especificas y en
-												// escala de grises
+				BufferedImage.TYPE_INT_RGB); // se configura la imagen con las
+												// medidas especificas 
 		//Image scaled=imagenObjeto.getScaledInstance(resizeWidth, resizeHeight, Image.SCALE_FAST);
 		
 		imagenSalida.createGraphics().drawImage(imagenObjeto, 0, 0,
@@ -235,10 +234,13 @@ public class UtilidadesFicheros
 
 		for (int i = 0; i < numpages; i++)
 		{
-			imagen = col.getPageImage(i);
+			long taskStart = System.currentTimeMillis();
+			PageImage pageImage = col.getPageImage(i);
 			
 			processPageAndSaveResults(inputpath, align, medianfilter,
-					outputdir, plantilla, imagen);
+					outputdir, plantilla, pageImage);
+			logger.debug("Page "+(i+1)+" ("+inputpath.getName()+") processed in (ms)"+(System.currentTimeMillis()-taskStart)); //$NON-NLS-1$
+			
 		}
 
 	}
@@ -249,14 +251,15 @@ public class UtilidadesFicheros
 	 * @param medianfilter
 	 * @param outputdir
 	 * @param plantilla
-	 * @param imagen
+	 * @param pageImage
 	 * @throws FileNotFoundException
 	 */
 	public static void processPageAndSaveResults(File inputpath, boolean align,
 			boolean medianfilter, String outputdir, PlantillaOMR plantilla,
-			BufferedImage imagen) throws FileNotFoundException
+			PageImage pageImage) throws FileNotFoundException
 	{
-		procesarPagina(imagen, align, medianfilter, outputdir, plantilla); // se
+		
+		procesarPagina(pageImage, align, medianfilter, outputdir, plantilla); // se
 																			// procesa
 																			// la
 																			// página
@@ -271,32 +274,34 @@ public class UtilidadesFicheros
 	 * Método que procesa una página a partir de un BufferedImage invocando a
 	 * los métodos que buscarán las marcas
 	 * 
-	 * @param imagen
+	 * @param pageImage
 	 * @param align
 	 * @param outputdir
 	 * @param plantilla devuelve los valores reconocidos
 	 * @throws FileNotFoundException
 	 */
-	public static void procesarPagina(BufferedImage imagen, boolean align,
+	public static void procesarPagina(PageImage pageImage, boolean align,
 			boolean medianfilter, String outputdir, PlantillaOMR plantilla)
 			throws FileNotFoundException
 	{
+		
+		if (align)
+			{
+			long funcStart = System.currentTimeMillis();
+			pageImage.align(); //encapsula procesamiento y representación
+			logger.debug("Page aligned in (ms)" + (System.currentTimeMillis() - funcStart)); //$NON-NLS-1$
+
+			}
+		
+		
 		long taskStart = System.currentTimeMillis();
-		long funcStart = taskStart;
-		PageImage pageImage=new PageImage(imagen,align); //encapsula procesamiento y representación
 		
-		
-		
-		taskStart = System.currentTimeMillis();
 		buscarMarcas(outputdir, plantilla, pageImage, medianfilter); // se
 																				// buscan
 																				// las
 																				// marcas
-		logger
-				.debug("\tMarks scanned in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
-		logger
-				.debug("Page processed in (ms)" + (System.currentTimeMillis() - funcStart)); //$NON-NLS-1$
-
+		logger.debug("\tMarks scanned in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
+		
 	}
 
 	/**
@@ -335,11 +340,7 @@ public class UtilidadesFicheros
 			PlantillaOMR plantilla,  PageImage pageImage, 
 			boolean medianfilter) throws FileNotFoundException
 	{
-		// Campo campo = new Campo();
-		Gray8Image grayimage=pageImage.getGrayImage();
 		
-		 
-	Gray8Image markedImage = (Gray8Image) (grayimage.createCopy());
 
 		for (int i = 0; i < plantilla.getNumPaginas(); i++)
 		{
@@ -357,18 +358,17 @@ public class UtilidadesFicheros
 											// entre si es un barcode o un
 											// circle
 				if (tipo == Campo.CIRCLE)
-					buscarMarcaCircle(i, pageImage ,markedImage, campo, medianfilter);
+					buscarMarcaCircle(i, pageImage , campo, medianfilter);
 				else if (tipo == Campo.CODEBAR)
 					buscarMarcaCodebar(pageImage, campo, medianfilter);
 			}
-			if (logger.isDebugEnabled())
+			pageImage.markProcessing();
+ 			if (logger.isDebugEnabled())
 			{
 				File debugImagePath;
 				try
 				{
-					debugImagePath = File.createTempFile("OMR_marksfound", ".png", new File(outputdir));
-					ImageUtil.saveImage(markedImage,debugImagePath.getAbsolutePath());
-					
+							
 					debugImagePath = File.createTempFile("OMR_original_marked", ".jpg", new File(outputdir));
 					ImageIO.write(pageImage.getImagen(), "JPG", debugImagePath);
 				}
@@ -391,17 +391,16 @@ public class UtilidadesFicheros
 	 * @param campo
 	 * @param medianfilter
 	 */
-	private static void buscarMarcaCodebar(PageImage pageImage, Campo campo,
-			boolean medianfilter)
+	private static void buscarMarcaCodebar(PageImage pageImage, Campo campo,boolean medianFilter)
 	{
 
 		String acticode;
 
 		String userid;
+		BarcodeManipulation barcodeManipulator=new BarcodeManipulation(pageImage,medianFilter);
 		try
 		{
-			campo.setValue(BarcodeManipulation.leerBarcode(campo, pageImage.getImagen(),
-					medianfilter));
+			campo.setValue( barcodeManipulator.getParsedCode(campo) );
 		}
 		catch (ReaderException e)
 		{
@@ -412,6 +411,7 @@ public class UtilidadesFicheros
 			acticode = campo.getValue();
 		if (campo.getNombre() == USERID_FIELDNAME)
 			userid = campo.getValue();
+		barcodeManipulator.markBarcode(campo);
 	}
 
 	/**
@@ -427,7 +427,7 @@ public class UtilidadesFicheros
 	 * @param medianfilter
 	 */
 	private static void buscarMarcaCircle(int i, 
-			PageImage pageImage, Gray8Image markedImage, Campo campo, boolean medianfilter)
+			PageImage pageImage, Campo campo, boolean medianfilter)
 	{
 		double x;
 		double y;
@@ -467,9 +467,9 @@ public class UtilidadesFicheros
 				logger.debug("buscarMarcaCircle - >>>>>>>Found mark at " + x + "," + y + ":" + campo); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			}
 			campo.setValue("true");
-			mark.putMarkOnImage(markedImage); // se hace una cruz en markedImage
+			//mark.putMarkOnImage(markedImage); // se hace una cruz en markedImage
 												// si se ha encontrado la marca
-			mark.putMarkOnImage(pageImage);
+			mark.putCircleMarkOnImage(pageImage);
 		} else
 		{
 			campo.setValue("false");
