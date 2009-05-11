@@ -7,7 +7,11 @@
 
 package org.uva.itast.blended.omr;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -17,6 +21,10 @@ import java.util.Vector;
  *
  */
 public class PaginaDefinicionMarcas {
+	/**
+	 * Logger for this class
+	 */
+	private static final Log			logger	= LogFactory.getLog(PaginaDefinicionMarcas.class);
 	
 	private int numPagina;					//página sobre la cuál versa la información
 	private Hashtable<String,Campo> campos= new Hashtable<String, Campo>();	//Hastable para almacenar los campos que leemos del fichero de definición de marcas
@@ -33,16 +41,20 @@ public class PaginaDefinicionMarcas {
 	/**
 	 * Método que lee las marcas de un objeto BufferedReader y las almacena en un objeto tipo Campo
 	 * @param in
+	 * @throws IOException 
 	 */
-	public void leerMarcas(BufferedReader in){
+	public void leerMarcas(BufferedReader in) throws IOException{
 		
 		String line;
-		try {
+		
         	in.mark(20);		//marcamos para recordar la posición anterior donde termino la lectura de in
             while((line = in.readLine()) != null && !line.equals("") ) {
             	if(line.startsWith("[Page"))			//etiqueta de principio de página
             	{
-            		System.out.println("Página siguiente");
+				if (logger.isDebugEnabled())
+				{
+					logger.debug("leerMarcas(BufferedReader) - Página siguiente"); //$NON-NLS-1$
+				}
             		in.reset();
             		return;
             	}
@@ -54,9 +66,7 @@ public class PaginaDefinicionMarcas {
             	}
             	in.mark(20);
             }
-        } catch(Exception ex) {
-            ex.printStackTrace(System.out);
-        }
+       
 	}
 
 	/**
