@@ -98,13 +98,14 @@ public class TestTestManipulacion extends TestCase
 		}
 		catch (Exception e)
 		{
-			fail("Can't configure test case."+e.getMessage());
+			fail("Can't configure test case."+e);
 		}
-		
+		Vector<File> errores;
 		// detección de errores
-		//procesartest.leerPaginas("nonexistentfile.png");
+		errores=procesartest.leerPaginas("nonexistentfile.png");
+		assertTrue("Errors not detected ",errores.size()==1);
 		
-		Vector<File> errores= procesartest.leerPaginas(procesartest.getInputPath());        		//se leen las páginas escaneadas
+		errores= procesartest.leerPaginas(procesartest.getInputPath());        		//se leen las páginas escaneadas
 		assertTrue("Errors encountered",errores.isEmpty());
 	
 		try
