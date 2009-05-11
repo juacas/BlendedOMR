@@ -201,7 +201,7 @@ public class TestManipulation
 					.println("uso: blended_omr [-i inputdir] [-o outputdir] [-id1 USERID] [-id2 ACTIVITYCODE] [-a] -d definitionfile");
 		else
 		{
-			System.out.println("¡Línea de comandos correcta!");
+				logger.debug("leerLineaComandos(String[]) Command-Line OK- arg=" + arg); //$NON-NLS-1$
 		}
 	}
 
@@ -433,7 +433,7 @@ public class TestManipulation
 
 				if (logger.isDebugEnabled())
 				{
-					logger.debug("processFileList(File[]) - Can't process file  - inputPath=" + inputPath + ", file=" + files[i] + ", e=" + e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+					logger.debug("processFileList(File[]) - Can't process file  -  file=" + files[i] + ", e=" + e,e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				}
 				errors.add(files[i]);
 			}
