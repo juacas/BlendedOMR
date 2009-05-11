@@ -8,7 +8,12 @@ import omrproj.ImageManipulation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
+import java.util.Date;
 
 import net.sourceforge.jiu.color.reduction.RGBToGrayConversion;
 import net.sourceforge.jiu.data.Gray8Image;
@@ -33,6 +38,24 @@ public class PageImage
 	 */
 	public Gray8Image getGrayImage()
 	{
+		
+	
+		if (grayimage==null)
+		{
+			long taskStart = System.currentTimeMillis();
+			WritableRaster raster = imagen.copyData( null );
+			BufferedImage copy = new BufferedImage( imagen.getColorModel(), raster, imagen.isAlphaPremultiplied(), null );
+			logger.debug("\tOriginal image copied in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
+			
+			 taskStart = System.currentTimeMillis();
+			
+			grayimage = convertirAGrayImage(imagen); // se transforma el
+														// BufferedImage en
+														// Gray8Image
+			logger.debug("\tImage converted to GrayImage in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
+			this.imagen=copy; // preserves original BufferedImage
+		}
+	
 		return grayimage;
 	}
 
@@ -53,21 +76,32 @@ public class PageImage
 	 */
 	public PageImage(BufferedImage imagen, boolean align)
 	{
-		this.imagen = imagen;
-		long taskStart = System.currentTimeMillis();
-		grayimage = convertirAGrayImage(imagen); // se transforma el
-													// BufferedImage en
-													// Gray8Image
-		logger
-				.debug("\tImage converted to GrayImage in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
-
+		
+		this(imagen);
+		
 		if (align == true)
 		{
-			taskStart = System.currentTimeMillis();
-			alignImage(grayimage);
-			logger
-					.debug("\tImage alligned in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
+			align();
 		}
+		
+	}
+
+	/**
+	 * 
+	 */
+	public void align()
+	{
+		long taskStart = System.currentTimeMillis();
+		alignImage(getGrayImage());
+		logger.debug("\tImage alligned in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
+	}
+
+	/**
+	 * @param imagen2
+	 */
+	public PageImage(BufferedImage imagen)
+	{
+		this.imagen=imagen;
 		
 	}
 
@@ -123,5 +157,19 @@ public class PageImage
 		// imagen
 		imageManipulator.locateConcentricCircles(); // se alinea si esta marcada
 		// la bandera de alineación
+	}
+
+	/**
+	 * 
+	 */
+	public void markProcessing()
+	{
+		BufferedImage imagen = getImagen();
+		Gray8Image grayImg = getGrayImage();
+		Graphics2D g=imagen.createGraphics();
+		g.setColor(Color.RED);
+		g.drawString("Page Processed at:"+new Date()+" W:"+imagen.getWidth()+" H:"+imagen.getHeight()+"  workcopy W: "+grayImg.getWidth()+" H:"+grayImg.getHeight(), 10, 10);
+		
+		
 	}
 }
