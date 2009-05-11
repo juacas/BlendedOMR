@@ -7,6 +7,13 @@
 
 package org.uva.itast.blended.omr;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +45,19 @@ import com.google.zxing.client.result.ResultParser;
  */
 public final class BarcodeManipulation
 {
-	public BarcodeManipulation() {
+	/**
+	 * Logger for this class
+	 */
+	private static final Log	logger	= LogFactory.getLog(BarcodeManipulation.class);
+
+	private Result	lastResult;
+	private PageImage	pageImage;
+	private boolean	medianfilter;
+
+	public BarcodeManipulation(PageImage imagen, boolean medianfilter)
+	{
+		this.pageImage=imagen;
+		this.medianfilter=medianfilter;
 	}
 	
 	/**
@@ -49,7 +68,7 @@ public final class BarcodeManipulation
 	 * @return
 	 * @throws ReaderException
 	 */
-	public static String leerBarcode(Campo campo, BufferedImage imagen, boolean medianfilter) throws ReaderException  {
+	public Result leerBarcode(Campo campo) throws ReaderException  {
 		  Hashtable<DecodeHintType, Object> hints = null;
 		  String barcode;
 		  BufferedImage subimage;
@@ -57,31 +76,52 @@ public final class BarcodeManipulation
 		  
 		  //se leen y almacenan las coordenadas
 		  double[] coords = campo.getCoordenadas();
-		  int x = (int) (coords[0]* TestManipulation._IMAGEWIDTHPIXEL/ConcentricCircle.a4width);		//concentriccirclewidth//posición de la x
-		  int y = (int) (coords[1]* TestManipulation._IMAGEHEIGTHPIXEL/ConcentricCircle.a4height);		//posición de la y
-		  int width = (int) (coords[2]* TestManipulation._IMAGEWIDTHPIXEL/ConcentricCircle.a4width);	//anchura en píxeles
-		  int height = (int) (coords[3]* TestManipulation._IMAGEHEIGTHPIXEL/ConcentricCircle.a4height);	//altura en píxeles
+		  Rectangle rect=getRectArea(coords);
 		  
-		  subimage = imagen.getSubimage(x,y,width,height);		//se coge la subimagen, x,y,w,h (en píxeles)
+		  subimage = pageImage.getImagen().getSubimage(rect.x,rect.y,rect.width,rect.height);		//se coge la subimagen, x,y,w,h (en píxeles)
 		  
-		  if (subimage == null) System.err.println(imagen.toString() + ": No es posible cargar la imagen");
+		  if (subimage == null)
+			{
+			  logger.error("leerBarcode(Campo) - " + pageImage.getImagen().toString() + ": No es posible cargar la imagen", null); //$NON-NLS-1$ //$NON-NLS-2$
+			  //TODO: Lanzar Excepcion
+			}
 		  
-		  if(medianfilter == true) medianFilter(subimage);		//parametro para desactivar el filtrado 
+		  if(medianfilter == true)
+			  medianFilter(subimage);		//parametro para desactivar el filtrado 
 		  
 	      MonochromeBitmapSource source = new BufferedImageMonochromeBitmapSource(subimage);
 	      Result result = new MultiFormatReader().decode(source, hints);
-	      ParsedResult parsedResult = ResultParser.parseResult(result);
+	      
+	      this.lastResult=result;
+	      return result;
+	  }
+
+	/**
+	 * @param result
+	 * @return
+	 */
+	public String getParsedCode(Result result)
+	{
+		String barcode;
+		ParsedResult parsedResult = ResultParser.parseResult(result);
 	      
 	      //System.out.println(imagen.toString() + " (format: " + result.getBarcodeFormat() +", type: " + parsedResult.getType() + "):\nRaw result:\n" + result.getText() +"\nParsed result:\n" + parsedResult.getDisplayResult());
 	      barcode = parsedResult.getDisplayResult();
-	      
-	      return barcode;
-	      
-	    //} catch (ReaderException e) {
-	    //	System.out.println(imagen.toString() + ": Código de barras no encontrado");
-	    //	}
-	      
-	  }
+		return barcode;
+	}
+
+	/**
+	 * @param coords
+	 * @return
+	 */
+	private static Rectangle getRectArea(double[] coords)
+	{
+		int x = (int) (coords[0]* TestManipulation._IMAGEWIDTHPIXEL/ConcentricCircle.a4width);		//concentriccirclewidth//posición de la x
+		  int y = (int) (coords[1]* TestManipulation._IMAGEHEIGTHPIXEL/ConcentricCircle.a4height);		//posición de la y
+		  int width = (int) (coords[2]* TestManipulation._IMAGEWIDTHPIXEL/ConcentricCircle.a4width);	//anchura en píxeles
+		  int height = (int) (coords[3]* TestManipulation._IMAGEHEIGTHPIXEL/ConcentricCircle.a4height);	//altura en píxeles
+		  return new Rectangle(x,y,width,height);
+	}
 
 	/**
 	 * Aplica un filtro para reconstruir imagenes de mala calidad, a través del valor de los píxeles vecinos
@@ -100,10 +140,33 @@ private static void medianFilter(BufferedImage subimage) {
 		
 	} catch (MissingParameterException e) {
 		// TODO Auto-generated catch block
-		e.printStackTrace();
+			logger.error("medianFilter(BufferedImage)", e); //$NON-NLS-1$
 	} catch (WrongParameterException e) {
 		// TODO Auto-generated catch block
-		e.printStackTrace();
+			logger.error("medianFilter(BufferedImage)", e); //$NON-NLS-1$
 	}
 }
+
+	/**
+	 * @param campo
+	 * @return
+	 * @throws ReaderException 
+	 */
+	public String getParsedCode(Campo campo) throws ReaderException
+	{
+		return getParsedCode(leerBarcode(campo));
+	}
+
+	/**
+	 * @param campo
+	 */
+	public void markBarcode(Campo campo)
+	{
+		Rectangle rect=getRectArea(campo.getCoordenadas());
+		Graphics g=this.pageImage.getImagen().createGraphics();
+		g.setColor(Color.RED);
+		g.drawRoundRect(rect.x, rect.y, rect.width, rect.height, 3, 3);
+		if (lastResult!=null)
+			g.drawString(lastResult.getBarcodeFormat().toString()+"="+getParsedCode(lastResult), rect.x, rect.y);
+	}
 }
