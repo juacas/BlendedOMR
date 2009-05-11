@@ -34,6 +34,8 @@ public class PagesCollection
 
 	private File	inputPath;
 
+	private PageImage	pageImage;
+
 	/**
 	 * @param inputpath
 	 * @throws IOException 
@@ -70,7 +72,7 @@ public class PagesCollection
 	 * @param i index of page starting with 0
 	 * @return
 	 */
-	public BufferedImage getPageImage(int i)
+	public PageImage getPageImage(int i)
 	{
 		try
 		{
@@ -80,7 +82,7 @@ public class PagesCollection
 			PDFPage page = pdffile.getPage(i+1);        				//se coge la primera página
 			imagen = UtilidadesFicheros.leerImagenPDF(page);		//reescalamos la imagen para que tenga la resolución que deseamos
 			logger.debug("PDF page "+i+" ("+inputPath.getName()+") converted in (ms)"+(System.currentTimeMillis()-start)); //$NON-NLS-1$
-			return imagen;
+			
 			}
 			else
 			{
@@ -99,7 +101,9 @@ public class PagesCollection
 			
 			throw new RuntimeException("Page "+i+" ("+getPageType(i)+") unavailable.",e);
 		}
-		return imagen;
+		
+		this.pageImage=new PageImage(imagen);
+		return pageImage;
 	}
 
 	/**
