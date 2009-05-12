@@ -122,7 +122,7 @@ public class TestOMRProcessor extends TestCase
 	{
 	try
 		{
-		  if (true) 
+		  if (false) 
 	    	   return;
        
 		URL url=getClass().getClassLoader().getResource("56605.pdf");
