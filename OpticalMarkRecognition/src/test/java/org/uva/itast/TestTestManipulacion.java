@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Vector;
 
+import org.uva.itast.blended.omr.PageImage;
 import org.uva.itast.blended.omr.TestManipulation;
 
 
@@ -100,7 +101,7 @@ public class TestTestManipulacion extends TestCase
 		{
 			fail("Can't configure test case."+e);
 		}
-		Vector<File> errores;
+		Vector<PageImage> errores;
 		// detección de errores
 		errores=procesartest.leerPaginas("nonexistentfile.png");
 		assertTrue("Errors not detected ",errores.size()==1);
