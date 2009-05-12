@@ -117,7 +117,7 @@ public class UtilidadesFicheros
 		int resizeHeight = TestManipulation._IMAGEHEIGTHPIXEL;
 
 		img_pdf = new BufferedImage(resizeWidth, resizeHeight,
-				BufferedImage.TYPE_BYTE_GRAY); // se configura la imagen con las
+				BufferedImage.TYPE_INT_RGB); // se configura la imagen con las
 												// medidas especificas y en
 												// escala de grises
 		Graphics2D g2 = img_pdf.createGraphics(); // se crea un objeto gráfico
