@@ -402,7 +402,7 @@ public class TestManipulation
 	 * @param inputPath
 	 * @return {@link Vector} with {@link File} that was not processed (with errors)
 	 */
-	public Vector<File> leerPaginas(String inputPath)
+	public Vector<PageImage> leerPaginas(String inputPath)
 	{
 		File dir = new File(inputPath);
 		File[] files = obtainFileList(dir); // obteneción de la lista de
@@ -417,14 +417,28 @@ public class TestManipulation
 	 * @throws IOException
 	 * @return {@link Vector} with Files not processed
 	 */
-	private Vector<File> processFileList(File[] files)
+	private Vector<PageImage> processFileList(File[] files)
 	{
-		Vector<File> errors = new Vector<File>();
+		Vector<PageImage> errors = new Vector<PageImage>();
+		PagesCollection pages=new PagesCollection();
 		for (int i = 0; i < files.length; i++)
 		{
 			try
 			{
-				UtilidadesFicheros.procesarImagenes(files[i], isAutoalign(),
+				pages.addFile(files[i]);
+			}
+			catch (IOException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		for (PageImage pageImage : pages)
+		{
+			try
+			{
+				UtilidadesFicheros.procesarImagenes(pageImage, isAutoalign(),
 						isMedianFilter(), outputdir, plantilla);
 			}
 			catch (Exception e)
@@ -433,11 +447,12 @@ public class TestManipulation
 
 				if (logger.isDebugEnabled())
 				{
-					logger.debug("processFileList(File[]) - Can't process file  -  file=" + files[i] + ", e=" + e,e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+					logger.debug("processFileList(File[]) - Can't process file  -  file=" + pageImage.getFileName() + ", e=" + e,e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				}
-				errors.add(files[i]);
+				errors.add(pageImage);
 			}
 		}
+		
 		return errors;
 	}
 
