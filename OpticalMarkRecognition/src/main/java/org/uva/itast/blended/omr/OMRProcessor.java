@@ -9,6 +9,8 @@ package org.uva.itast.blended.omr;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.uva.itast.blended.omr.pages.PageImage;
+import org.uva.itast.blended.omr.pages.PagesCollection;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,22 +22,24 @@ import java.io.InputStreamReader;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import javax.imageio.ImageIO;
+
 /**
  * @author Jesús Rodilana
  */
-public class TestManipulation
+public class OMRProcessor
 {
 	/**
 	 * Logger for this class
 	 */
-	private static final Log	logger				= LogFactory.getLog(TestManipulation.class);
+	private static final Log	logger				= LogFactory.getLog(OMRProcessor.class);
 
-	public static final int	_IMAGEHEIGTHPIXEL	= 2339/2;	// valor en píxeles
+	public static final int	_IMAGEHEIGTHPIXEL	= (int)(2339);	// valor en píxeles
 															// de la altura de
 															// la imágen con la
 															// que se trabaja en
 															// el programa
-	public static final int	_IMAGEWIDTHPIXEL	= 1700/2;	// valor en píxeles
+	public static final int	_IMAGEWIDTHPIXEL	= (int)(1700);	// valor en píxeles
 															// de la anchura de
 															// la imágen con la
 															// que se trabaja en
@@ -91,10 +95,19 @@ public class TestManipulation
 	/**
 	 * Constructor TestManipulation sin parámetros.
 	 */
-	public TestManipulation()
+	public OMRProcessor()
 	{
 	}
-
+	/**
+	 * Load template
+	 * @param filename
+	 * @throws IOException
+	 */
+	public void loadTemplate(String filename) throws IOException
+	{
+		
+		plantilla = new PlantillaOMR(filename); // se crea la plantilla según el
+	}		
 	/**
 	 * Método que lee la línea de comandos. Identifica que las opciones y
 	 * parámetros sean correctos y los almacena. uso: blended_omr [-i inputdir]
@@ -102,7 +115,7 @@ public class TestManipulation
 	 * definitionfiles -a indica que hay que alinear la página -f indica que hay
 	 * que filtrar los campos (para imágenes de mala calidad)
 	 */
-	public void leerLineaComandos(String[] args)
+	public void readCommandLine(String[] args)
 	{
 		int i = 0, j;
 
@@ -344,39 +357,12 @@ public class TestManipulation
 	 * 
 	 * @param medianfilter
 	 */
-	private void setMedianFilter(boolean medianfilter)
+	public void setMedianFilter(boolean medianfilter)
 	{
 		this.medianfilter = medianfilter;
 	}
 
-	/**
-	 * Método para leer los campos del archivo de marcas
-	 * 
-	 * @param filename
-	 * @throws IOException
-	 */
-	public void leerDefinitionfile(String filename) throws IOException
-	{
-		String line;
 
-		// //primero se leen el número de páginas que define el archivo
-		// BufferedReader entrada = new BufferedReader(new InputStreamReader(new
-		// FileInputStream(filename)));
-		// while((line = entrada.readLine()) != null && !line.equals(""))
-		// {
-		// if(line.startsWith("[Page")) numeropaginas++; //si identificamos una
-		// página incrementamos el número de página
-		// }
-		// if (numeropaginas == 0) numeropaginas=1; //si no se encuentra la
-		// etiqueta solamente habrá una página
-		// entrada.close();
-
-		plantilla = new PlantillaOMR(filename); // se crea la plantilla según el
-												// número de páginas, dentro de
-												// esta clase se leerán las
-												// posiciones de las marcas
-
-	}
 
 	/**
 	 * Método para escribir todos los valores de un campo, el parámetro key
@@ -402,24 +388,74 @@ public class TestManipulation
 	 * @param inputPath
 	 * @return {@link Vector} with {@link File} that was not processed (with errors)
 	 */
-	public Vector<PageImage> leerPaginas(String inputPath)
+	public Vector<PageImage> processPath(String inputPath)
 	{
 		File dir = new File(inputPath);
 		File[] files = obtainFileList(dir); // obteneción de la lista de
-											// ficheros a procesar
-		return processFileList(files); // procesar ficheros
+		PagesCollection pages = getPageCollection(files);									// ficheros a procesar
+		return processPages(pages); // procesar ficheros
 	}
 
 	/**
-	 * Método para procesar la lista de ficheros
+	 * Método para procesar las páginas
 	 * 
 	 * @param files
 	 * @throws IOException
 	 * @return {@link Vector} with Files not processed
 	 */
-	private Vector<PageImage> processFileList(File[] files)
+	private Vector<PageImage> processPages(PagesCollection pages)
 	{
 		Vector<PageImage> errors = new Vector<PageImage>();
+		
+		
+		for (PageImage pageImage : pages)
+		{
+			try
+			{
+				long taskStart = System.currentTimeMillis();
+				
+				
+				UtilidadesFicheros.procesarPagina(pageImage, isAutoalign(), isMedianFilter(), outputdir, plantilla); // se
+																					// procesa
+																			// la
+																					// página
+				
+				UtilidadesFicheros.saveOMRResults(pageImage.getFileName(), outputdir, plantilla);// se salvan
+																			// los
+																			// resultados
+																			// en archivo
+				
+			   pageImage.outputMarkedPage(outputdir);
+			   
+//			  if (logger.isDebugEnabled())
+//				  pageImage.outputWorkingPage(outputdir);
+					
+				
+				
+				pageImage.freeMemory();
+				logger.debug("Page  "+pageImage+" processed in (ms)"+(System.currentTimeMillis()-taskStart)); //$NON-NLS-1$
+			}
+			catch (Exception e)
+			{
+				// report files with errors
+
+				if (logger.isDebugEnabled())
+				{
+					logger.debug("processFileList(File[]) - Can't process page=" + pageImage.toString() + ", e=" + e,e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				}
+				errors.add(pageImage);
+			}
+		}
+		
+		return errors;
+	}
+
+	/**
+	 * @param files
+	 * @return
+	 */
+	private PagesCollection getPageCollection(File[] files)
+	{
 		PagesCollection pages=new PagesCollection();
 		for (int i = 0; i < files.length; i++)
 		{
@@ -433,27 +469,7 @@ public class TestManipulation
 				e.printStackTrace();
 			}
 		}
-		
-		for (PageImage pageImage : pages)
-		{
-			try
-			{
-				UtilidadesFicheros.procesarImagenes(pageImage, isAutoalign(),
-						isMedianFilter(), outputdir, plantilla);
-			}
-			catch (Exception e)
-			{
-				// report files with errors
-
-				if (logger.isDebugEnabled())
-				{
-					logger.debug("processFileList(File[]) - Can't process file  -  file=" + pageImage.getFileName() + ", e=" + e,e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				}
-				errors.add(pageImage);
-			}
-		}
-		
-		return errors;
+		return pages;
 	}
 
 	/**

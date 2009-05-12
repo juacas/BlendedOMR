@@ -14,6 +14,7 @@ import omrproj.SolidMark;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.uva.itast.blended.omr.pages.PageImage;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -73,71 +74,8 @@ public class UtilidadesFicheros
 	 * @return imagenSalida
 	 * @throws IOException
 	 */
-	public static BufferedImage reescalar(File imagenLeer) throws IOException
-	{
-		Image imagenObjeto = null;
-		BufferedImage imagenSalida = null; // se crea la imagen de salida
-
-		// se elige el ancho y el alto de la nueva imagen
-		int resizeWidth = TestManipulation._IMAGEWIDTHPIXEL;
-		int resizeHeight = TestManipulation._IMAGEHEIGTHPIXEL;
-
-		
-		imagenObjeto = ImageIO.read(imagenLeer);
-
-		imagenSalida = new BufferedImage(resizeWidth, resizeHeight,
-				BufferedImage.TYPE_INT_RGB); // se configura la imagen con las
-												// medidas especificas 
-		//Image scaled=imagenObjeto.getScaledInstance(resizeWidth, resizeHeight, Image.SCALE_FAST);
-		
-		imagenSalida.createGraphics().drawImage(imagenObjeto, 0, 0,
-				resizeWidth, resizeHeight, null); // se crea un objeto gráfico
-													// en dos dimensiones
-
-		return imagenSalida;
-	}
-
-	/**
-	 * Método que lee una imagen pdf y la transforma en un objeto de tipo
-	 * BufferedImage reescalado
-	 * 
-	 * @param page
-	 * @return img_pdf
-	 * @throws InterruptedException
-	 * @throws Exception
-	 */
-	public static BufferedImage leerImagenPDF(PDFPage page)
-			throws InterruptedException
-	{
-		BufferedImage img_pdf = null; // se crea un bufferedImge para almacenar
-										// la imagen
-
-		// se elige el ancho y el alto de la imagen
-		int resizeWidth = TestManipulation._IMAGEWIDTHPIXEL;
-		int resizeHeight = TestManipulation._IMAGEHEIGTHPIXEL;
-
-		img_pdf = new BufferedImage(resizeWidth, resizeHeight,
-				BufferedImage.TYPE_INT_RGB); // se configura la imagen con las
-												// medidas especificas y en
-												// escala de grises
-		Graphics2D g2 = img_pdf.createGraphics(); // se crea un objeto gráfico
-													// en dos dimensiones
-		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
-
-		PDFRenderer renderer = new PDFRenderer(page, g2, new Rectangle(0, 0,
-				TestManipulation._IMAGEWIDTHPIXEL,
-				TestManipulation._IMAGEHEIGTHPIXEL), null, Color.RED); // se
-																		// renderiza
-																		// la
-																		// imgen
-		page.waitForFinish();
-		renderer.run();
-		img_pdf.createGraphics().drawImage(img_pdf, 0, 0, resizeWidth,
-				resizeHeight, null); // por último se dibuja la imagen
-
-		return img_pdf;
-	}
+	
+	
 
 	/**
 	 * Método que salva un objeto tipo imagen en un archivo físico de extensión
@@ -259,7 +197,7 @@ public class UtilidadesFicheros
 																			// la
 																			// página
 		
-			saveOMRResults(pageImage.getFileName(), outputdir, plantilla);// se salvan
+		saveOMRResults(pageImage.getFileName(), outputdir, plantilla);// se salvan
 																	// los
 																	// resultados
 																	// en
@@ -273,7 +211,7 @@ public class UtilidadesFicheros
 	 * @param pageImage
 	 * @param align
 	 * @param outputdir
-	 * @param plantilla devuelve los valores reconocidos
+	 * @param plantilla in/out devuelve los valores reconocidos
 	 * @throws FileNotFoundException
 	 */
 	public static void procesarPagina(PageImage pageImage, boolean align,
@@ -283,12 +221,16 @@ public class UtilidadesFicheros
 		
 		if (align)
 			{
-			long funcStart = System.currentTimeMillis();
+			
 			pageImage.align(); //encapsula procesamiento y representación
-			logger.debug("Page aligned in (ms)" + (System.currentTimeMillis() - funcStart)); //$NON-NLS-1$
-
+			
 			}
+		if (medianfilter)
+		{
+			
+			pageImage.medianFilter(); //encapsula procesamiento y representación
 		
+		}
 		
 		long taskStart = System.currentTimeMillis();
 		
@@ -359,22 +301,8 @@ public class UtilidadesFicheros
 					buscarMarcaCodebar(pageImage, campo, medianfilter);
 			}
 			
-			pageImage.markProcessing();
- 			if (logger.isDebugEnabled())
-			{
-				File debugImagePath;
-				try
-				{
-							
-					debugImagePath = File.createTempFile("OMR_original_marked", ".jpg", new File(outputdir));
-					ImageIO.write(pageImage.getImagen(), "JPG", debugImagePath);
-				}
-				catch (IOException e)
-				{
-					logger.error("buscarMarcas(String, PlantillaOMR, Gray8Image, BufferedImage, boolean)", e); //$NON-NLS-1$
-				}
-				
-			}
+			pageImage.labelPageAsProcessed();
+ 			
 		}
 		return plantilla;
 	}
@@ -415,7 +343,7 @@ public class UtilidadesFicheros
 	 * Método que busca marcas de tipo circle en un objeto tipo Gray8Image
 	 * 
 	 * @param i
-	 * @param medianfilter 
+	 *
 	 * @param campo 
 	 * @param markedImage 
 	 * @param mark
@@ -439,17 +367,15 @@ public class UtilidadesFicheros
 		x = coords[0]+coords[2]/2;
 		y = coords[1]+coords[3]/2;
 		// Pasamos el tamaño a píxeles _IMAGEWIDTHPIXELx_IMAGEHEIGTHPIXEL
-		xpixel = (int) (x * TestManipulation._IMAGEWIDTHPIXEL / ConcentricCircle.a4width);
-		ypixel = (int) (y * TestManipulation._IMAGEHEIGTHPIXEL / ConcentricCircle.a4height);
+		xpixel = pageImage.toPixelsX(x);//(int) (x * pageImage.getHorizontalRatio());
+		ypixel = pageImage.toPixelsY(y);
 
 		// leemos la anchura de las marcas y las pasamos a píxeles
 		markradXmm = coords[2];
 		markradYmm = coords[3];
-		int markWidth = Math.max(5, (int) (markradXmm * TestManipulation._IMAGEWIDTHPIXEL / ConcentricCircle.a4width));
-		int markHeight = Math.max(5,(int) (markradYmm * TestManipulation._IMAGEHEIGTHPIXEL / ConcentricCircle.a4height));
-		SolidCircleMark mark = new SolidCircleMark(pageImage,
-				markWidth,
-				markHeight, TestManipulation._IMAGEWIDTHPIXEL / ConcentricCircle.a4width, TestManipulation._IMAGEHEIGTHPIXEL / ConcentricCircle.a4height);
+		int markWidth = Math.max(5, pageImage.toPixelsX(markradXmm));
+		int markHeight = Math.max(5,pageImage.toPixelsY(markradYmm));
+		SolidCircleMark mark = new SolidCircleMark(pageImage,markWidth,	markHeight);
 
 		if (logger.isDebugEnabled())
 		{
@@ -486,41 +412,51 @@ public class UtilidadesFicheros
 			PlantillaOMR plantilla) throws FileNotFoundException
 	{
 
-		Hashtable<String, Campo> campos = plantilla.getPagina(1).getCampos();
+		try
+		{
+			Hashtable<String, Campo> campos = plantilla.getPagina(1).getCampos();
 
-		Campo acticodeField = campos.get(ACTIVITYCODE_FIELDNAME);
-		Campo useridField = campos.get(USERID_FIELDNAME);
-		
-		int useridInt = Integer.parseInt(useridField.getValue()); // evita
-																	// inyección
-																	// de path
-																	// en el
-																	// código
-		int acticodeInt = Integer.parseInt(acticodeField.getValue()); // evita
+			//TODO: usar los nombres pasados en -id1 -id2
+			Campo acticodeField = campos.get(ACTIVITYCODE_FIELDNAME);
+			Campo useridField = campos.get(USERID_FIELDNAME);
+			
+			int useridInt = Integer.parseInt(useridField.getValue()); // evita
 																		// inyección
-																		// de
-																		// path
+																		// de path
 																		// en el
 																		// código
+			int acticodeInt = Integer.parseInt(acticodeField.getValue()); // evita
+																			// inyección
+																			// de
+																			// path
+																			// en el
+																			// código
 
-		File dir = new File(outputdir); // que venga de parametro
-		File outputFile = new File(dir, "omr_result_" + useridInt + "_"
-				+ acticodeInt + ".txt");
+			File dir = new File(outputdir); // que venga de parametro
+			File outputFile = new File(dir, "omr_result_" + useridInt + "_"
+					+ acticodeInt + ".txt");
 
-		PrintWriter out = new PrintWriter(new FileOutputStream(outputFile));
-		for (int i = 0; i < plantilla.getNumPaginas(); i++)
-		{
-			out.println("Filename=" + inputpath);
-			out.println("[Page" + plantilla.getPagina(i + 1).getNumPagina()
-					+ "]");
-			for (int k = 0; k < plantilla.getPagina(i + 1).getMarcas().size(); k++)
+			PrintWriter out = new PrintWriter(new FileOutputStream(outputFile,true));
+			for (int i = 0; i < plantilla.getNumPaginas(); i++)
 			{
-				Campo campo2 = campos.get(plantilla.getPagina(i + 1)
-						.getMarcas().elementAt(k));
-				out.println(campo2.getNombre() + "=" + campo2.getValue());
+				out.println("Filename=" + inputpath);
+				out.println("[Page" + plantilla.getPagina(i + 1).getNumPagina()
+						+ "]");
+				for (int k = 0; k < plantilla.getPagina(i + 1).getMarcas().size(); k++)
+				{
+					Campo campo2 = campos.get(plantilla.getPagina(i + 1)
+							.getMarcas().elementAt(k));
+					out.println(campo2.getNombre() + "=" + campo2.getValue());
+				}
 			}
+			out.close();
+			
 		}
-		out.close();
+		catch (NumberFormatException e)
+		{
+			// TODO Auto-generated catch block
+			logger.error("saveOMRResults:  Can't obtain ID1 and ID2 for outputting report."); //$NON-NLS-1$
+		}
 		return;
 	}
 }

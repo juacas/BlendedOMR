@@ -6,6 +6,7 @@ package org.uva.itast.blended.omr;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.uva.itast.blended.omr.pages.PageImage;
 
 //import net.sourceforge.jiu.codecs.*;
 import java.awt.Color;
@@ -70,12 +71,12 @@ public class SolidCircleMark
  * @param approxYscale
  */
 	public SolidCircleMark(PageImage pageimage, int markWidth,
-			int markHeight, double approxXscale, double approxYscale)
+			int markHeight)
 	{
 		this.grayimage = pageimage.getGrayImage();
 		this.pageImage=pageimage;
-		this.approxXscale = approxXscale;
-		this.approxYscale = approxYscale;
+		this.approxXscale = pageimage.getHorizontalRatio();
+		this.approxYscale = pageimage.getVerticalRatio();
 		this.markHeight= markHeight;
 		this.markWidth=markWidth;
 	

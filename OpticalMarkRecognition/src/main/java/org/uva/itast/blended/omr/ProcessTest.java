@@ -21,9 +21,9 @@ public class ProcessTest {
 	 * @throws Exception
 	 */
     public static void main(String[] args) throws Exception {
-        TestManipulation procesartest = new TestManipulation();    			//se crea un objeto tipo TestManipulation para todo lo que tenga que ver con sus métodos
-        procesartest.leerLineaComandos(args);        						//se lee la línea de comandos
-        procesartest.leerDefinitionfile(procesartest.getDefinitionfile());	//se lee el fichero con la descripción de las marcas
-        procesartest.leerPaginas(procesartest.getInputPath());        		//se leen las páginas escaneadas
+        OMRProcessor processor = new OMRProcessor();    			//se crea un objeto tipo TestManipulation para todo lo que tenga que ver con sus métodos
+        processor.readCommandLine(args);        						//se lee la línea de comandos
+        processor.loadTemplate(processor.getDefinitionfile());	//se lee el fichero con la descripción de las marcas
+        processor.processPath(processor.getInputPath());        		//se leen las páginas escaneadas
     }
 }

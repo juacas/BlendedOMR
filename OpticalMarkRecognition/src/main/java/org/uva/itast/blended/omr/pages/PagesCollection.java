@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.uva.itast.blended.omr;
+package org.uva.itast.blended.omr.pages;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
