@@ -24,7 +24,7 @@ import net.sourceforge.jiu.gui.awt.BufferedRGB24Image;
 /**
  * @author juacas
  */
-public class PageImage
+public abstract class PageImage
 {
 	/**
 	 * Logger for this class
@@ -42,6 +42,7 @@ public class PageImage
 	
 		if (grayimage==null)
 		{
+			BufferedImage imagen=getImagen();
 			long taskStart = System.currentTimeMillis();
 			WritableRaster raster = imagen.copyData( null );
 			BufferedImage copy = new BufferedImage( imagen.getColorModel(), raster, imagen.isAlphaPremultiplied(), null );
@@ -53,7 +54,7 @@ public class PageImage
 														// BufferedImage en
 														// Gray8Image
 			logger.debug("\tImage converted to GrayImage in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
-			this.imagen=copy; // preserves original BufferedImage
+			setImagen(copy); // preserves original BufferedImage
 		}
 	
 		return grayimage;
@@ -64,26 +65,28 @@ public class PageImage
 	 */
 	public BufferedImage getImagen()
 	{
+		if (imagen==null)
+		{
+			setImagen(createImage());
+		}
 		return imagen;
 	}
 
+	/**
+	 * @return
+	 */
+	abstract BufferedImage createImage();
+
 	private BufferedImage	imagen;
 
+	
+
 	/**
-	 * 
-	 * @param imagen
-	 * @param align
+	 * @param imagen the imagen to set
 	 */
-	public PageImage(BufferedImage imagen, boolean align)
+	protected void setImagen(BufferedImage imagen)
 	{
-		
-		this(imagen);
-		
-		if (align == true)
-		{
-			align();
-		}
-		
+		this.imagen = imagen;
 	}
 
 	/**
@@ -96,14 +99,7 @@ public class PageImage
 		logger.debug("\tImage alligned in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
 	}
 
-	/**
-	 * @param imagen2
-	 */
-	public PageImage(BufferedImage imagen)
-	{
-		this.imagen=imagen;
-		
-	}
+	
 
 	/**
 	 * Método que a partir de un objeto tipo BufferedImage lo transforma en uno
@@ -172,4 +168,14 @@ public class PageImage
 		
 		
 	}
+
+	/**
+	 * @return
+	 */
+	public abstract String getType();
+
+	/**
+	 * @return
+	 */
+	public abstract String getFileName();
 }

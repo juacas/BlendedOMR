@@ -8,10 +8,13 @@ import org.apache.commons.logging.LogFactory;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import com.sun.pdfview.PDFFile;
 import com.sun.pdfview.PDFPage;
@@ -20,21 +23,16 @@ import com.sun.pdfview.PDFPage;
  * @author juacas
  *
  */
-public class PagesCollection
+public class PagesCollection implements Iterable<PageImage>
 {
 	/**
 	 * Logger for this class
 	 */
 	private static final Log	logger	= LogFactory.getLog(PagesCollection.class);
 
-	private PDFFile	pdffile; // for PDF
-	private int	numPagesPDF;
-
-	private BufferedImage	imagen; //last rendered image
-
-	private File	inputPath;
-
-	private PageImage	pageImage;
+	
+	
+	ArrayList<PageImage> pages=new ArrayList<PageImage>();
 
 	/**
 	 * @param inputpath
@@ -42,22 +40,16 @@ public class PagesCollection
 	 */
 	public PagesCollection(File inputpath) throws IOException
 	{
-		this.inputPath=inputpath;
-		if(inputpath.getName().toLowerCase().endsWith(".pdf"))
-			{	//si se trata de un fichero PDF, hay que convertir a BufferedImage
-    		long start=System.currentTimeMillis();
-			RandomAccessFile raf = new RandomAccessFile(inputpath, "r");	//se carga la imagen pdf para leerla
-			FileChannel channel = raf.getChannel();
-			ByteBuffer buf = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-			pdffile = new PDFFile(buf);    							//se crea un objeto de tipo PDFFile para almacenar las páginas
-			numPagesPDF = pdffile.getNumPages();
-			logger.debug("PDF readed in (ms)"+(System.currentTimeMillis()-start)); //$NON-NLS-1$
-			}
-		else
-			{
-			numPagesPDF=1;
-			
-			}
+		
+		addFile(inputpath);
+	}
+
+	/**
+	 * 
+	 */
+	public PagesCollection()
+	{
+		// TODO Auto-generated constructor stub
 	}
 
 	/**
@@ -65,7 +57,7 @@ public class PagesCollection
 	 */
 	public int getNumPages()
 	{
-		return numPagesPDF;
+		return pages.size();
 	}
 
 	/**
@@ -74,35 +66,9 @@ public class PagesCollection
 	 */
 	public PageImage getPageImage(int i)
 	{
-		try
-		{
-			long start=System.currentTimeMillis();
-			if("PDF".equals(getPageType(i)))
-			{
-			PDFPage page = pdffile.getPage(i+1);        				//se coge la primera página
-			imagen = UtilidadesFicheros.leerImagenPDF(page);		//reescalamos la imagen para que tenga la resolución que deseamos
-			logger.debug("PDF page "+i+" ("+inputPath.getName()+") converted in (ms)"+(System.currentTimeMillis()-start)); //$NON-NLS-1$
-			
-			}
-			else
-			{
-				imagen = UtilidadesFicheros.reescalar(inputPath);	
-				logger.debug("Image page "+i+" ("+inputPath.getName()+") converted in (ms)"+(System.currentTimeMillis()-start)); //$NON-NLS-1$
-				
-			}
-		}
-		catch (InterruptedException e)
-		{
-			
-			throw new RuntimeException("Page "+i+" ("+getPageType(i)+") unavailable.",e);
-		}
-		catch (IOException e)
-		{
-			
-			throw new RuntimeException("Page "+i+" ("+getPageType(i)+") unavailable.",e);
-		}
 		
-		this.pageImage=new PageImage(imagen);
+			
+		PageImage pageImage=pages.get(i);
 		return pageImage;
 	}
 
@@ -112,10 +78,45 @@ public class PagesCollection
 	 */
 	private String getPageType(int i)
 	{
-		if (pdffile!=null)
-			return "PDF";
-		else
-			return "Non-PDF";
+		return pages.get(i).getType();
+	}
+
+	/**
+	 * @param file
+	 * @throws IOException 
+	 */
+	public void addFile(File inputpath) throws IOException
+	{
+	if(inputpath.getName().toLowerCase().endsWith(".pdf"))
+		{	//si se trata de un fichero PDF, hay que convertir a BufferedImage
+		long start=System.currentTimeMillis();
+		RandomAccessFile raf = new RandomAccessFile(inputpath, "r");	//se carga la imagen pdf para leerla
+		FileChannel channel = raf.getChannel();
+		ByteBuffer buf = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+		PDFFile pdffile = new PDFFile(buf);    							//se crea un objeto de tipo PDFFile para almacenar las páginas
+		int numPagesPDF = pdffile.getNumPages();
+		logger.debug("PDF readed in (ms)"+(System.currentTimeMillis()-start)); //$NON-NLS-1$
+		for (int i=0;i<numPagesPDF;i++)
+			{
+			PageImage page=new PDFPageImage(inputpath,pdffile,i);
+			pages.add(page);
+			}
+		
+		}
+	else
+		{
+		pages.add(new ImageFilePage(inputpath));
+		
+		}
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Iterable#iterator()
+	 */
+	public Iterator<PageImage> iterator()
+	{
+		return pages.iterator();
 	}
 
 }
