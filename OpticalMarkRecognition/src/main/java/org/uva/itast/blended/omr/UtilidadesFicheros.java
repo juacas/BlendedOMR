@@ -224,24 +224,19 @@ public class UtilidadesFicheros
 	 * @param plantilla
 	 * @throws IOException
 	 */
-	public static void procesarImagenes(File inputpath, boolean align,
+	public static void procesarImagenes(PageImage page, boolean align,
 			boolean medianfilter, String outputdir, PlantillaOMR plantilla)
 			throws IOException
 	{
-		BufferedImage imagen;
-		PagesCollection col = new PagesCollection(inputpath);
-		int numpages = col.getNumPages();
+		
 
-		for (int i = 0; i < numpages; i++)
-		{
 			long taskStart = System.currentTimeMillis();
-			PageImage pageImage = col.getPageImage(i);
 			
-			processPageAndSaveResults(inputpath, align, medianfilter,
-					outputdir, plantilla, pageImage);
-			logger.debug("Page "+(i+1)+" ("+inputpath.getName()+") processed in (ms)"+(System.currentTimeMillis()-taskStart)); //$NON-NLS-1$
 			
-		}
+			processPageAndSaveResults(align, medianfilter,outputdir, plantilla, page);
+			logger.debug("Page  ("+page.getFileName()+") processed in (ms)"+(System.currentTimeMillis()-taskStart)); //$NON-NLS-1$
+			
+		
 
 	}
 
@@ -254,7 +249,7 @@ public class UtilidadesFicheros
 	 * @param pageImage
 	 * @throws FileNotFoundException
 	 */
-	public static void processPageAndSaveResults(File inputpath, boolean align,
+	public static void processPageAndSaveResults(boolean align,
 			boolean medianfilter, String outputdir, PlantillaOMR plantilla,
 			PageImage pageImage) throws FileNotFoundException
 	{
@@ -263,7 +258,8 @@ public class UtilidadesFicheros
 																			// procesa
 																			// la
 																			// página
-		saveOMRResults(inputpath.getName(), outputdir, plantilla); // se salvan
+		
+			saveOMRResults(pageImage.getFileName(), outputdir, plantilla);// se salvan
 																	// los
 																	// resultados
 																	// en
@@ -362,6 +358,7 @@ public class UtilidadesFicheros
 				else if (tipo == Campo.CODEBAR)
 					buscarMarcaCodebar(pageImage, campo, medianfilter);
 			}
+			
 			pageImage.markProcessing();
  			if (logger.isDebugEnabled())
 			{
@@ -493,7 +490,7 @@ public class UtilidadesFicheros
 
 		Campo acticodeField = campos.get(ACTIVITYCODE_FIELDNAME);
 		Campo useridField = campos.get(USERID_FIELDNAME);
-
+		
 		int useridInt = Integer.parseInt(useridField.getValue()); // evita
 																	// inyección
 																	// de path
