@@ -29,13 +29,12 @@ public class SolidCircleMark
 	/**
 	 * 
 	 */
-	private static final int	SCAN_DELTA_DIVISOR	= 4;
+	private static final double	SIMILARITY_PERCENT	= 0.5d;
 
 	/**
-	 * Logger for this class
+	 * 
 	 */
-	private static final Log	logger			= LogFactory.getLog(SolidCircleMark.class);
-
+	private static final int	SCAN_DELTA_DIVISOR	= 4;
 	/**
 	 * 
 	 */
@@ -43,6 +42,12 @@ public class SolidCircleMark
 														// para el barrido que
 														// se da para buscar la
 														// marca
+	/**
+	 * Logger for this class
+	 */
+	private static final Log	logger			= LogFactory.getLog(SolidCircleMark.class);
+
+	
 	Gray8Image					grayimage;
 	public int					markWidth;
 	public int							markHeight;
@@ -119,7 +124,7 @@ public class SolidCircleMark
 		maxsim = -1;
 		maxsimX = 0;
 		maxsimY = 0;
-// [JPC] this loop was refactored to start the analysis in the center
+// [JPC] this loop was refactored to start the analysis from the center
 		int maxDeltaX = (int) (markWidth  * SCAN_PERCENT);
 		int maxDeltaY = (int) (markHeight * SCAN_PERCENT);
 		int deltaXY = Math.max(1, markWidth / SCAN_DELTA_DIVISOR);
@@ -175,13 +180,13 @@ public class SolidCircleMark
 				}
 			}
 		}
-
+		double threshold=getAutoSimilarity()*(1+SIMILARITY_PERCENT);
 		if (logger.isDebugEnabled())
 		{
 			logger
-					.debug("isMark(int, int) - --" + maxsim + ":" + maxsimX + "," + maxsimY + "->" + x + ":" + y); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+					.debug("isMark(int, int) - --" + maxsim + " (threshold)"+threshold+":" + maxsimX + "," + maxsimY + "->" + x + ":" + y); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 		}
-		if (maxsim > getAutoSimilarity()*1.2)
+		if (maxsim > threshold)
 			return true;
 		else
 			return false;
