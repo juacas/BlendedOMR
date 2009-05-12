@@ -77,14 +77,20 @@ public final class BarcodeManipulation
 		  //se leen y almacenan las coordenadas
 		  double[] coords = campo.getCoordenadas();
 		  Rectangle rect=getRectArea(coords);
+		  //[JPC] Need to be TYPE_BYTE_GRAY 
+		  // BufferedImageMonochromeBitmapSource seems to work bad with TYPE_BYTERGB
 		  
-		  subimage = pageImage.getImagen().getSubimage(rect.x,rect.y,rect.width,rect.height);		//se coge la subimagen, x,y,w,h (en píxeles)
-		  
-		  if (subimage == null)
+		  BufferedImage barcodeArea = pageImage.getImagen().getSubimage(rect.x,rect.y,rect.width,rect.height);		//se coge la subimagen, x,y,w,h (en píxeles)
+		  if (barcodeArea == null)
 			{
 			  logger.error("leerBarcode(Campo) - " + pageImage.getImagen().toString() + ": No es posible cargar la imagen", null); //$NON-NLS-1$ //$NON-NLS-2$
 			  //TODO: Lanzar Excepcion
 			}
+		  subimage=new BufferedImage(rect.width,rect.height,BufferedImage.TYPE_BYTE_GRAY);
+		  Graphics g=subimage.createGraphics();
+		  g.drawImage(barcodeArea,0,0,null);
+		  
+		  
 		  
 		  if(medianfilter == true)
 			  medianFilter(subimage);		//parametro para desactivar el filtrado 
