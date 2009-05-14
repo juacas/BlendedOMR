@@ -420,7 +420,7 @@ public class OMRProcessor
 																			// la
 																					// página
 				
-				UtilidadesFicheros.saveOMRResults(pageImage.getFileName(), outputdir, plantilla);// se salvan
+				UtilidadesFicheros.saveOMRResults(pageImage.getFileName(), outputdir, plantilla, activitycode, userid);// se salvan
 																			// los
 																			// resultados
 																			// en archivo
