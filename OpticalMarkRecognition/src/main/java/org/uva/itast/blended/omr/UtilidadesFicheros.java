@@ -61,21 +61,9 @@ public class UtilidadesFicheros
 	private static final Log	logger					= LogFactory
 																.getLog(UtilidadesFicheros.class);
 
-	public static final String	USERID_FIELDNAME		= "USERID";
-	public static final String	ACTIVITYCODE_FIELDNAME	= "ACTIVITYCODE";
+	//public static final String	USERID_FIELDNAME		= "USERID";
+	//public static final String	ACTIVITYCODE_FIELDNAME	= "ACTIVITYCODE";
 	public static final String	IMAGE_TYPE				= "png";
-
-	/**
-	 * Método que lee una imagen y la transforma en un objeto de tipo
-	 * BufferedImage reescalado
-	 * 
-	 * @param filename
-	 * @param outputdir
-	 * @return imagenSalida
-	 * @throws IOException
-	 */
-	
-	
 
 	/**
 	 * Método que salva un objeto tipo imagen en un archivo físico de extensión
@@ -163,7 +151,7 @@ public class UtilidadesFicheros
 	 * @throws IOException
 	 */
 	public static void procesarImagenes(PageImage page, boolean align,
-			boolean medianfilter, String outputdir, PlantillaOMR plantilla)
+			boolean medianfilter, String outputdir, PlantillaOMR plantilla, String acticode, String userid)
 			throws IOException
 	{
 		
@@ -171,7 +159,7 @@ public class UtilidadesFicheros
 			long taskStart = System.currentTimeMillis();
 			
 			
-			processPageAndSaveResults(align, medianfilter,outputdir, plantilla, page);
+			processPageAndSaveResults(align, medianfilter,outputdir, plantilla, page, acticode, userid);
 			logger.debug("Page  ("+page.getFileName()+") processed in (ms)"+(System.currentTimeMillis()-taskStart)); //$NON-NLS-1$
 			
 		
@@ -189,7 +177,7 @@ public class UtilidadesFicheros
 	 */
 	public static void processPageAndSaveResults(boolean align,
 			boolean medianfilter, String outputdir, PlantillaOMR plantilla,
-			PageImage pageImage) throws FileNotFoundException
+			PageImage pageImage, String acticode, String userid) throws FileNotFoundException
 	{
 		
 		procesarPagina(pageImage, align, medianfilter, outputdir, plantilla); // se
@@ -197,7 +185,7 @@ public class UtilidadesFicheros
 																			// la
 																			// página
 		
-		saveOMRResults(pageImage.getFileName(), outputdir, plantilla);// se salvan
+		saveOMRResults(pageImage.getFileName(), outputdir, plantilla, acticode, userid);// se salvan
 																	// los
 																	// resultados
 																	// en
@@ -307,8 +295,6 @@ public class UtilidadesFicheros
 		return plantilla;
 	}
 
-	// XXX pasar medianfilter
-
 	/**
 	 * Método que busca marcas de tipo codebar en un objeto tipo BufferedImage
 	 * 
@@ -332,10 +318,6 @@ public class UtilidadesFicheros
 			campo.setValue(null);
 			campo.setValid(false);
 		}
-		if (campo.getNombre() == ACTIVITYCODE_FIELDNAME)
-			acticode = campo.getValue();
-		if (campo.getNombre() == USERID_FIELDNAME)
-			userid = campo.getValue();
 		barcodeManipulator.markBarcode(campo);
 	}
 
@@ -409,7 +391,7 @@ public class UtilidadesFicheros
 	 * @throws FileNotFoundException
 	 */
 	public static void saveOMRResults(String inputpath, String outputdir,
-			PlantillaOMR plantilla) throws FileNotFoundException
+			PlantillaOMR plantilla, String acticode, String userid) throws FileNotFoundException
 	{
 
 		try
@@ -417,8 +399,8 @@ public class UtilidadesFicheros
 			Hashtable<String, Campo> campos = plantilla.getPagina(1).getCampos();
 
 			//TODO: usar los nombres pasados en -id1 -id2
-			Campo acticodeField = campos.get(ACTIVITYCODE_FIELDNAME);
-			Campo useridField = campos.get(USERID_FIELDNAME);
+			Campo acticodeField = campos.get(acticode);
+			Campo useridField = campos.get(userid);
 			
 			int useridInt = Integer.parseInt(useridField.getValue()); // evita
 																		// inyección
