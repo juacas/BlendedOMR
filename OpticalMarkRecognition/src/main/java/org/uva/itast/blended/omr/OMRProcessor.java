@@ -362,8 +362,6 @@ public class OMRProcessor
 		this.medianfilter = medianfilter;
 	}
 
-
-
 	/**
 	 * Método para escribir todos los valores de un campo, el parámetro key
 	 * indicara el nombre del campo
