@@ -54,28 +54,26 @@ public class OMRProcessor {
 	private boolean medianfilter = false;
 	// marcador para el campo obligatorio -d
 	private boolean dflag = false;
-	// el número de página por defecto será 0
-	private int numeropaginas = 0;
+	
 	// plantilla para almacenar las páginas y los campos de definition file
 	PlantillaOMR plantilla;
 
 	/**
 	 * Constructor TestManipulation sin parámetros.
 	 */
-	public OMRProcessor() {
+	public OMRProcessor()
+	{
 	}
-
 	/**
 	 * Load template
-	 * 
 	 * @param filename
 	 * @throws IOException
 	 */
-	public void loadTemplate(String filename) throws IOException {
-
+	public void loadTemplate(String filename) throws IOException
+	{
+		
 		plantilla = new PlantillaOMR(filename); // se crea la plantilla según el
-	}
-
+	}		
 	/**
 	 * Método que lee la línea de comandos. Identifica que las opciones y
 	 * parámetros sean correctos y los almacena. uso: blended_omr [-i inputdir]
@@ -83,17 +81,20 @@ public class OMRProcessor {
 	 * definitionfiles -a indica que hay que alinear la página -f indica que hay
 	 * que filtrar los campos (para imágenes de mala calidad)
 	 */
-	public void readCommandLine(String[] args) {
+	public void readCommandLine(String[] args)
+	{
 		int i = 0, j;
 
 		// detectamos todas las opciones (símbolo "-" delante)
-		while (i < args.length && args[i].startsWith("-")) {
+		while (i < args.length && args[i].startsWith("-"))
+		{
 			vflag = true;
 			arg = args[i++];
 
 			// opciones que requieren argumentos
 			// opción -i
-			if (arg.equals("-i")) {
+			if (arg.equals("-i"))
+			{
 				if (i < args.length)
 					setInputPath(args[i++]);
 				else
@@ -102,7 +103,8 @@ public class OMRProcessor {
 					;
 			}
 			// opción -o
-			else if (arg.equals("-o")) {
+			else if (arg.equals("-o"))
+			{
 				if (i < args.length)
 					setOutputdir(args[i++]);
 				else
@@ -111,7 +113,8 @@ public class OMRProcessor {
 					;
 			}
 			// opción -id1
-			else if (arg.equals("-id1")) {
+			else if (arg.equals("-id1"))
+			{
 				if (i < args.length)
 					setUserid(args[i++]);
 				else
@@ -120,7 +123,8 @@ public class OMRProcessor {
 					;
 			}
 			// opción -id2
-			else if (arg.equals("-id2")) {
+			else if (arg.equals("-id2"))
+			{
 				if (i < args.length)
 					setActivitycode(args[i++]);
 				else
@@ -129,21 +133,26 @@ public class OMRProcessor {
 					;
 			}
 			// opción -d
-			else if (arg.equals("-d")) {
+			else if (arg.equals("-d"))
+			{
 				if (i < args.length)
 					setDefinitionfile(args[i++]);
 				else
 					System.err.println("-d requiere un definitionfile");
-				if (vflag) {
+				if (vflag)
+				{
+					// System.out.println("DefinitionFile = " + definitionfile);
 					dflag = true;
 				}
 			}
 			// opciones que no requieren argumentos (flags)
-			else {
-				for (j = 1; j < arg.length(); j++) {
+			else
+			{
+				for (j = 1; j < arg.length(); j++)
+				{
 					flag = arg.charAt(j);
-					switch (flag) {
-					// Opción autoalign
+					switch (flag)
+					{
 					case 'a':
 						if (vflag)
 							setAutoalign(true);
@@ -166,9 +175,9 @@ public class OMRProcessor {
 		if (i < args.length || dflag == false)
 			System.err
 					.println("uso: blended_omr [-i inputdir] [-o outputdir] [-id1 USERID] [-id2 ACTIVITYCODE] [-a] -d definitionfile");
-		else {
-			logger
-					.debug("leerLineaComandos(String[]) Command-Line OK- arg=" + arg); //$NON-NLS-1$
+		else
+		{
+				logger.debug("leerLineaComandos(String[]) Command-Line OK- arg=" + arg); //$NON-NLS-1$
 		}
 	}
 
@@ -177,7 +186,8 @@ public class OMRProcessor {
 	 * 
 	 * @return inputdir
 	 */
-	public String getInputPath() {
+	public String getInputPath()
+	{
 		return inputPath;
 	}
 
@@ -186,7 +196,8 @@ public class OMRProcessor {
 	 * 
 	 * @param inputdir
 	 */
-	private void setInputPath(String inputdir) {
+	private void setInputPath(String inputdir)
+	{
 		this.inputPath = inputdir;
 	}
 
@@ -195,7 +206,8 @@ public class OMRProcessor {
 	 * 
 	 * @return outputdir
 	 */
-	public String getOutputdir() {
+	public String getOutputdir()
+	{
 		return outputdir;
 	}
 
@@ -204,7 +216,8 @@ public class OMRProcessor {
 	 * 
 	 * @param outputdir
 	 */
-	private void setOutputdir(String outputdir) {
+	private void setOutputdir(String outputdir)
+	{
 		this.outputdir = outputdir;
 	}
 
@@ -213,7 +226,8 @@ public class OMRProcessor {
 	 * 
 	 * @return userid
 	 */
-	public String getUserid() {
+	public String getUserid()
+	{
 		return userid;
 	}
 
@@ -222,7 +236,8 @@ public class OMRProcessor {
 	 * 
 	 * @param userid
 	 */
-	private void setUserid(String userid) {
+	private void setUserid(String userid)
+	{
 		this.userid = userid;
 	}
 
@@ -231,7 +246,8 @@ public class OMRProcessor {
 	 * 
 	 * @return
 	 */
-	public String getActivitycode() {
+	public String getActivitycode()
+	{
 		return activitycode;
 	}
 
@@ -240,7 +256,8 @@ public class OMRProcessor {
 	 * 
 	 * @param activitycode
 	 */
-	private void setActivitycode(String activitycode) {
+	private void setActivitycode(String activitycode)
+	{
 		this.activitycode = activitycode;
 	}
 
@@ -249,7 +266,8 @@ public class OMRProcessor {
 	 * 
 	 * @return definitionfile
 	 */
-	public String getDefinitionfile() {
+	public String getDefinitionfile()
+	{
 		return definitionfile;
 	}
 
@@ -258,7 +276,8 @@ public class OMRProcessor {
 	 * 
 	 * @param definitionfile
 	 */
-	private void setDefinitionfile(String definitionfile) {
+	private void setDefinitionfile(String definitionfile)
+	{
 		this.definitionfile = definitionfile;
 	}
 
@@ -268,7 +287,8 @@ public class OMRProcessor {
 	 * 
 	 * @return autoalign
 	 */
-	public boolean isAutoalign() {
+	public boolean isAutoalign()
+	{
 		return autoalign;
 	}
 
@@ -278,7 +298,8 @@ public class OMRProcessor {
 	 * 
 	 * @param autoalign
 	 */
-	private void setAutoalign(boolean autoalign) {
+	private void setAutoalign(boolean autoalign)
+	{
 		this.autoalign = autoalign;
 	}
 
@@ -288,7 +309,8 @@ public class OMRProcessor {
 	 * 
 	 * @return medianfilter
 	 */
-	public boolean isMedianFilter() {
+	public boolean isMedianFilter()
+	{
 		return medianfilter;
 	}
 
@@ -298,7 +320,8 @@ public class OMRProcessor {
 	 * 
 	 * @param medianfilter
 	 */
-	public void setMedianFilter(boolean medianfilter) {
+	public void setMedianFilter(boolean medianfilter)
+	{
 		this.medianfilter = medianfilter;
 	}
 
@@ -308,7 +331,8 @@ public class OMRProcessor {
 	 * 
 	 * @param key
 	 */
-	public void escribirValoresCampo(String key) {
+	public void escribirValoresCampo(String key)
+	{
 		Hashtable<String, Campo> campos = plantilla.getPagina(1).getCampos();
 		Campo campo = (Campo) campos.get(key);
 		System.out.println("Nombre : " + campo.getNombre());
@@ -323,10 +347,10 @@ public class OMRProcessor {
 	 * Método para leer todas las páginas que haya en inputpath
 	 * 
 	 * @param inputPath
-	 * @return {@link Vector} with {@link File} that was not processed (with
-	 *         errors)
+	 * @return {@link Vector} with {@link File} that was not processed (with errors)
 	 */
-	public Vector<PageImage> processPath(String inputPath) {
+	public Vector<PageImage> processPath(String inputPath)
+	{
 		File dir = new File(inputPath);
 		// obteneción de la lista de ficheros a procesar
 		File[] files = obtainFileList(dir);
@@ -342,17 +366,21 @@ public class OMRProcessor {
 	 * @throws IOException
 	 * @return {@link Vector} with Files not processed
 	 */
-	private Vector<PageImage> processPages(PagesCollection pages) {
+	private Vector<PageImage> processPages(PagesCollection pages)
+	{
 		Vector<PageImage> errors = new Vector<PageImage>();
-
-		for (PageImage pageImage : pages) {
-			try {
+		
+		
+		for (PageImage pageImage : pages)
+		{
+			try
+			{
 				long taskStart = System.currentTimeMillis();
 
 				// se procesa la página
 				UtilidadesFicheros.procesarPagina(pageImage, isAutoalign(),
 						isMedianFilter(), outputdir, plantilla);
-
+				
 				// se salvan los resultados en archivo
 				UtilidadesFicheros.saveOMRResults(pageImage.getFileName(),
 						outputdir, plantilla, activitycode, userid);
@@ -363,20 +391,20 @@ public class OMRProcessor {
 				// pageImage.outputWorkingPage(outputdir);
 
 				pageImage.freeMemory();
-				logger
-						.debug("Page  " + pageImage + " processed in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
-			} catch (Exception e) {
+				logger.debug("Page  "+pageImage+" processed in (ms)"+(System.currentTimeMillis()-taskStart)); //$NON-NLS-1$
+			}
+			catch (Exception e)
+			{
 				// report files with errors
 
-				if (logger.isDebugEnabled()) {
-					logger
-							.debug(
-									"processFileList(File[]) - Can't process page=" + pageImage.toString() + ", e=" + e, e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				if (logger.isDebugEnabled())
+				{
+					logger.debug("processFileList(File[]) - Can't process page=" + pageImage.toString() + ", e=" + e,e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				}
 				errors.add(pageImage);
 			}
 		}
-
+		
 		return errors;
 	}
 
@@ -384,12 +412,17 @@ public class OMRProcessor {
 	 * @param files
 	 * @return
 	 */
-	private PagesCollection getPageCollection(File[] files) {
-		PagesCollection pages = new PagesCollection();
-		for (int i = 0; i < files.length; i++) {
-			try {
+	private PagesCollection getPageCollection(File[] files)
+	{
+		PagesCollection pages=new PagesCollection();
+		for (int i = 0; i < files.length; i++)
+		{
+			try
+			{
 				pages.addFile(files[i]);
-			} catch (IOException e) {
+			}
+			catch (IOException e)
+			{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -404,19 +437,23 @@ public class OMRProcessor {
 	 * @param path
 	 * @return
 	 */
-	private File[] obtainFileList(File path) {
-		// almacenamos en un array de File[] los path de los ficheros
-		File[] files;
-		if (path.isDirectory()) {
-			files = path.listFiles(new FilenameFilter() {
-				public boolean accept(File dir, String name) {
-					// se convierte el nombre a minúsculas
-					name.toLowerCase();
+	private File[] obtainFileList(File path)
+	{
+		File[] files; // almacenamos en un array de File[] los path de los
+						// ficheros
+		if (path.isDirectory())
+		{
+			files = path.listFiles(new FilenameFilter()
+			{
+				public boolean accept(File dir, String name)
+				{
+					name.toLowerCase(); // se convierte el nombre a minúsculas
 					return name.endsWith(".jpg") || name.endsWith(".png")
 							|| name.endsWith(".pdf");
 				}
 			});
-		} else {
+		} else
+		{
 			files = new File[] { path };
 		}
 		return files;
