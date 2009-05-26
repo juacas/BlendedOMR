@@ -3,7 +3,7 @@
  */
 package org.uva.itast.blended.omr.pages;
 
-import omrproj.ConcentricCircle;
+//import omrproj.ConcentricCircle;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -132,7 +132,7 @@ public class ImageFilePage extends PageImage
 	@Override
 	public double getHorizontalRatio()
 	{
-		return getImagen().getWidth()/ConcentricCircle.a4width;
+		return getImagen().getWidth()/a4width;
 	}
 
 	/* (non-Javadoc)
@@ -141,7 +141,7 @@ public class ImageFilePage extends PageImage
 	@Override
 	public double getVerticalRatio()
 	{
-		return getImagen().getHeight()/ConcentricCircle.a4height;
+		return getImagen().getHeight()/a4height;
 	}
 
 	

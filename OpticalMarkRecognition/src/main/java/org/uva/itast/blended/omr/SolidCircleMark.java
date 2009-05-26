@@ -66,7 +66,8 @@ public class SolidCircleMark {
 	public SolidCircleMark(PageImage pageimage, int markWidth, int markHeight) {
 		// this.grayimage = pageimage.getGrayImage();
 
-		this.image = pageimage.getImagen();
+		//this.image = pageimage.getImagen();
+		this.image = pageimage.getWorkImage();
 
 		this.pageImage = pageimage;
 		this.approxXscale = pageimage.getHorizontalRatio();

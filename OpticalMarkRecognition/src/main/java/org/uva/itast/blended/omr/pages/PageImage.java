@@ -13,7 +13,7 @@ import java.util.Date;
 
 import javax.imageio.ImageIO;
 
-import net.sourceforge.jiu.color.reduction.RGBToGrayConversion;
+/*import net.sourceforge.jiu.color.reduction.RGBToGrayConversion;
 import net.sourceforge.jiu.data.Gray8Image;
 import net.sourceforge.jiu.data.PixelImage;
 import net.sourceforge.jiu.data.RGB24Image;
@@ -22,10 +22,11 @@ import net.sourceforge.jiu.gui.awt.BufferedRGB24Image;
 import net.sourceforge.jiu.gui.awt.ImageCreator;
 import net.sourceforge.jiu.ops.MissingParameterException;
 import net.sourceforge.jiu.ops.WrongParameterException;
-import omrproj.ImageManipulation;
+import omrproj.ImageManipulation;*/
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 
 /**
  * @author juacas
@@ -35,13 +36,16 @@ public abstract class PageImage {
 	 * Logger for this class
 	 */
 	private static final Log logger = LogFactory.getLog(PageImage.class);
+	
+	public static double		a4width		= 210;										// mm
+	public static double		a4height	= 290;										// mm
 
-	private Gray8Image grayimage;
+	//private Gray8Image grayimage;//XXX grayimage==>workimage
 
 	/**
 	 * @return the grayimage
 	 */
-	public Gray8Image getGrayImage() {
+	/*public Gray8Image getGrayImage() {
 
 		if (grayimage == null) {
 			BufferedImage imagen = getImagen();
@@ -63,8 +67,29 @@ public abstract class PageImage {
 		}
 
 		return grayimage;
-	}
+	}*/
+	
+	public BufferedImage getWorkImage() {
 
+		if (workimage == null) {
+			workimage = getImagen();
+			long taskStart = System.currentTimeMillis();
+			// WritableRaster raster = imagen.copyData( null );
+			// BufferedImage copy = new BufferedImage( imagen.getColorModel(),
+			// raster, imagen.isAlphaPremultiplied(), null );
+			//	logger.debug("\tOriginal image copied in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
+			// It's not necessary to keep a copy. concersion to Gray8Image do
+			// not touch original.
+			taskStart = System.currentTimeMillis();
+
+			logger
+					.debug("\tImage converted to GrayImage in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
+			// setImagen(copy); // preserves original BufferedImage
+		}
+
+		return workimage;
+	}
+	
 	/**
 	 * @return the imagen
 	 */
@@ -81,6 +106,7 @@ public abstract class PageImage {
 	abstract BufferedImage createImage();
 	
 	private BufferedImage imagen;
+	private BufferedImage workimage;
 
 	/**
 	 * @param imagen
@@ -95,7 +121,8 @@ public abstract class PageImage {
 	 */
 	public void align() {
 		long taskStart = System.currentTimeMillis();
-		alignImage(getGrayImage());
+		//alignImage(getGrayImage());
+		alignImage(getWorkImage());
 		logger
 				.debug("\tImage alligned in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
 	}
@@ -107,7 +134,7 @@ public abstract class PageImage {
 	 * @param imagen
 	 * @return grayimage
 	 */
-	Gray8Image convertToGrayImage(BufferedImage imagen) {
+	/*Gray8Image convertToGrayImage(BufferedImage imagen) {
 		Gray8Image grayimage = null;
 		RGB24Image redimage = null;
 		try {
@@ -127,39 +154,30 @@ public abstract class PageImage {
 			throw new RuntimeException("Can't convert image.");
 		}
 		return grayimage;
-	}
+	}*/
 
+	/**
+	 * Método para filtrar toda la página
+	 */
 	public void medianFilter() {
-		try {
-			long funcStart = System.currentTimeMillis();
-			MedianFilter filter = new MedianFilter();
-			Gray8Image grayimage = getGrayImage();
-
-			// filter.setArea((int) ((grayimage.getWidth()/
-			// OMRProcessor._IMAGEWIDTHPIXEL * 25) / 2) * 2 + 1,
-			// (int) (grayimage.getHeight()/ OMRProcessor._IMAGEHEIGTHPIXEL * 25
-			// / 2) * 2 + 1);
-			filter.setArea(3, 3);
-			filter.setInputImage(grayimage);
-
-			filter.process();
-
-			logger
-					.debug("Page filtered (Median) in (ms)" + (System.currentTimeMillis() - funcStart)); //$NON-NLS-1$
-
-		} catch (MissingParameterException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (WrongParameterException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		// Gray8Image medianimage = (Gray8Image)(filter.getOutputImage());
+		
+		long funcStart = System.currentTimeMillis();
+		
+		com.jhlabs.image.MedianFilter filter = new com.jhlabs.image.MedianFilter();
+		workimage = getWorkImage();
+		
+		BufferedImage result=filter.createCompatibleDestImage(workimage,workimage.getColorModel());
+		filter.filter(workimage, result);
+		workimage=result;
+		
+		logger.debug("Page filtered (Median) in (ms)" + (System.currentTimeMillis() - funcStart)); //$NON-NLS-1$
+		
 	}
 
-	private static void alignImage(Gray8Image grayimage) {
+	//private static void alignImage(Gray8Image grayimage) {
+	private static void alignImage(BufferedImage image) {//XXX FALTA
 		long funcStart = System.currentTimeMillis();
-		ImageManipulation imageManipulator = new ImageManipulation(grayimage); // se
+		//ImageManipulation imageManipulator = new ImageManipulation(grayimage); // se
 		// crea
 		// un
 		// objeto
@@ -171,7 +189,7 @@ public abstract class PageImage {
 		// con
 		// la
 		// imagen
-		imageManipulator.locateConcentricCircles(); // se alinea si esta marcada
+		//imageManipulator.locateConcentricCircles(); // se alinea si esta marcada
 		// la bandera de alineación
 		logger
 				.debug("Page aligned in (ms)" + (System.currentTimeMillis() - funcStart)); //$NON-NLS-1$
@@ -183,13 +201,18 @@ public abstract class PageImage {
 	 */
 	public void labelPageAsProcessed() {
 		BufferedImage imagen = getImagen();
-		Gray8Image grayImg = getGrayImage();
+		//Gray8Image grayImg = getGrayImage();
 		Graphics2D g = imagen.createGraphics();
 		g.setColor(Color.RED);
+		//g.drawString("Page Processed at:" + new Date() + " W:"
+			//	+ imagen.getWidth() + " H:" + imagen.getHeight()
+			//	+ "  workcopy W: " + grayImg.getWidth() + " H:"
+			//	+ grayImg.getHeight(), 10, 10);
+
 		g.drawString("Page Processed at:" + new Date() + " W:"
 				+ imagen.getWidth() + " H:" + imagen.getHeight()
-				+ "  workcopy W: " + grayImg.getWidth() + " H:"
-				+ grayImg.getHeight(), 10, 10);
+				+ "  workcopy W: " + workimage.getWidth() + " H:"
+				+ workimage.getHeight(), 10, 10);
 
 	}
 
@@ -209,7 +232,8 @@ public abstract class PageImage {
 	public void freeMemory() {
 		long freeMem = Runtime.getRuntime().freeMemory();
 		long availMem = Runtime.getRuntime().totalMemory();
-		grayimage = null;
+		//grayimage = null;
+		workimage = null;
 
 		imagen.flush();
 		setImagen(null);
@@ -243,12 +267,19 @@ public abstract class PageImage {
 
 		debugImagePath = File.createTempFile("OMR_working_debug", ".jpg",
 				new File(outputdir));
-		Gray8Image grayImage = getGrayImage();
+		//Gray8Image grayImage = getGrayImage();
+		BufferedImage workImage = getWorkImage();
 
-		Image img = ImageCreator.convertToAwtImage(grayImage, 255);
-		BufferedImage out = new BufferedImage(grayImage.getWidth(), grayImage
+		//Image img = ImageCreator.convertToAwtImage(grayImage, 255);
+		//BufferedImage out = new BufferedImage(grayImage.getWidth(), grayImage
+			//	.getHeight(), BufferedImage.TYPE_INT_RGB);
+		
+		BufferedImage out = new BufferedImage(workImage.getWidth(), workImage
 				.getHeight(), BufferedImage.TYPE_INT_RGB);
-		out.createGraphics().drawImage(img, 0, 0, null);
+		
+		//out.createGraphics().drawImage(img, 0, 0, null);
+		
+		out.createGraphics().drawImage(workImage, 0, 0, null);
 
 		ImageIO.write(out, "JPG", debugImagePath);
 

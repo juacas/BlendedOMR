@@ -281,7 +281,7 @@ public class UtilidadesFicheros
 			campo.setValid(false);
 		}
 		
-		barcodeManipulator.markBarcode(campo);
+		//barcodeManipulator.markBarcode(campo);
 	}
 
 	/**
