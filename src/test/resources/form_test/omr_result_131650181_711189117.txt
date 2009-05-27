@@ -1,0 +1,17 @@
+Filename=Doc2.pdf
+[Page1]
+Nota-0=false
+Nota-1=false
+Nota-2=false
+Nota-3=false
+Nota-4=false
+Nota-5=false
+Nota-6=false
+Nota-7=false
+Nota-8=false
+Nota-9=true
+Nota-10=false
+Alumno-1=0000711040982
+Alumno-2=0000456627479
+ACTIVITYCODE=0000711189117
+USERID=0000131650181

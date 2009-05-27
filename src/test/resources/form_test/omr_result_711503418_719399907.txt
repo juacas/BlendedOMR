@@ -1,0 +1,17 @@
+Filename=Doc4.pdf
+[Page1]
+Nota-0=false
+Nota-1=false
+Nota-2=false
+Nota-3=false
+Nota-4=false
+Nota-5=false
+Nota-6=false
+Nota-7=true
+Nota-8=false
+Nota-9=false
+Nota-10=false
+Alumno-1=0000711542561
+Alumno-2=0000123346177
+ACTIVITYCODE=0000719399907
+USERID=0000711503418
