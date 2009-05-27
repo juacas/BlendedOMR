@@ -1,0 +1,17 @@
+Filename=Doc5.pdf
+[Page1]
+Nota-0=false
+Nota-1=false
+Nota-2=false
+Nota-3=false
+Nota-4=false
+Nota-5=true
+Nota-6=false
+Nota-7=false
+Nota-8=false
+Nota-9=false
+Nota-10=false
+Alumno-1=0000719476295
+Alumno-2=0000711200256
+ACTIVITYCODE=0000123918176
+USERID=0000719460386
