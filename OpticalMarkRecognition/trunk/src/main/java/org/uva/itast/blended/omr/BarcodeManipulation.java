@@ -12,6 +12,8 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 import org.apache.commons.logging.Log;
@@ -49,7 +51,7 @@ public final class BarcodeManipulation
 	public BarcodeManipulation(PageImage imagen, boolean medianfilter)
 	{
 		this.pageImage=imagen;
-		this.medianfilter=medianfilter;
+		this.medianfilter=false;//medianfilter;
 	}
 	
 	/**
@@ -60,55 +62,53 @@ public final class BarcodeManipulation
 	 * @return
 	 * @throws ReaderException
 	 */
-	public Result leerBarcode(Campo campo) throws ReaderException  {
+	public Result scanField(Campo campo) throws ReaderException  {
 		 
 		  
-		  
 		  //se leen y almacenan las coordenadas
-		  double[] coords = campo.getCoordenadas();
-			Rectangle expandedArea = getExpandedArea(coords);
-			Rectangle area=getRectArea(coords);
+		Rectangle2D coords = campo.getBBox();
+		Rectangle2D expandedBbox = getExpandedArea(coords);
+//		Rectangle area=pageImage.toPixels(coords);
+//		Rectangle expandedArea=pageImage.toPixels(expandedBbox);
+		
 	    Result result;
 		try
 		{
-			result = scanAreaForBarcode(area);
+			result = scanAreaForBarcode(coords);
 		}
 		catch (ReaderException e)
 		{
 			//Try with a wider area
 		
-			result = scanAreaForBarcode(expandedArea);
-			//for report
-			subimage=subimage.getSubimage(area.x-expandedArea.x, area.y-expandedArea.y, area.width, area.height);
+			result = scanAreaForBarcode(expandedBbox);
+			
 		}
 	      this.lastResult=result;
 	      return result;
 	  }
 
 	/**
-	 * @param rect
+	 * @param rect area in milimeters to be scanned //TODO
 	 * @return
 	 * @throws ReaderException
 	 */
-	private Result scanAreaForBarcode(Rectangle rect) throws ReaderException
+	private Result scanAreaForBarcode(Rectangle2D rect) throws ReaderException
 	{
 		//[JPC] Need to be TYPE_BYTE_GRAY 
 		  // BufferedImageMonochromeBitmapSource seems to work bad with TYPE_BYTERGB
-		  
-		  BufferedImage barcodeArea = pageImage.getImagen().getSubimage(rect.x,rect.y,rect.width,rect.height);		//se coge la subimagen, x,y,w,h (en píxeles)
-		  if (barcodeArea == null)
+	//TODO sustituir por subimage de pageimage	  
+		 BufferedImage subimage = pageImage.getSubimage(rect, BufferedImage.TYPE_BYTE_BINARY);		//se coge la subimagen, x,y,w,h (en píxeles)
+		 //BufferedImage subImage=new BufferedImage(subImage1.getWidth(),subImage1.getHeight(),BufferedImage.TYPE_BYTE_GRAY);
+		 //subImage.getGraphics().drawImage(subImage, 0, 0, null);
+		  if (subimage == null)
 			{
-			  logger.error("leerBarcode(Campo) - " + pageImage.getImagen().toString() + ": No es posible cargar la imagen", null); //$NON-NLS-1$ //$NON-NLS-2$
+			  logger.error("leerBarcode(Campo) - " + pageImage.toString() + ": No es posible cargar la imagen", null); //$NON-NLS-1$ //$NON-NLS-2$
 			  //TODO: Lanzar Excepcion
+			  throw new RuntimeException("Can't extract subimage from page.");
 			}
 		  
-		  subimage=new BufferedImage(rect.width,rect.height,BufferedImage.TYPE_BYTE_GRAY);
-		  Graphics g=subimage.createGraphics();
-		  g.drawImage(barcodeArea,0,0,null);
-		  
-		
-	      MonochromeBitmapSource source = new BufferedImageMonochromeBitmapSource(subimage);
-	      Result result=null;
+	    MonochromeBitmapSource source = new BufferedImageMonochromeBitmapSource(subimage);
+	    Result result=null;
 		try
 		{
 			result = new MultiFormatReader().decode(source,null);
@@ -138,24 +138,37 @@ public final class BarcodeManipulation
 	public String getParsedCode(Result result)
 	{
 		String barcode;
+		if (result!=null)
+		{
 		ParsedResult parsedResult = ResultParser.parseResult(result);
 	      
 	      //System.out.println(imagen.toString() + " (format: " + result.getBarcodeFormat() +", type: " + parsedResult.getType() + "):\nRaw result:\n" + result.getText() +"\nParsed result:\n" + parsedResult.getDisplayResult());
-	      barcode = parsedResult.getDisplayResult();
+	    barcode = parsedResult.getDisplayResult();
+		}
+		else
+		barcode=null;
+		
 		return barcode;
 	}
 
 	/**
+	 * Return boundingBox of 
 	 * @param coords
 	 * @return
 	 */
 	private Rectangle getRectArea(double[] coords)
 	{
-		int x = this.pageImage.toPixelsX(coords[0]);		//concentriccirclewidth//posición de la x
-		  int y = this.pageImage.toPixelsY(coords[1]);		//posición de la y
-		  int width = this.pageImage.toPixelsX(coords[2]);	//anchura en píxeles
-		  int height = this.pageImage.toPixelsY(coords[3]);	//altura en píxeles
-		  return new Rectangle(x,y,width,height);
+		Point2D coordUpperLeft=	pageImage.toPixels(coords[0], coords[1]);
+		Point2D coordBottomRight= pageImage.toPixels(coords[0]+coords[2], coords[1]+coords[2]);
+		
+		int x=(int) Math.min(coordUpperLeft.getX(), coordBottomRight.getX());
+		int y=(int) Math.min(coordUpperLeft.getY(), coordBottomRight.getY());
+		int xm=(int) Math.max(coordUpperLeft.getX(), coordBottomRight.getX());
+		int ym=(int) Math.max(coordUpperLeft.getY(), coordBottomRight.getY());
+		int width = xm-x;	//anchura en píxeles
+		int height = ym-y;	//altura en píxeles
+		
+		return new Rectangle(x,y,width,height);
 	}
 
 	/**
@@ -168,8 +181,8 @@ private static BufferedImage medianFilter(BufferedImage subimage) {
 		
 		BufferedImage result=filter.createCompatibleDestImage(subimage,subimage.getColorModel());
 		filter.filter(subimage, result);
-		subimage=result;
-		return subimage;
+		
+		return result;
 
 }
 
@@ -180,7 +193,7 @@ private static BufferedImage medianFilter(BufferedImage subimage) {
 	 */
 	public String getParsedCode(Campo campo) throws ReaderException
 	{
-		return getParsedCode(leerBarcode(campo));
+		return getParsedCode(scanField(campo));
 	}
 
 	/**
@@ -188,11 +201,13 @@ private static BufferedImage medianFilter(BufferedImage subimage) {
 	 */
 	public void markBarcode(Campo campo)
 	{
-		Rectangle rect=getRectArea(campo.getCoordenadas());
+		//get bbox in pixels
+		Rectangle rect=pageImage.toPixels(campo.getBBox());
 		// expand the area for some tolerance
-		Rectangle expandedRect = getExpandedArea(campo.getCoordenadas());
-		Graphics2D g=this.pageImage.getImagen().createGraphics();
-	
+		Rectangle2D expandedArea = getExpandedArea(campo.getBBox());
+		Rectangle expandedRect = pageImage.toPixels(expandedArea);
+		
+		Graphics2D g = pageImage.getReportingGraphics();
 //	if (logger.isDebugEnabled())
 //		{
 //			//filtered image is on subimage
@@ -203,6 +218,8 @@ private static BufferedImage medianFilter(BufferedImage subimage) {
 			g.setColor(Color.BLUE);
 		else 
 			g.setColor(Color.RED);
+		
+		
 		g.drawRoundRect(rect.x, rect.y, rect.width, rect.height, 3, 3);
 		g.drawRoundRect(expandedRect.x, expandedRect.y, expandedRect.width, expandedRect.height, 3, 3);
 		
@@ -211,19 +228,23 @@ private static BufferedImage medianFilter(BufferedImage subimage) {
 		
 	}
 
+	
+
 	/**
+	 * Generates an expanded boundingbox in milimeters
+	 * 
+	 * @see {@link #BARCODE_AREA_PERCENT}
+	 * @see {@value #BARCODE_AREA_PERCENT}
 	 * @param rect
-	 * @return
+	 * @return milimeteres
 	 */
-	private Rectangle getExpandedArea(double coords[])
+	private Rectangle2D getExpandedArea(Rectangle2D rect)
 	{
-		Rectangle rect=getRectArea(coords);
-		
-		
-		Rectangle expandedRect=new Rectangle((int)(rect.x-rect.width*(BARCODE_AREA_PERCENT)/2),
-						(int)(rect.y-rect.height*(BARCODE_AREA_PERCENT)/2),
-						(int)(rect.width*(1+BARCODE_AREA_PERCENT)),
-						(int)(rect.height*(1+BARCODE_AREA_PERCENT)));
+		Rectangle expandedRect=new Rectangle();
+		expandedRect.setFrame((rect.getX()-rect.getWidth()*(BARCODE_AREA_PERCENT)/2),
+						(rect.getY()-rect.getHeight()*(BARCODE_AREA_PERCENT)/2),
+						(rect.getWidth()*(1+BARCODE_AREA_PERCENT)),
+						(rect.getHeight()*(1+BARCODE_AREA_PERCENT)));
 		return expandedRect;
 	}
 }

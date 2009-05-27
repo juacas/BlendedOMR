@@ -3,18 +3,16 @@
  */
 package org.uva.itast.blended.omr.pages;
 
-//import omrproj.ConcentricCircle;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.uva.itast.blended.omr.OMRProcessor;
-
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.uva.itast.blended.omr.OMRProcessor;
 
 /**
  * @author juacas
@@ -36,6 +34,7 @@ public class ImageFilePage extends PageImage
 	public ImageFilePage(File path)
 	{
 	this.filePath=path;
+	
 	}
 
 	/* (non-Javadoc)
@@ -89,8 +88,8 @@ public class ImageFilePage extends PageImage
 		BufferedImage imagenSalida = null; // se crea la imagen de salida
 
 		// se elige el ancho y el alto de la nueva imagen
-		int resizeWidth = OMRProcessor._IMAGEWIDTHPIXEL;
-		int resizeHeight = OMRProcessor._IMAGEHEIGTHPIXEL;
+		int resizeWidth = OMRProcessor._PAGE_WIDTH_PIXELS;
+		int resizeHeight = OMRProcessor._PAGE_HEIGHT_PIXELS;
 
 		
 		
@@ -130,19 +129,22 @@ public class ImageFilePage extends PageImage
 	 * @see org.uva.itast.blended.omr.PageImage#getHorizontalRatio()
 	 */
 	@Override
-	public double getHorizontalRatio()
+	public double getPreferredHorizontalResolution()
 	{
-		return getImagen().getWidth()/a4width;
+		return getImagen().getWidth()/PageImage.a4width;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.uva.itast.blended.omr.PageImage#getVerticalRatio()
 	 */
 	@Override
-	public double getVerticalRatio()
+	public double getPreferredVerticalResolution()
 	{
-		return getImagen().getHeight()/a4height;
+		return getImagen().getHeight()/PageImage.a4height;
 	}
+
+	
+	
 
 	
 

@@ -37,12 +37,18 @@ public class BufferedImageUtil {
 			BufferedImage template, boolean dump) {
 		int diff = 0, total = 0;
 
-		if (dump && logger.isDebugEnabled()) {
+		int templateHeight = template.getHeight();
+		int templateWidth = template.getWidth();
+		int imgHeight = img.getHeight();
+		int imgWidth = img.getWidth();
+		if (dump && logger.isDebugEnabled()) 
+		{
 			logger
-					.debug("templateXOR - Testing XOR Width=" + template.getWidth() + "from upper-left x=" + x + ", y=" + y); //$NON-NLS-1$ //$NON-NLS-2$
+					.debug("templateXOR - Testing XOR Width=" + templateWidth + "from upper-left x=" + x + ", y=" + y); //$NON-NLS-1$ //$NON-NLS-2$
 
-			for (int j = y; j < y + template.getHeight() && j < img.getHeight(); j++) {
-				for (int i = x; i < x + template.getWidth() && i < img.getWidth(); i++) {
+			for (int j = y; j < y + templateHeight && j < imgHeight; j++) {
+				for (int i = x; i < x + templateWidth && i < imgWidth; i++) 
+				{
 					float luminance = getLuminance(img, j, i);
 					boolean isblack = (luminance < 0.75 ? true : false);
 					boolean tempIsBlack = isBlack(template, j - y, i - x);
@@ -50,10 +56,10 @@ public class BufferedImageUtil {
 				}
 				System.out.println("<-");
 			}
-		}
+		}//  end debug
 		
-		for (int j = y; j < y + template.getHeight() && j < img.getHeight(); j++) {
-			for (int i = x; i < x + template.getWidth() && i < img.getWidth(); i++) {
+		for (int j = y; j < y + templateHeight && j < imgHeight; j++) {
+			for (int i = x; i < x + templateWidth && i < imgWidth; i++) {
 				float luminance = getLuminance(img, j, i);
 				boolean isblack = (luminance < 0.75 ? true : false);
 				boolean tempIsWhite = isWhite(template, j - y, i - x);

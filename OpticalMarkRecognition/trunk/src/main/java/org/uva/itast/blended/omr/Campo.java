@@ -7,6 +7,8 @@
 
 package org.uva.itast.blended.omr;
 
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.util.StringTokenizer;
 
 /**
@@ -24,14 +26,24 @@ public class Campo {
 	public String toString()
 	{
 		
-		return this.nombre+" at ("+coordenadas[0]+", "+coordenadas[1]+")";
+		return this.nombre+" at ("+bbox.getX()+", "+bbox.getY()+")";
 	}
 
 	private String nombre;
     private int tipo, numeroPagina;
     private String[] coords;
-    private double[] coordenadas=new double[4];
-    private String valor;
+    private Rectangle2D bbox; //BoundingBox in milimeters
+    
+    /**
+     * BoundingBox in milimeters
+	 * @return the bbox
+	 */
+	public Rectangle2D getBBox()
+	{
+		return bbox;
+	}
+
+	private String valor;
     public static int CIRCLE=0;	//nos puede resultar más cómodo tratarlos como dos enteros, incluso podríamos valernos de boolean, aunque lo dejaremos así porque es más escalable
 	public static int CODEBAR=1;
 	private boolean valid=true;
@@ -57,8 +69,11 @@ public class Campo {
         String tipos = st2.nextToken();
         String coord = st2.nextToken();
         coords=coord.split(",");
-        
+        double coordenadas[]=new double[4];
         for(int i=0; i<coords.length; i++) coordenadas[i]=Double.parseDouble(coords[i]);
+        Rectangle2D bbox=new Rectangle();
+        bbox.setFrame(coordenadas[0],coordenadas[1],coordenadas[2],coordenadas[3]);
+        setBBox(bbox);
         
         setValue("");
         
@@ -72,6 +87,15 @@ public class Campo {
     }
     
     /**
+     * BoundingBox in milimeters
+	 * @param bbox
+	 */
+	public void setBBox(Rectangle2D bbox)
+	{
+		this.bbox=bbox;
+	}
+	
+	/**
      * Devuelve el nombre del campo
      * @return nombre
      */
@@ -95,14 +119,7 @@ public class Campo {
         return numeroPagina;
     }
     
-	/**
-	 * Devuelve las coordenadas del campo
-	 * @return coordenadas
-	 */
-    public double[] getCoordenadas() {
-        return coordenadas;
-    }
-    
+	
 	/**
 	 * Devuelve el valor de barcode
 	 * @return barcode

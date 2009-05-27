@@ -75,19 +75,12 @@ public class TestOMRProcessor extends TestCase
 	 */
 	public void testProcessPath()
 	{
-		
 		try
 		{
-		
-     
-        
-		
 		URL url=getClass().getClassLoader().getResource("Doc1.pdf");
 		File testPath=new File(url.toURI());
 		prepareConfig(testPath);
-		
-		
-		
+
 		Vector<PageImage> errores;
 		// detección de errores
 		errores=processor.processPath("nonexistentfile.png");
@@ -95,7 +88,7 @@ public class TestOMRProcessor extends TestCase
 		
 		processor.setMedianFilter(true);
 		errores= processor.processPath(testPath.getAbsolutePath());        		//se leen las páginas escaneadas
-		assertTrue("Errors encountered",errores.isEmpty());
+		assertTrue("Errors encountered."+errores,errores.isEmpty());
 	
 		
 		url=getClass().getClassLoader().getResource("OMR_imagePage850x1170.png");
@@ -115,6 +108,7 @@ public class TestOMRProcessor extends TestCase
 		}
 		catch (Exception e)
 		{
+			e.printStackTrace();
 			fail("Can't configure test case."+e);
 		}
 	}
@@ -133,8 +127,6 @@ public class TestOMRProcessor extends TestCase
 	processor.setMedianFilter(true);
 		errores= processor.processPath(testPath.getAbsolutePath());        		//se leen las páginas escaneadas
 		assertTrue("Errors encountered",errores.isEmpty());
-	
-		
 		}
 		catch (Exception e)
 		{
