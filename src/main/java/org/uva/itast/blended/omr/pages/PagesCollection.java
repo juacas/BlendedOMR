@@ -3,21 +3,15 @@
  */
 package org.uva.itast.blended.omr.pages;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.sun.pdfview.PDFFile;
-import com.sun.pdfview.PDFPage;
 
 /**
  * @author juacas
@@ -90,10 +84,8 @@ public class PagesCollection implements Iterable<PageImage>
 	if(inputpath.getName().toLowerCase().endsWith(".pdf"))
 		{	//si se trata de un fichero PDF, hay que convertir a BufferedImage
 		long start=System.currentTimeMillis();
-		RandomAccessFile raf = new RandomAccessFile(inputpath, "r");	//se carga la imagen pdf para leerla
-		FileChannel channel = raf.getChannel();
-		ByteBuffer buf = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-		PDFFile pdffile = new PDFFile(buf);    							//se crea un objeto de tipo PDFFile para almacenar las páginas
+		
+		PDFFile pdffile = PDFPageImage.loadPDFFile(inputpath); //se crea un objeto de tipo PDFFile que almacena las páginas
 		int numPagesPDF = pdffile.getNumPages();
 		logger.debug("PDF readed in (ms)"+(System.currentTimeMillis()-start)); //$NON-NLS-1$
 		for (int i=0;i<numPagesPDF;i++)

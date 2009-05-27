@@ -28,9 +28,9 @@ public class OMRProcessor {
 	private static final Log logger = LogFactory.getLog(OMRProcessor.class);
 
 	// valor en píxeles de la altura de la imágen con la que se trabajara
-	public static final int _IMAGEHEIGTHPIXEL = (int) (2339);
+	public static final int _PAGE_HEIGHT_PIXELS = (int) (2339);
 	// valor en píxeles de la anchura de la imágen con la que se trabajara
-	public static final int _IMAGEWIDTHPIXEL = (int) (1700);
+	public static final int _PAGE_WIDTH_PIXELS = (int) (1700);
 
 	private String arg;
 	private char flag;
@@ -338,9 +338,8 @@ public class OMRProcessor {
 		System.out.println("Nombre : " + campo.getNombre());
 		System.out.println("Numero de Página : " + campo.getNumPag());
 		System.out.println("Tipo : " + campo.getTipo());
-		double[] coords = campo.getCoordenadas();
-		for (int i = 0; i < coords.length; i++)
-			System.out.println("Coordenadas : " + coords[i]);
+		
+		System.out.println("Coordenadas : " + campo.getBBox());
 	}
 
 	/**

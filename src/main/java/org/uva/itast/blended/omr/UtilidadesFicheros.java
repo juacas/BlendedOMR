@@ -8,6 +8,10 @@
 package org.uva.itast.blended.omr;
 
 import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,6 +19,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Collection;
@@ -25,6 +31,7 @@ import javax.imageio.ImageIO;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.uva.itast.blended.omr.pages.PageImage;
+import org.uva.itast.blended.omr.pages.SubImage;
 
 import com.google.zxing.ReaderException;
 import com.sun.pdfview.PDFFile;
@@ -173,7 +180,7 @@ public class UtilidadesFicheros
 		if (medianfilter)
 		{
 			
-			pageImage.medianFilter(); //encapsula procesamiento y representación
+		//	pageImage.medianFilter(); //encapsula procesamiento y representación
 		
 		}
 		
@@ -299,44 +306,31 @@ public class UtilidadesFicheros
 	private static void buscarMarcaCircle(int i, 
 			PageImage pageImage, Campo campo, boolean medianfilter)
 	{
-		double x;
-		double y;
-		int xpixel;
-		int ypixel;
-		double markradXmm; // se trabajara con la posición de las marcas en
-							// milímetros
-		double markradYmm;
-		double[] coords = campo.getCoordenadas();
-		// "x" será la primera coordenada, "y" la segunda
-		//centra las coordenadas
-		x = coords[0]+coords[2]/2;
-		y = coords[1]+coords[3]/2;
-		// Pasamos el tamaño a píxeles _IMAGEWIDTHPIXELx_IMAGEHEIGTHPIXEL
-		xpixel = pageImage.toPixelsX(x);//(int) (x * pageImage.getHorizontalRatio());
-		ypixel = pageImage.toPixelsY(y);
-
-		// leemos la anchura de las marcas y las pasamos a píxeles
-		markradXmm = coords[2];
-		markradYmm = coords[3];
-		int markWidth = Math.max(5, pageImage.toPixelsX(markradXmm));
-		int markHeight = Math.max(5,pageImage.toPixelsY(markradYmm));
-		SolidCircleMark mark = new SolidCircleMark(pageImage,markWidth,	markHeight);
+		Rectangle2D bbox=campo.getBBox();//milimeters
+		Rectangle bboxPx = pageImage.toPixels(bbox);
+		// center of the mark
+		Point2D center=new Point();
+		center.setLocation(bbox.getCenterX(),bbox.getCenterY());
+	
+		// leemos la anchura de las marcas en milímetros
+		double markWidth = Math.max(1, bbox.getWidth());
+		double markHeight = Math.max(1,bbox.getHeight());
+		SolidCircleMark markScanner = new SolidCircleMark(pageImage,markWidth,markHeight);
 
 		if (logger.isDebugEnabled())
 		{
 			logger.debug("buscarMarcaCircle - campo=" + campo); //$NON-NLS-1$
 		}
 
-		if (mark.isMark(xpixel, ypixel,false)) // se busca la marca que se desea
-											// encontrar
+		if (markScanner.isMark(center,false) ) // se busca la marca que se desea encontrar
 		{
 			if (logger.isDebugEnabled())
 			{
-				logger.debug("buscarMarcaCircle - >>>>>>>Found mark at " + x + "," + y + ":" + campo); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+				logger.debug("buscarMarcaCircle - >>>>>>>Found mark at " + bbox + " (mm) :" + campo); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			}
 			campo.setValue("true");
 												// si se ha encontrado la marca
-			mark.putCircleMarkOnImage(pageImage);
+			markScanner.putCircleMarkOnImage(pageImage);
 		} else
 		{
 			campo.setValue("false");
@@ -402,5 +396,40 @@ public class UtilidadesFicheros
 			logger.error("saveOMRResults:  Can't obtain ID1 and ID2 for outputting report."); //$NON-NLS-1$
 		}
 		return;
+	}
+
+	/**
+	 * @param subImage
+	 */
+	public static void logSubImage(SubImage subImage)
+	{
+		
+			if (logger.isDebugEnabled()&& true)
+			{
+				long start=System.currentTimeMillis();
+				Rectangle2D markArea=subImage.getBoundingBox();
+				
+				
+				try
+				{
+					URL url=UtilidadesFicheros.class.getClassLoader().getResource("Doc1.pdf");
+					File testPath=new File(new File(url.toURI()).getParentFile(),"output");
+					File imgFile=new File(testPath,"debugSubimage"+System.currentTimeMillis()+".png");
+					UtilidadesFicheros.salvarImagen(subImage, imgFile.getAbsolutePath(), "PNG");
+					logger.debug("Dumped subimage "+markArea+" in (ms) :"+(System.currentTimeMillis()-start));
+				}
+				catch (IOException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				catch (URISyntaxException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		
+		
 	}
 }

@@ -6,23 +6,18 @@ package org.uva.itast.blended.omr.pages;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
 import javax.imageio.ImageIO;
-
-/*import net.sourceforge.jiu.color.reduction.RGBToGrayConversion;
-import net.sourceforge.jiu.data.Gray8Image;
-import net.sourceforge.jiu.data.PixelImage;
-import net.sourceforge.jiu.data.RGB24Image;
-import net.sourceforge.jiu.filters.MedianFilter;
-import net.sourceforge.jiu.gui.awt.BufferedRGB24Image;
-import net.sourceforge.jiu.gui.awt.ImageCreator;
-import net.sourceforge.jiu.ops.MissingParameterException;
-import net.sourceforge.jiu.ops.WrongParameterException;
-import omrproj.ImageManipulation;*/
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,70 +26,27 @@ import org.apache.commons.logging.LogFactory;
 /**
  * @author juacas
  */
-public abstract class PageImage {
+public abstract class PageImage
+{
 	/**
 	 * Logger for this class
 	 */
-	private static final Log logger = LogFactory.getLog(PageImage.class);
-	
+	private static final Log	logger	= LogFactory.getLog(PageImage.class);
+	private static final int	REPORTING_WIDTH	= 1024;
 	public static double		a4width		= 210;										// mm
 	public static double		a4height	= 290;										// mm
 
-	//private Gray8Image grayimage;//XXX grayimage==>workimage
 
-	/**
-	 * @return the grayimage
-	 */
-	/*public Gray8Image getGrayImage() {
 
-		if (grayimage == null) {
-			BufferedImage imagen = getImagen();
-			long taskStart = System.currentTimeMillis();
-			// WritableRaster raster = imagen.copyData( null );
-			// BufferedImage copy = new BufferedImage( imagen.getColorModel(),
-			// raster, imagen.isAlphaPremultiplied(), null );
-			//	logger.debug("\tOriginal image copied in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
-			// It's not necessary to keep a copy. concersion to Gray8Image do
-			// not touch original.
-			taskStart = System.currentTimeMillis();
 
-			// se transforma el BufferedImage en Gray8Image
-			grayimage = convertToGrayImage(imagen);
 
-			logger
-					.debug("\tImage converted to GrayImage in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
-			// setImagen(copy); // preserves original BufferedImage
-		}
-
-		return grayimage;
-	}*/
-	
-	public BufferedImage getWorkImage() {
-
-		if (workimage == null) {
-			workimage = getImagen();
-			long taskStart = System.currentTimeMillis();
-			// WritableRaster raster = imagen.copyData( null );
-			// BufferedImage copy = new BufferedImage( imagen.getColorModel(),
-			// raster, imagen.isAlphaPremultiplied(), null );
-			//	logger.debug("\tOriginal image copied in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
-			// It's not necessary to keep a copy. concersion to Gray8Image do
-			// not touch original.
-			taskStart = System.currentTimeMillis();
-
-			logger
-					.debug("\tImage converted to GrayImage in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
-			// setImagen(copy); // preserves original BufferedImage
-		}
-
-		return workimage;
-	}
-	
 	/**
 	 * @return the imagen
 	 */
-	public BufferedImage getImagen() {
-		if (imagen == null) {
+	public BufferedImage getImagen()
+	{
+		if (imagen==null)
+		{
 			setImagen(createImage());
 		}
 		return imagen;
@@ -104,116 +56,124 @@ public abstract class PageImage {
 	 * @return
 	 */
 	abstract BufferedImage createImage();
+
+	private BufferedImage	imagen;
+	private BufferedImage	reportImage;
+	private AffineTransform	alignmentTransform;
+
 	
-	private BufferedImage imagen;
-	private BufferedImage workimage;
 
 	/**
-	 * @param imagen
-	 *            the imagen to set
+	 * @param imagen the imagen to set
 	 */
-	protected void setImagen(BufferedImage imagen) {
+	protected void setImagen(BufferedImage imagen)
+	{
 		this.imagen = imagen;
+		// configure alignment information
+		resetAlignmentInfo();
 	}
 
 	/**
-	 * 
-	 */
-	public void align() {
-		long taskStart = System.currentTimeMillis();
-		//alignImage(getGrayImage());
-		alignImage(getWorkImage());
-		logger
-				.debug("\tImage alligned in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
-	}
-
-	/**
-	 * Método que a partir de un objeto tipo BufferedImage lo transforma en uno
-	 * de tipo Gray8Image
-	 * 
 	 * @param imagen
-	 * @return grayimage
 	 */
-	/*Gray8Image convertToGrayImage(BufferedImage imagen) {
-		Gray8Image grayimage = null;
-		RGB24Image redimage = null;
-		try {
-			PixelImage image = new BufferedRGB24Image(imagen);
-			if (image.getImageType().toString().indexOf("RGB") != -1) {
-				redimage = (RGB24Image) image;
-				RGBToGrayConversion rgbtogray = new RGBToGrayConversion();
-				rgbtogray.setInputImage(redimage);
-				rgbtogray.process();
-				grayimage = (Gray8Image) (rgbtogray.getOutputImage());
-			} else if (image.getImageType().toString().indexOf("Gray") != -1) {
-				grayimage = (Gray8Image) (image);
-			} else {
-				grayimage = null;
-			}
-		} catch (Exception e) {
-			throw new RuntimeException("Can't convert image.");
-		}
-		return grayimage;
-	}*/
-
-	/**
-	 * Método para filtrar toda la página
-	 */
-	public void medianFilter() {
+	public void resetAlignmentInfo()
+	{
+		AffineTransform tr=new AffineTransform();
 		
-		long funcStart = System.currentTimeMillis();
+		double horizRatio = getPreferredHorizontalResolution();
+		double vertRatio = getPreferredVerticalResolution();
 		
-		com.jhlabs.image.MedianFilter filter = new com.jhlabs.image.MedianFilter();
-		workimage = getWorkImage();
-		
-		BufferedImage result=filter.createCompatibleDestImage(workimage,workimage.getColorModel());
-		filter.filter(workimage, result);
-		workimage=result;
-		
-		logger.debug("Page filtered (Median) in (ms)" + (System.currentTimeMillis() - funcStart)); //$NON-NLS-1$
-		
-	}
-
-	//private static void alignImage(Gray8Image grayimage) {
-	private static void alignImage(BufferedImage image) {//XXX FALTA
-		long funcStart = System.currentTimeMillis();
-		//ImageManipulation imageManipulator = new ImageManipulation(grayimage); // se
-		// crea
-		// un
-		// objeto
-		// image
-		// que
-		// nos
-		// permita
-		// trabajar
-		// con
-		// la
-		// imagen
-		//imageManipulator.locateConcentricCircles(); // se alinea si esta marcada
-		// la bandera de alineación
-		logger
-				.debug("Page aligned in (ms)" + (System.currentTimeMillis() - funcStart)); //$NON-NLS-1$
-
+		// Do not assume square pixels
+		tr.setToScale(horizRatio,vertRatio);
+		setAlignmentInfo(tr);
 	}
 
 	/**
 	 * 
 	 */
-	public void labelPageAsProcessed() {
-		BufferedImage imagen = getImagen();
-		//Gray8Image grayImg = getGrayImage();
-		Graphics2D g = imagen.createGraphics();
+	public void align()
+	{
+		long taskStart = System.currentTimeMillis();
+		AffineTransform transform=new AffineTransform();
+		
+// TODO: Process page for aligning
+		setAlignmentInfo(transform);
+		logger.debug("\tImage alligned in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
+	}
+
+	
+
+	/**
+	 * Sets the transformation data needed for aligning the Page
+	 * contains information about the traslation and rotation of the page in pixels units.
+	 * Need to consider image scale to convert from milimeters
+	 * @param transform
+	 * @see AffineTransform
+	 * @see getVerticalRatio
+	 * @see getHorizontalRatio
+	 */
+	public void setAlignmentInfo(AffineTransform transform)
+	{
+		this.alignmentTransform=transform;
+	}
+public AffineTransform getAllignmentInfo()
+{
+	if (this.alignmentTransform==null)
+		resetAlignmentInfo();
+	return alignmentTransform;
+}
+	
+	/**
+	 * Try to detect alignment marks and create the spatial transformation info
+	 * @see java.awt.geom.AffineTransform 
+	 */
+	public void alignImage()
+	{
+		long funcStart = System.currentTimeMillis();
+		
+		AffineTransform transform=getAllignmentInfo();
+		
+		// obtain rotation and traslation
+		transform.translate(0, 0); //pixels
+		
+		setAlignmentInfo(transform);
+		
+		logger.debug("Page aligned in (ms)" + (System.currentTimeMillis() - funcStart)); //$NON-NLS-1$
+
+	}
+
+	/**
+	 * Mark the results in a thumbnail of the page intended for reporting
+	 */
+	public void labelPageAsProcessed()
+	{
+		
+		BufferedImage imagen = getReportingImage();
+		Graphics2D g=imagen.createGraphics();
 		g.setColor(Color.RED);
-		//g.drawString("Page Processed at:" + new Date() + " W:"
-			//	+ imagen.getWidth() + " H:" + imagen.getHeight()
-			//	+ "  workcopy W: " + grayImg.getWidth() + " H:"
-			//	+ grayImg.getHeight(), 10, 10);
+		g.drawString("Page Processed at:"+new Date()+" W:"+imagen.getWidth()+" H:"+imagen.getHeight(), 10, 10);
+		
+		
+	}
 
-		g.drawString("Page Processed at:" + new Date() + " W:"
-				+ imagen.getWidth() + " H:" + imagen.getHeight()
-				+ "  workcopy W: " + workimage.getWidth() + " H:"
-				+ workimage.getHeight(), 10, 10);
-
+	/**
+	 * Creates an small-resolution image for reporting purposes
+	 * @return
+	 */
+	public BufferedImage getReportingImage()
+	{
+		if (reportImage==null)
+		{
+			// Create a fixed resolution image
+			int w=REPORTING_WIDTH;
+			int h=getImagen().getHeight()*w/getImagen().getWidth();
+			
+			reportImage=new BufferedImage(w, h,BufferedImage.TYPE_INT_RGB);
+			Image scaledImage=getImagen().getScaledInstance(w, h, Image.SCALE_DEFAULT);
+			reportImage.createGraphics().drawImage(scaledImage, 0, 0, null);
+		}
+	
+		return reportImage;
 	}
 
 	/**
@@ -229,78 +189,196 @@ public abstract class PageImage {
 	/**
 	 * Free up memory resources
 	 */
-	public void freeMemory() {
-		long freeMem = Runtime.getRuntime().freeMemory();
-		long availMem = Runtime.getRuntime().totalMemory();
-		//grayimage = null;
-		workimage = null;
-
+	public void freeMemory()
+	{
+		long freeMem=Runtime.getRuntime().freeMemory();
+		long availMem=Runtime.getRuntime().totalMemory();
+		reportImage.flush();
+		reportImage=null;
+		
 		imagen.flush();
 		setImagen(null);
 		System.gc();
 
-		if (logger.isDebugEnabled()) {
-			logger
-					.debug("endUse() -TotalMem" + availMem / 1024 / 1024 + " MB freeMem Before=" + freeMem / 1024 / 1024 + ", freeMem After=" + Runtime.getRuntime().freeMemory() / 1024 / 1024); //$NON-NLS-1$ //$NON-NLS-2$
+		if (logger.isDebugEnabled())
+		{
+			logger.debug("endUse() -TotalMem"+availMem/1024/1024+" MB freeMem Before=" + freeMem/1024/1024 + ", freeMem After=" + Runtime.getRuntime().freeMemory()/1024/1024); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
 
 	/**
 	 * @param outputdir
-	 * @throws IOException
+	 * @throws IOException 
 	 */
-	public void outputMarkedPage(String outputdir) throws IOException {
+	public void outputMarkedPage(String outputdir) throws IOException
+	{
 		File debugImagePath;
-
-		debugImagePath = File.createTempFile("OMR_original_marked", ".jpg",
-				new File(outputdir));
-		ImageIO.write(getImagen(), "JPG", debugImagePath);
-
+							
+			debugImagePath = File.createTempFile("OMR_original_marked", ".jpg", new File(outputdir));
+			ImageIO.write(getReportingImage(), "JPG", debugImagePath);
+		
 	}
 
 	/**
 	 * @param outputdir
-	 * @throws IOException
+	 * @throws IOException 
 	 */
-	public void outputWorkingPage(String outputdir) throws IOException {
+	public void outputWorkingPage(String outputdir) throws IOException
+	{
 		File debugImagePath;
-
-		debugImagePath = File.createTempFile("OMR_working_debug", ".jpg",
-				new File(outputdir));
-		//Gray8Image grayImage = getGrayImage();
-		BufferedImage workImage = getWorkImage();
-
-		//Image img = ImageCreator.convertToAwtImage(grayImage, 255);
-		//BufferedImage out = new BufferedImage(grayImage.getWidth(), grayImage
-			//	.getHeight(), BufferedImage.TYPE_INT_RGB);
 		
-		BufferedImage out = new BufferedImage(workImage.getWidth(), workImage
-				.getHeight(), BufferedImage.TYPE_INT_RGB);
-		
-		//out.createGraphics().drawImage(img, 0, 0, null);
-		
-		out.createGraphics().drawImage(workImage, 0, 0, null);
-
-		ImageIO.write(out, "JPG", debugImagePath);
-
+		debugImagePath = File.createTempFile("OMR_working_debug", ".jpg", new File(outputdir));		
+		ImageIO.write(getImagen(), "JPG", debugImagePath);
+	
 	}
 
 	/**
-	 * @return
+	 * Returns the ratio between pixels and milimeters
+	 * default implementation getImagen().getWidth()/PageImage.a4width
+	 * @return resolution in pixels/mm
 	 */
-	public abstract double getHorizontalRatio();
-
-	public abstract double getVerticalRatio();
+	public abstract double getPreferredHorizontalResolution();
+	/**
+	 * Returns the ratio between pixels and milimeters
+	 * default implementation getImagen().getHeight()/PageImage.a4height
+	 * @return resolution in pixels/mm
+	 */
+	public abstract double getPreferredVerticalResolution();
 
 	/**
+	 * Use alignment information to transform from milimeters to pixel coordinates at the preferred resolution for this page
 	 * @param x
 	 * @return
 	 */
-	public int toPixelsX(double x) {
-		return (int) (x * this.getHorizontalRatio());
+	public Point toPixels(double x,double y)
+	{
+		AffineTransform alignment=getAllignmentInfo();
+		Point2D coord=new Point();
+		coord.setLocation(x, y);
+		Point coordTransformed=new Point();
+		alignment.transform(coord, coordTransformed);
+		
+		return coordTransformed;
 	}
 
-	public int toPixelsY(double y) {
-		return (int) (y * this.getVerticalRatio());
+	/**
+	 * Obtain a subimage from the pageimage (in milimeters and related to actual paper)
+	 * Place to make optimizations when rendering high resolution files.
+	 * It takes into account the traslation and rotation of the physical page.
+	 * 
+	 * Default implementation uses getImage() which should decode entire image.
+	 * @param x mm
+	 * @param y mm
+	 * @param w mm
+	 * @param h mm
+	 * @param imageType TODO
+	 * @return SubImage
+	 * @see SubImage
+	 */
+	public SubImage getSubimage(double x, double y, double w, double h, int imageType)
+	{
+	Rectangle2D rectMM=new Rectangle();
+	rectMM.setFrame(x,y,w,h);
+	return getSubimage(rectMM, imageType);
 	}
+
+	/**
+	 * Convert from  pixel-space to paper-space.
+	 * Paper-space refers to logical area of the paper in the image.
+	 * Pixel-space refers to entire area of the image that contains the image of the paper. (Maybe with offset and rotation)
+	 * @param i
+	 * @param j
+	 * @return
+	 * @throws NoninvertibleTransformException 
+	 */
+	public Point2D toMilimeters(int i, int j) 
+	{
+
+		try
+		{
+			AffineTransform tr = getAllignmentInfo();
+			AffineTransform inv;
+			inv = tr.createInverse();
+			Point2D pixeles = new Point(i, j);
+			Point2D dest=null;
+			return inv.transform(pixeles, dest);
+		}
+		catch (NoninvertibleTransformException e)
+		{
+			throw new RuntimeException("error page definition.",e);
+		}
+
+	}
+
+	/**
+	 * Convert box from Milimeters to Pixels relative to the PageImage in the preferred resolution
+	 * in case of alignment rotation the returned Rectangle is the minimum bounding box that contains
+	 * the original corners transformed.
+	 * @param box in milimeters related to actual page
+	 * @return minimum bounding box in pixels related to image representation
+	 */
+	public Rectangle toPixels(Rectangle2D box)
+	{
+		
+		Point p1=toPixels(box.getX(),box.getY());
+		Point p2=toPixels(box.getMaxX(),box.getMaxY());
+		Rectangle bboxPx=new Rectangle(p1);
+		bboxPx.add(p2);
+		return bboxPx;
+		
+	}
+
+	/**
+	 * Scaled graphics for drawing on a small version of the page.
+	 * @return
+	 */
+	public Graphics2D getReportingGraphics()
+	{
+		BufferedImage reportingImage = this.getReportingImage();
+		Graphics2D g=reportingImage.createGraphics();
+		AffineTransform trans= g.getTransform();
+		trans.scale(reportingImage.getWidth()/(getPreferredHorizontalResolution()*PageImage.a4width),
+				reportingImage.getHeight()/(getPreferredVerticalResolution()*PageImage.a4height));
+		g.setTransform(trans);
+		return g;
+	}
+
+	/**
+	 * @param rectMM bounding box in milimeters
+	 * @see #getSubimage(double, double, double, double, int)
+	 * @return
+	 */
+	public SubImage getSubimage(Rectangle2D rectMM, int imageType)
+	{
+		
+		Rectangle rect=this.toPixels(rectMM);
+		Point upperLeft=this.toPixels(rectMM.getX(), rectMM.getY());
+		
+		//TODO: incluir la resolución preferida ahora asume la nativa de la imagen
+		Point reference=upperLeft;
+		
+		BufferedImage originalSubImage=getImagen().getSubimage(rect.x,rect.y, rect.width, rect.height);
+		
+		//rotate image
+		SubImage subimage=new SubImage(rect.width,rect.height,imageType);
+		subimage.setReference(reference);
+		subimage.setBoundingBox(rect);
+		
+		
+		Graphics2D g=subimage.createGraphics();
+		g.drawImage(originalSubImage, getAllignmentInfo(), null);
+		
+		return subimage;
+	}
+
+	/**
+	 * @param pointMM
+	 * @return
+	 */
+	public Point toPixels(Point2D pointMM)
+	{
+		
+		return toPixels(pointMM.getX(), pointMM.getY());
+	}
+	
 }
