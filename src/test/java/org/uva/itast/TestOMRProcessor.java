@@ -112,6 +112,7 @@ public class TestOMRProcessor extends TestCase
 			fail("Can't configure test case."+e);
 		}
 	}
+	
 	public void testProcessMultiPagePDF()
 	{
 	try
