@@ -164,8 +164,8 @@ public AffineTransform getAllignmentInfo()
 	{
 		if (reportImage==null)
 		{
-			// Create a fixed resolution image
-			int w=REPORTING_WIDTH;
+			// Create a fixed (smaller) resolution image
+			int w=Math.min(REPORTING_WIDTH,getImagen().getWidth());
 			int h=getImagen().getHeight()*w/getImagen().getWidth();
 			
 			reportImage=new BufferedImage(w, h,BufferedImage.TYPE_INT_RGB);
@@ -366,7 +366,7 @@ public AffineTransform getAllignmentInfo()
 		
 		
 		Graphics2D g=subimage.createGraphics();
-		g.drawImage(originalSubImage, getAllignmentInfo(), null);
+		g.drawImage(originalSubImage, 0,0, null);
 		
 		return subimage;
 	}
