@@ -16,7 +16,7 @@ import java.util.StringTokenizer;
  * @author Jesús Rodilana
  *
  */
-public class Campo {
+public class Field {
 	
 	
     /* (non-Javadoc)
@@ -52,7 +52,7 @@ public class Campo {
 	 * Constructor de la clase Campo sin parámetros
 	 *
 	 */
-	public Campo(){
+	public Field(){
 		 this.valor = "";
 	}
 	
@@ -61,7 +61,7 @@ public class Campo {
 	 * @param line
 	 * @throws NullPointerException
 	 */
-    public Campo(String line) throws NullPointerException{
+    public Field(String line) throws NullPointerException{
         StringTokenizer st = new StringTokenizer(line, "[");
         nombre = st.nextToken();
         String sig = st.nextToken();

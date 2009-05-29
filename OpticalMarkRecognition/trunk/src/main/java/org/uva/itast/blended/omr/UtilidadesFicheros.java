@@ -12,6 +12,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -32,6 +33,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.SubImage;
+import org.uva.itast.blended.omr.scanners.BarcodeScanner;
+import org.uva.itast.blended.omr.scanners.SolidCircleMarkScanner;
 
 import com.google.zxing.ReaderException;
 import com.sun.pdfview.PDFFile;
@@ -177,12 +180,7 @@ public class UtilidadesFicheros
 			pageImage.align(); //encapsula procesamiento y representación
 			
 			}
-		if (medianfilter)
-		{
-			
-		//	pageImage.medianFilter(); //encapsula procesamiento y representación
 		
-		}
 		
 		long taskStart = System.currentTimeMillis();
 		
@@ -237,21 +235,21 @@ public class UtilidadesFicheros
 		for (int i = 0; i < plantilla.getNumPaginas(); i++)
 		{
 			// se recorren todas las marcas de una página determinada
-			Hashtable<String, Campo> campos = plantilla.getPagina(i + 1)
+			Hashtable<String, Field> campos = plantilla.getPagina(i + 1)
 					.getCampos(); // Hastable para almacenar los campos que
 									// leemos del fichero de definición de
 									// marcas
-			Collection<Campo> campos_val = campos.values();
-			for (Campo campo : campos_val)
+			Collection<Field> campos_val = campos.values();
+			for (Field campo : campos_val)
 			{
 				// vamos a buscar en los campos leídos, en marcas[] están
 				// almacenadas las keys
 				int tipo = campo.getTipo(); // se almacena el tipo para separar
 											// entre si es un barcode o un
 											// circle
-				if (tipo == Campo.CIRCLE)
+				if (tipo == Field.CIRCLE)
 					buscarMarcaCircle(i, pageImage , campo, medianfilter);
-				else if (tipo == Campo.CODEBAR)
+				else if (tipo == Field.CODEBAR)
 					{
 					buscarMarcaCodebar(pageImage, campo, medianfilter);
 					
@@ -273,14 +271,15 @@ public class UtilidadesFicheros
 	 * @param campo
 	 * @param medianfilter
 	 */
-	private static void buscarMarcaCodebar(PageImage pageImage, Campo campo,boolean medianFilter)
+	private static void buscarMarcaCodebar(PageImage pageImage, Field campo,boolean medianFilter)
 	{
 
 	
-		BarcodeManipulation barcodeManipulator=new BarcodeManipulation(pageImage,medianFilter);
+		BarcodeScanner barcodeScanner=new BarcodeScanner(pageImage,medianFilter);
 		try
 		{
-			campo.setValue( barcodeManipulator.getParsedCode(campo) );
+			campo.setValue( barcodeScanner.getParsedCode(campo) );
+			barcodeScanner.markBarcode(campo);
 		}
 		catch (ReaderException e)
 		{
@@ -304,7 +303,7 @@ public class UtilidadesFicheros
 	 * @param medianfilter
 	 */
 	private static void buscarMarcaCircle(int i, 
-			PageImage pageImage, Campo campo, boolean medianfilter)
+			PageImage pageImage, Field campo, boolean medianfilter)
 	{
 		Rectangle2D bbox=campo.getBBox();//milimeters
 		Rectangle bboxPx = pageImage.toPixels(bbox);
@@ -315,7 +314,7 @@ public class UtilidadesFicheros
 		// leemos la anchura de las marcas en milímetros
 		double markWidth = Math.max(1, bbox.getWidth());
 		double markHeight = Math.max(1,bbox.getHeight());
-		SolidCircleMark markScanner = new SolidCircleMark(pageImage,markWidth,markHeight);
+		SolidCircleMarkScanner markScanner = new SolidCircleMarkScanner(pageImage,markWidth,markHeight);
 
 		if (logger.isDebugEnabled())
 		{
@@ -349,14 +348,12 @@ public class UtilidadesFicheros
 	public static void saveOMRResults(String inputpath, String outputdir,
 			PlantillaOMR plantilla, String acticode, String userid) throws FileNotFoundException
 	{
-
+		Hashtable<String, Field> campos = plantilla.getPagina(1).getCampos();
+		Field acticodeField = campos.get(acticode);
+		Field useridField = campos.get(userid);
 		try
 		{
-			Hashtable<String, Campo> campos = plantilla.getPagina(1).getCampos();
-
-			//TODO: usar los nombres pasados en -id1 -id2
-			Campo acticodeField = campos.get(acticode);
-			Campo useridField = campos.get(userid);
+			
 			
 			int useridInt = Integer.parseInt(useridField.getValue()); // evita
 																		// inyección
@@ -382,7 +379,7 @@ public class UtilidadesFicheros
 						+ "]");
 				for (int k = 0; k < plantilla.getPagina(i + 1).getMarcas().size(); k++)
 				{
-					Campo campo2 = campos.get(plantilla.getPagina(i + 1)
+					Field campo2 = campos.get(plantilla.getPagina(i + 1)
 							.getMarcas().elementAt(k));
 					out.println(campo2.getNombre() + "=" + campo2.getValue());
 				}
@@ -393,7 +390,8 @@ public class UtilidadesFicheros
 		catch (NumberFormatException e)
 		{
 			// TODO Auto-generated catch block
-			logger.error("saveOMRResults:  Can't obtain ID1 and ID2 for outputting report."); //$NON-NLS-1$
+			logger.error("saveOMRResults:  Can't obtain "+acticode+"="+acticodeField.getValue()+" and "+userid+"="+useridField.getValue()+" for outputting report."); //$NON-NLS-1$
+			
 		}
 		return;
 	}
@@ -401,35 +399,50 @@ public class UtilidadesFicheros
 	/**
 	 * @param subImage
 	 */
+	public static void logSubImage(String textId, BufferedImage subImage)
+	{
+		if (logger.isDebugEnabled()&& true)
+		{
+			long start=System.currentTimeMillis();
+			
+			
+			
+			try
+			{
+				URL url=UtilidadesFicheros.class.getClassLoader().getResource("Doc1.pdf");
+				File testPath=new File(new File(url.toURI()).getParentFile(),"output");
+				File imgFile=new File(testPath,"debug_"+textId+System.currentTimeMillis()+".png");
+				UtilidadesFicheros.salvarImagen(subImage, imgFile.getAbsolutePath(), "PNG");
+				logger.debug("Dumped "+textId+" in (ms) :"+(System.currentTimeMillis()-start));
+			}
+			catch (IOException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			catch (URISyntaxException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	
+	}
 	public static void logSubImage(SubImage subImage)
 	{
 		
-			if (logger.isDebugEnabled()&& true)
-			{
-				long start=System.currentTimeMillis();
-				Rectangle2D markArea=subImage.getBoundingBox();
-				
-				
-				try
-				{
-					URL url=UtilidadesFicheros.class.getClassLoader().getResource("Doc1.pdf");
-					File testPath=new File(new File(url.toURI()).getParentFile(),"output");
-					File imgFile=new File(testPath,"debugSubimage"+System.currentTimeMillis()+".png");
-					UtilidadesFicheros.salvarImagen(subImage, imgFile.getAbsolutePath(), "PNG");
-					logger.debug("Dumped subimage "+markArea+" in (ms) :"+(System.currentTimeMillis()-start));
-				}
-				catch (IOException e)
-				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				catch (URISyntaxException e)
-				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		
+		logSubImage("subimage", subImage);
+	}
+
+	/**
+	 * @param prefix
+	 * @param medianed
+	 */
+	public static void logSubImage(String prefix, SubImage subImage)
+	{
+		Rectangle2D markArea=subImage.getBoundingBox();
+		logger.debug("Dumped subimage  "+markArea);
+		logSubImage(prefix,(BufferedImage)subImage);
 		
 	}
 }

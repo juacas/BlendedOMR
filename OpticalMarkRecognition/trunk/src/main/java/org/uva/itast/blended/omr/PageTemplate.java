@@ -20,21 +20,21 @@ import java.util.Vector;
  * @author Jesús Rodilana
  *
  */
-public class PaginaDefinicionMarcas {
+public class PageTemplate {
 	/**
 	 * Logger for this class
 	 */
-	private static final Log			logger	= LogFactory.getLog(PaginaDefinicionMarcas.class);
+	private static final Log			logger	= LogFactory.getLog(PageTemplate.class);
 	
 	private int numPagina;					//página sobre la cuál versa la información
-	private Hashtable<String,Campo> campos= new Hashtable<String, Campo>();	//Hastable para almacenar los campos que leemos del fichero de definición de marcas
+	private Hashtable<String,Field> campos= new Hashtable<String, Field>();	//Hastable para almacenar los campos que leemos del fichero de definición de marcas
 	private Vector<String> marcas= new Vector<String>();		//vector para buscar marcas, aquí están almacenadas las keys
 	
 	/**
 	 * Constructor de la clase PaginaDefinicionMarcas
 	 * @param numerodepagina
 	 */
-	public PaginaDefinicionMarcas(int numerodepagina){
+	public PageTemplate(int numerodepagina){
 		this.numPagina = numerodepagina;
 	}
 	
@@ -60,7 +60,7 @@ public class PaginaDefinicionMarcas {
             	}
             	else									//lectura de campos de una línea
             	{
-            		Campo campo = new Campo(line);
+            		Field campo = new Field(line);
                     campos.put(campo.getNombre(), campo);
                 	marcas.add(campo.getNombre());		//almacenamos en el array marcas[] la clave
             	}
@@ -81,7 +81,7 @@ public class PaginaDefinicionMarcas {
 	 * Método que devuelve el Hastable campos, que contiene los campos
 	 * @return campos
 	 */
-	public Hashtable<String,Campo> getCampos() {
+	public Hashtable<String,Field> getCampos() {
 		return campos;
 	}
 	
