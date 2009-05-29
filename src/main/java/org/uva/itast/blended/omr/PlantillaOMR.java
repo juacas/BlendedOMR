@@ -21,7 +21,7 @@ import java.util.Vector;
 public class PlantillaOMR {
 	
 	
-	private Vector<PaginaDefinicionMarcas> paginas;		//cada elemento almacena un número de página y el contenido de dicha página
+	private Vector<PageTemplate> paginas;		//cada elemento almacena un número de página y el contenido de dicha página
 	
 	/**
 	 * Constructor de la clase PlantillaOMR, crea una plantilla a partir
@@ -33,7 +33,7 @@ public class PlantillaOMR {
 	public PlantillaOMR(String definitionfile) throws IOException
 	{
 		
-		paginas = new Vector<PaginaDefinicionMarcas>();	//instanciamos el vector paginas
+		paginas = new Vector<PageTemplate>();	//instanciamos el vector paginas
 		String line;
 		
 		BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(definitionfile)));
@@ -42,7 +42,7 @@ public class PlantillaOMR {
             	{
             		String num=line.substring(5,line.length()-1);	//Obtener i de [Pagei]
             		int numpag=Integer.parseInt(num);
-            		PaginaDefinicionMarcas pagina = new PaginaDefinicionMarcas(numpag);		//se crea una nueva página, parámetros: definitionfile e i, este último indica el número de página
+            		PageTemplate pagina = new PageTemplate(numpag);		//se crea una nueva página, parámetros: definitionfile e i, este último indica el número de página
         			pagina.leerMarcas(in);							//se leen las marcas
         			paginas.add(numpag-1, pagina);					//se guardan a partir del elemento 0 (numpag-1)
             	}
@@ -55,7 +55,7 @@ public class PlantillaOMR {
 	 *  @param pagina se numera empezando en 1
 	 *  @return pagina.elementAt(pagina-1)
 	 */
-	public PaginaDefinicionMarcas getPagina(int pagina) {
+	public PageTemplate getPagina(int pagina) {
 		return paginas.elementAt(pagina-1);
 	}
 	
@@ -63,7 +63,7 @@ public class PlantillaOMR {
 	 * Devuelve el vector paginas donde están almacenadas todas las páginas de una plantilla
 	 * @return paginas
 	 */
-	public Vector<PaginaDefinicionMarcas> getPaginas() {
+	public Vector<PageTemplate> getPaginas() {
 		return paginas;
 	}
 	

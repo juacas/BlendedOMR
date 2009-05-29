@@ -56,8 +56,22 @@ public class OMRProcessor {
 	private boolean dflag = false;
 	
 	// plantilla para almacenar las páginas y los campos de definition file
-	PlantillaOMR plantilla;
+	PlantillaOMR template;
 
+	/**
+	 * @return the template
+	 */
+	protected PlantillaOMR getTemplate()
+	{
+		return template;
+	}
+	/**
+	 * @param template the template to set
+	 */
+	protected void setTemplate(PlantillaOMR template)
+	{
+		this.template = template;
+	}
 	/**
 	 * Constructor TestManipulation sin parámetros.
 	 */
@@ -72,7 +86,7 @@ public class OMRProcessor {
 	public void loadTemplate(String filename) throws IOException
 	{
 		
-		plantilla = new PlantillaOMR(filename); // se crea la plantilla según el
+		template = new PlantillaOMR(filename); // se crea la plantilla según el
 	}		
 	/**
 	 * Método que lee la línea de comandos. Identifica que las opciones y
@@ -246,9 +260,10 @@ public class OMRProcessor {
 	 * 
 	 * @return
 	 */
-	public String getActivitycode()
+	public String getFieldValue(String fieldName)
 	{
-		return activitycode;
+		return getTemplate().getPagina(1).getCampos().get(fieldName).getValue();
+	
 	}
 
 	/**
@@ -333,8 +348,8 @@ public class OMRProcessor {
 	 */
 	public void escribirValoresCampo(String key)
 	{
-		Hashtable<String, Campo> campos = plantilla.getPagina(1).getCampos();
-		Campo campo = (Campo) campos.get(key);
+		Hashtable<String, Field> campos = template.getPagina(1).getCampos();
+		Field campo = (Field) campos.get(key);
 		System.out.println("Nombre : " + campo.getNombre());
 		System.out.println("Numero de Página : " + campo.getNumPag());
 		System.out.println("Tipo : " + campo.getTipo());
@@ -378,11 +393,11 @@ public class OMRProcessor {
 
 				// se procesa la página
 				UtilidadesFicheros.procesarPagina(pageImage, isAutoalign(),
-						isMedianFilter(), outputdir, plantilla);
+						isMedianFilter(), outputdir, template);
 				
 				// se salvan los resultados en archivo
 				UtilidadesFicheros.saveOMRResults(pageImage.getFileName(),
-						outputdir, plantilla, activitycode, userid);
+						outputdir, template, activitycode, userid);
 
 				pageImage.outputMarkedPage(outputdir);
 
