@@ -12,11 +12,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.junit.Test;
-import org.uva.itast.blended.omr.BarcodeManipulation;
 import org.uva.itast.blended.omr.UtilidadesFicheros;
 import org.uva.itast.blended.omr.pages.PDFPageImage;
 import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.SubImage;
+import org.uva.itast.blended.omr.scanners.BarcodeScanner;
 
 /**
  * @author juacas
