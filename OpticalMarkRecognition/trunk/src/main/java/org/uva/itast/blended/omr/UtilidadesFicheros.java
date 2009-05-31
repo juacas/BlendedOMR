@@ -34,12 +34,14 @@ import org.apache.commons.logging.LogFactory;
 import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.SubImage;
 import org.uva.itast.blended.omr.scanners.BarcodeScanner;
+import org.uva.itast.blended.omr.scanners.MarkScannerException;
+import org.uva.itast.blended.omr.scanners.ScanResult;
 import org.uva.itast.blended.omr.scanners.SolidCircleMarkScanner;
 
-import com.google.zxing.ReaderException;
 import com.sun.pdfview.PDFFile;
 
 /**
+ * @author Juan Pablo de Castro
  * @author Jesús Rodilana
  */
 public class UtilidadesFicheros
@@ -184,7 +186,7 @@ public class UtilidadesFicheros
 		
 		long taskStart = System.currentTimeMillis();
 		
-		buscarMarcas(outputdir, plantilla, pageImage, medianfilter); // se
+		searchMarks(outputdir, plantilla, pageImage, medianfilter); // se
 																				// buscan
 																				// las
 																				// marcas
@@ -226,7 +228,7 @@ public class UtilidadesFicheros
 	 * @return plantilla
 	 * @throws FileNotFoundException
 	 */
-	public static PlantillaOMR buscarMarcas(String outputdir,
+	public static PlantillaOMR searchMarks(String outputdir,
 			PlantillaOMR plantilla,  PageImage pageImage, 
 			boolean medianfilter) throws FileNotFoundException
 	{
@@ -281,7 +283,7 @@ public class UtilidadesFicheros
 			campo.setValue( barcodeScanner.getParsedCode(campo) );
 			barcodeScanner.markBarcode(campo);
 		}
-		catch (ReaderException e)
+		catch (MarkScannerException e)
 		{
 			campo.setValue(null);
 			campo.setValid(false);
@@ -314,25 +316,34 @@ public class UtilidadesFicheros
 		// leemos la anchura de las marcas en milímetros
 		double markWidth = Math.max(1, bbox.getWidth());
 		double markHeight = Math.max(1,bbox.getHeight());
-		SolidCircleMarkScanner markScanner = new SolidCircleMarkScanner(pageImage,markWidth,markHeight);
+		SolidCircleMarkScanner markScanner = new SolidCircleMarkScanner(pageImage,markWidth,markHeight,medianfilter);
 
 		if (logger.isDebugEnabled())
 		{
 			logger.debug("buscarMarcaCircle - campo=" + campo); //$NON-NLS-1$
 		}
-
-		if (markScanner.isMark(center,false) ) // se busca la marca que se desea encontrar
+		try
 		{
-			if (logger.isDebugEnabled())
+			ScanResult res=markScanner.scanField(campo);
+			
+			if ( (Boolean)res.getResult() ) // se busca la marca que se desea encontrar
 			{
-				logger.debug("buscarMarcaCircle - >>>>>>>Found mark at " + bbox + " (mm) :" + campo); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+				if (logger.isDebugEnabled())
+				{
+					logger.debug("buscarMarcaCircle - >>>>>>>Found mark at " + bbox + " (mm) :" + campo); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+				}
+				campo.setValue("true");
+													// si se ha encontrado la marca
+				markScanner.putCircleMarkOnImage(pageImage);
+			} else
+			{
+				campo.setValue("false");
 			}
-			campo.setValue("true");
-												// si se ha encontrado la marca
-			markScanner.putCircleMarkOnImage(pageImage);
-		} else
+			campo.setValid(true);
+		}
+		catch (MarkScannerException e)
 		{
-			campo.setValue("false");
+			campo.setValid(false);
 		}
 	}
 

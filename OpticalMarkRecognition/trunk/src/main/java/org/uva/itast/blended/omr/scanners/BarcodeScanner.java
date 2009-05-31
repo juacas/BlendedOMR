@@ -9,10 +9,10 @@ package org.uva.itast.blended.omr.scanners;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.geom.Point2D;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
@@ -33,69 +33,78 @@ import com.google.zxing.client.result.ResultParser;
 
 /**
  * 
+ * @author Juan Pablo de Castro
  * @author Jesús Rodilana
  *
  */
-public final class BarcodeScanner
+public final class BarcodeScanner extends MarkScanner
 {
 	/**
 	 * Logger for this class
 	 */
-	private static final Log	logger	= LogFactory.getLog(BarcodeScanner.class);
+	static final Log	logger	= LogFactory.getLog(BarcodeScanner.class);
 
-	private static final double	BARCODE_AREA_PERCENT	= 0.5d;
+	static final double	BARCODE_AREA_PERCENT	= 0.5d;
 
-	private Result	lastResult;
-	private PageImage	pageImage;
-	private boolean	medianfilter;
+	
+	
 
 	private BufferedImage	subimage;
 
 	public BarcodeScanner(PageImage imagen, boolean medianfilter)
 	{
-		this.pageImage=imagen;
-		this.medianfilter=medianfilter;
+		super(imagen,medianfilter);
+	}
+	/**
+	 * 
+	 */
+	public String getParsedCode(Field campo) throws MarkScannerException
+	{
+		return getParsedCode(scanField(campo));
 	}
 	
 	/**
-	 * Método que lee el valor de un código de barras contenido en un objeto tipo BufferedImage a partir de los patrones dados en un objeto tipo Campo
-	 * @param campo
-	 * @param imagen
-	 * @param medianfilter 
+	 * @param result
 	 * @return
-	 * @throws ReaderException
 	 */
-	public Result scanField(Field campo) throws ReaderException  {
-		 
-		  
-		  //se leen y almacenan las coordenadas
-		Rectangle2D coords = campo.getBBox();
-		Rectangle2D expandedBbox = getExpandedArea(coords);
-//		Rectangle area=pageImage.toPixels(coords);
-//		Rectangle expandedArea=pageImage.toPixels(expandedBbox);
-		
-	    Result result;
-		try
+	public String getParsedCode(ScanResult result)
+	{
+		String barcode;
+		if (result!=null)
 		{
-			result = scanAreaForBarcode(coords);
+		ParsedResult parsedResult = ResultParser.parseResult((Result) result.getResult());
+	      
+	      //System.out.println(imagen.toString() + " (format: " + result.getBarcodeFormat() +", type: " + parsedResult.getType() + "):\nRaw result:\n" + result.getText() +"\nParsed result:\n" + parsedResult.getDisplayResult());
+	    barcode = parsedResult.getDisplayResult();
 		}
-		catch (ReaderException e)
-		{
-			//Try with a wider area
+		else
+		barcode=null;
 		
-			result = scanAreaForBarcode(expandedBbox);
-			
-		}
-	      this.lastResult=result;
-	      return result;
-	  }
-
+		return barcode;
+	}
 	/**
-	 * @param rect area in milimeters to be scanned //TODO
+	 * Generates an expanded boundingbox in milimeters
+	 * 
+	 * @see {@link #BARCODE_AREA_PERCENT}
+	 * @see {@value #BARCODE_AREA_PERCENT}
+	 * @param rect
+	 * @return milimeteres
+	 */
+	protected Rectangle2D getExpandedArea(Rectangle2D rect)
+	{
+		Rectangle expandedRect=new Rectangle();
+		expandedRect.setFrame((rect.getX()-rect.getWidth()*(BARCODE_AREA_PERCENT)/2),
+						(rect.getY()-rect.getHeight()*(BARCODE_AREA_PERCENT)/2),
+						(rect.getWidth()*(1+BARCODE_AREA_PERCENT)),
+						(rect.getHeight()*(1+BARCODE_AREA_PERCENT)));
+		return expandedRect;
+	}
+	/**
+	 * @param rect area in milimeters to be scanned
 	 * @return
 	 * @throws ReaderException
 	 */
-	private Result scanAreaForBarcode(Rectangle2D rect) throws ReaderException
+	public ScanResult scanAreaForFieldData(Rectangle2D rect)	throws MarkScannerException
 	{
 		//[JPC] Need to be TYPE_BYTE_GRAY 
 		  // BufferedImageMonochromeBitmapSource seems to work bad with TYPE_BYTERGB
@@ -105,7 +114,7 @@ public final class BarcodeScanner
 		  if (subimage == null)
 			{
 			  logger.error("leerBarcode(Campo) - " + pageImage.toString() + ": No es posible cargar la imagen", null); //$NON-NLS-1$ //$NON-NLS-2$
-			  //TODO: Lanzar Excepcion
+			  //TODO: Lanzar otra Excepcion
 			  throw new RuntimeException("Can't extract subimage from page.");
 			}
 		if (logger.isDebugEnabled())
@@ -123,7 +132,7 @@ public final class BarcodeScanner
 		if(medianfilter == true)
 			 {
 				 UtilidadesFicheros.logSubImage(subimage);
-
+	
 				long start=System.currentTimeMillis();
 				BufferedImage medianed= medianFilter(subimage);
 				logger.debug("scanAreaForBarcode(MedianFilter area=" + subimage.getWidth()+"x"+subimage.getHeight() + ") In (ms) "+(System.currentTimeMillis()-start)); //$NON-NLS-1$ //$NON-NLS-2$
@@ -132,79 +141,23 @@ public final class BarcodeScanner
 					 UtilidadesFicheros.logSubImage("debug_median",medianed);
 				 
 				 source = new BufferedImageMonochromeBitmapSource(medianed);
-				 result = new MultiFormatReader().decode(source, null);
+				 try
+				{
+					result = new MultiFormatReader().decode(source, null);
+				}
+				catch (ReaderException e1)
+				{
+					throw new MarkScannerException(e);
+				}
 				
 				 //subimage=medianed; // store medianed image for reporting
 				
 			 }
 		else
-			throw e; // re-throw exception to notify caller 
+			throw new MarkScannerException(e); // re-throw exception to notify caller 
 		}
-		return result;
-	}
-
-	/**
-	 * @param result
-	 * @return
-	 */
-	public String getParsedCode(Result result)
-	{
-		String barcode;
-		if (result!=null)
-		{
-		ParsedResult parsedResult = ResultParser.parseResult(result);
-	      
-	      //System.out.println(imagen.toString() + " (format: " + result.getBarcodeFormat() +", type: " + parsedResult.getType() + "):\nRaw result:\n" + result.getText() +"\nParsed result:\n" + parsedResult.getDisplayResult());
-	    barcode = parsedResult.getDisplayResult();
-		}
-		else
-		barcode=null;
-		
-		return barcode;
-	}
-
-	/**
-	 * Return boundingBox of 
-	 * @param coords
-	 * @return
-	 */
-	private Rectangle getRectArea(double[] coords)
-	{
-		Point2D coordUpperLeft=	pageImage.toPixels(coords[0], coords[1]);
-		Point2D coordBottomRight= pageImage.toPixels(coords[0]+coords[2], coords[1]+coords[2]);
-		
-		int x=(int) Math.min(coordUpperLeft.getX(), coordBottomRight.getX());
-		int y=(int) Math.min(coordUpperLeft.getY(), coordBottomRight.getY());
-		int xm=(int) Math.max(coordUpperLeft.getX(), coordBottomRight.getX());
-		int ym=(int) Math.max(coordUpperLeft.getY(), coordBottomRight.getY());
-		int width = xm-x;	//anchura en píxeles
-		int height = ym-y;	//altura en píxeles
-		
-		return new Rectangle(x,y,width,height);
-	}
-
-	/**
-	 * Aplica un filtro para reconstruir imagenes de mala calidad, a través del valor de los píxeles vecinos
-	 * @param subimage
-	 */
-private static BufferedImage medianFilter(BufferedImage subimage) {
-	
-		com.jhlabs.image.MedianFilter filter = new com.jhlabs.image.MedianFilter();
-		BufferedImage result=filter.createCompatibleDestImage(subimage,subimage.getColorModel());
-		filter.filter(subimage, result);
-		
-		return result;
-
-}
-
-	/**
-	 * @param campo
-	 * @return
-	 * @throws ReaderException 
-	 */
-	public String getParsedCode(Field campo) throws ReaderException
-	{
-		return getParsedCode(scanField(campo));
+		ScanResult scanResult=new ScanResult("Barcode",result);
+		return scanResult;
 	}
 
 	/**
@@ -219,8 +172,8 @@ private static BufferedImage medianFilter(BufferedImage subimage) {
 		Rectangle expandedRect = pageImage.toPixels(expandedArea);
 		
 		Graphics2D g = pageImage.getReportingGraphics();
-
-		g.setStroke(new BasicStroke(1,BasicStroke.CAP_SQUARE,BasicStroke.JOIN_ROUND,1,new float[]{3,6},0));
+		AffineTransform t=g.getTransform();
+		g.setStroke(new BasicStroke(1,BasicStroke.CAP_SQUARE,BasicStroke.JOIN_ROUND,1,new float[]{(float) (3/t.getScaleX()),(float) (6/t.getScaleY())},0));
 		if (lastResult!=null)
 			g.setColor(Color.BLUE);
 		else 
@@ -230,28 +183,10 @@ private static BufferedImage medianFilter(BufferedImage subimage) {
 		g.drawRoundRect(rect.x, rect.y, rect.width, rect.height, 3, 3);
 		g.drawRoundRect(expandedRect.x, expandedRect.y, expandedRect.width, expandedRect.height, 3, 3);
 		
-		if (lastResult!=null)
-			g.drawString(lastResult.getBarcodeFormat().toString()+"="+getParsedCode(lastResult), rect.x, rect.y);
 		
-	}
-
-	
-
-	/**
-	 * Generates an expanded boundingbox in milimeters
-	 * 
-	 * @see {@link #BARCODE_AREA_PERCENT}
-	 * @see {@value #BARCODE_AREA_PERCENT}
-	 * @param rect
-	 * @return milimeteres
-	 */
-	private Rectangle2D getExpandedArea(Rectangle2D rect)
-	{
-		Rectangle expandedRect=new Rectangle();
-		expandedRect.setFrame((rect.getX()-rect.getWidth()*(BARCODE_AREA_PERCENT)/2),
-						(rect.getY()-rect.getHeight()*(BARCODE_AREA_PERCENT)/2),
-						(rect.getWidth()*(1+BARCODE_AREA_PERCENT)),
-						(rect.getHeight()*(1+BARCODE_AREA_PERCENT)));
-		return expandedRect;
+		g.setFont(new Font("Arial",Font.PLAIN,(int) (12/t.getScaleX())));
+		if (lastResult!=null)
+			g.drawString(((Result)lastResult.getResult()).getBarcodeFormat().toString()+"="+getParsedCode(lastResult), rect.x, rect.y);
+		
 	}
 }

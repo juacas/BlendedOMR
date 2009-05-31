@@ -7,16 +7,17 @@
 
 package org.uva.itast.blended.omr;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * 
+ * @author Juan Pablo de Castro
  * @author Jesús Rodilana
  *
  */
