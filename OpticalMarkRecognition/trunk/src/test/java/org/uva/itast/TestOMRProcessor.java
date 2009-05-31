@@ -5,15 +5,13 @@ package org.uva.itast;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Vector;
 
+import junit.framework.TestCase;
+
 import org.uva.itast.blended.omr.OMRProcessor;
 import org.uva.itast.blended.omr.pages.PageImage;
-
-
-import junit.framework.TestCase;
 
 
 /**

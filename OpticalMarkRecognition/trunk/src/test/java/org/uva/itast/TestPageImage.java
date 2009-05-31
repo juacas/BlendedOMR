@@ -3,7 +3,8 @@
  */
 package org.uva.itast;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
