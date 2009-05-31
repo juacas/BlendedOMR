@@ -7,11 +7,11 @@ package org.uva.itast.blended.omr.scanners;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -19,15 +19,16 @@ import java.awt.image.BufferedImage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.uva.itast.blended.omr.BufferedImageUtil;
+import org.uva.itast.blended.omr.Field;
 import org.uva.itast.blended.omr.UtilidadesFicheros;
 import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.SubImage;
 
 
 /**
- * @author Aaditeshwar Seth
+ * @author Juan Pablo de Castro
  */
-public class SolidCircleMarkScanner {
+public class SolidCircleMarkScanner extends MarkScanner{
 	/**
 	 * 
 	 */
@@ -59,9 +60,11 @@ public class SolidCircleMarkScanner {
 	double maxsim;
 	int maxsimX, maxsimY;
 
-	private PageImage pageImage;
+	
 
 	private double autoSimilarity;
+
+	private boolean	dump=false;
 
 	/**
 	 * 
@@ -71,11 +74,11 @@ public class SolidCircleMarkScanner {
 	 * @param approxXscale
 	 * @param approxYscale
 	 */
-	public SolidCircleMarkScanner(PageImage pageimage, double markWidth, double markHeight) {
+	public SolidCircleMarkScanner(PageImage pageimage, double markWidth, double markHeight, boolean medianfilter) 
+	{
+		super(pageimage,medianfilter);
+
 		
-
-		this.pageImage = pageimage;
-
 		this.approxXscale = pageimage.getPreferredHorizontalResolution();
 		this.approxYscale = pageimage.getPreferredVerticalResolution();
 		
@@ -120,115 +123,7 @@ public class SolidCircleMarkScanner {
 				/ (templateimg.getHeight() * templateimg.getWidth());
 	}
 
-	/**
-	 * 
-	 * @param x
-	 *            coords of the CENTER of the mark
-	 * @param y
-	 * @param dump
-	 *            enable the dumping of pattern comparisons
-	 * @return
-	 */
-//	public boolean isMark(int x, int y, boolean dump) 
-//	{
-//		maxsim = -1;
-//		maxsimX = 0;
-//		maxsimY = 0;
-//		
-//		
-//		// [JPC] this loop was refactored to start the analysis from the center
-//		int maxDeltaX = (int) (markWidth * SCAN_PERCENT);
-//		int maxDeltaY = (int) (markHeight * SCAN_PERCENT);
-//		int deltaXY = Math.max(1, markWidth / SCAN_DELTA_DIVISOR);
-//		
-//		//Gets a subimage from  x-maxDeltaX-template.getWidth(),y-maxDeltaY ->  x+maxDeltaY,y+maxDeltaY
-//		// stores the offsetX and offsetY to use original images's coordinates
-//		
-//		int templateWidth = template.getWidth();
-//		int templateHeight = template.getHeight();
-//		int offsetX=x-maxDeltaX-templateWidth;
-//		int offsetY=y-maxDeltaY-templateHeight;
-//		
-//		SubImage subImage=this.pageImage.getSubimage(offsetX, offsetY, maxDeltaX*2, maxDeltaY*2, BufferedImage.TYPE_BYTE_GRAY);
-//		
-//		boolean markpoint = true;// for debugging the position of the templates.
-//		for (int xTemplate = x; xTemplate <= x + maxDeltaX; xTemplate += deltaXY)
-//		{
-//
-//			for (int yTemplate = y; yTemplate <= y + maxDeltaY; yTemplate += deltaXY)
-//			{
-//	
-//			double similarity = 1.0 - 
-//				BufferedImageUtil.templateXOR(subImage, 
-//						xTemplate  - templateWidth / 2 -offsetX, 
-//						yTemplate  - templateHeight / 2 -offsetY, 
-//						template, dump);
-//				if (markpoint)
-//					markPointInImage(xTemplate, yTemplate);
-//				
-//				if (maxsim == -1 || maxsim < similarity)
-//				{
-//					maxsim = similarity;
-//					maxsimX = xTemplate;
-//					maxsimY = yTemplate;// + markradY * 2; // XXX
-//				}
-//				// similarity = 1.0 - ConcentricCircle.templateXOR(grayimage,
-//				similarity = 1.0 - 
-//					BufferedImageUtil.templateXOR(subImage, 
-//						2 * x - xTemplate - templateWidth / 2 -offsetX, 
-//						2 * y - yTemplate - templateHeight / 2 -offsetY,
-//						template, dump);
-//				if (markpoint)
-//					markPointInImage(2 * x - xTemplate, 2 * y - yTemplate);
-//				if (maxsim == -1 || maxsim < similarity)
-//				{
-//					maxsim = similarity;
-//					maxsimX = 2 * x - xTemplate;
-//					maxsimY = 2 * y - yTemplate;// + markradY * 2; // XXX
-//				}
-//
-//				// similarity = 1.0 - ConcentricCircle.templateXOR(grayimage,
-//				similarity = 1.0 - 
-//					BufferedImageUtil.templateXOR(subImage, 
-//							xTemplate - templateWidth / 2 -offsetX,
-//							2 * y - yTemplate- templateHeight / 2-offsetY,
-//							template, dump);
-//				if (markpoint)
-//					markPointInImage(xTemplate, 2 * y - yTemplate);
-//				if (maxsim == -1 || maxsim < similarity)
-//				{
-//					maxsim = similarity;
-//					maxsimX = xTemplate;
-//					maxsimY = 2 * y - yTemplate;// + markradY * 2; // XXX
-//				}
-//
-//				// similarity = 1.0 - ConcentricCircle.templateXOR(grayimage,
-//				similarity = 1.0 - BufferedImageUtil.templateXOR(subImage, 
-//						2 * x - xTemplate - templateWidth / 2 -offsetX,
-//						yTemplate - templateHeight/ 2-offsetY,
-//						template, dump);
-//
-//				if (markpoint)
-//					markPointInImage(2 * x - xTemplate, yTemplate);
-//				if (maxsim == -1 || maxsim < similarity)
-//				{
-//					maxsim = similarity;
-//					maxsimX = 2 * x - xTemplate;
-//					maxsimY = yTemplate;
-//				}
-//			}
-//		}
-//		double threshold = getAutoSimilarity() * (1 + SIMILARITY_PERCENT);
-//		if (logger.isDebugEnabled())
-//		{
-//			logger.debug("isMark(int, int) - --" + maxsim + " (threshold)" + threshold + ":" + maxsimX + "," + maxsimY + "->" + x + ":" + y); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-//		}
-//		if (maxsim > threshold)
-//			return true;
-//		else
-//			return false;
-//
-//	}
+
 
 	/**
 	 * When comparing with an empty space there are a minimum similarity due to
@@ -246,12 +141,13 @@ public class SolidCircleMarkScanner {
 	 * @param y in pixels
 	 */
 	private void markPointInImage(int x, int y) {
-		Graphics g = pageImage.getReportingGraphics();
+		Graphics2D g = pageImage.getReportingGraphics();
+		AffineTransform t=g.getTransform();
 		g.setColor(Color.WHITE);
-		g.fillOval(x - 1, y - 1, 2, 2);
+		g.fillOval((int)(x - 1/t.getScaleX()),(int)( y - 1/t.getScaleY()), (int)(2/t.getScaleX()), (int)(2/t.getScaleY()));
 		// g.drawRect(i-w/2-1, j-h/2-1, w, h);
 		g.setColor(Color.BLACK);
-		g.drawOval(x - 1, y - 1, 2, 2);
+		g.drawOval((int)(x - 1/t.getScaleX()), (int)(y - 1/t.getScaleY()), (int)(2/t.getScaleX()), (int)(2/t.getScaleY()));
 		// g.drawRect(i-w/2, j-h/2, w, h);
 
 	}
@@ -273,16 +169,16 @@ public class SolidCircleMarkScanner {
 		int markWidth=markDimsPx.x;
 		int markHeight=markDimsPx.y;
 		g.setColor(Color.RED);
-		
+		AffineTransform t=g.getTransform();
 		g.drawLine(maxsimX, maxsimY - markHeight / 2 - 1, maxsimX, maxsimY
-				- markHeight / 2 - 20);
+				- markHeight / 2 - (int)(20/t.getScaleY()));
 		Polygon arrowHead = new Polygon();
-		arrowHead.addPoint(maxsimX, maxsimY - markHeight / 2 - 1);
-		arrowHead.addPoint(maxsimX - 6, maxsimY - markHeight / 2 - 10);
-		arrowHead.addPoint(maxsimX + 6, maxsimY - markHeight / 2 - 10);
+		arrowHead.addPoint(maxsimX, (int) (maxsimY - markHeight / 2 - 1/t.getScaleY()));
+		arrowHead.addPoint((int)(maxsimX - 6/t.getScaleX()),(int)( maxsimY - markHeight / 2 - 10/t.getScaleY()));
+		arrowHead.addPoint((int)(maxsimX + 6/t.getScaleX()), (int)(maxsimY - markHeight / 2 - 10/t.getScaleY()));
 		g.fillPolygon(arrowHead);
 		
-		g.setStroke(new BasicStroke(2,BasicStroke.CAP_SQUARE,BasicStroke.JOIN_ROUND,1,new float[]{3,4},0));
+		g.setStroke(new BasicStroke(2,BasicStroke.CAP_SQUARE,BasicStroke.JOIN_ROUND,1,new float[]{(float) (3/t.getScaleX()),(float) (4/t.getScaleY())},0));
 		g.drawOval(
 				maxsimX - markWidth / 2 - 1,
 				maxsimY - markHeight / 2 - 1,
@@ -295,7 +191,7 @@ public class SolidCircleMarkScanner {
 	 * @param b
 	 * @return
 	 */
-	public boolean isMark(Point2D markCenter, boolean dump)
+	protected boolean isMark(Rectangle2D markArea, boolean dump)
 	{
 		maxsim = -1;
 		maxsimX = 0;
@@ -310,24 +206,31 @@ public class SolidCircleMarkScanner {
 		
 		//Gets a subimage from  x-maxDeltaX-template.getWidth(),y-maxDeltaY ->  x+maxDeltaY,y+maxDeltaY
 		// stores the offsetX and offsetY to use original images's coordinates
+		markArea=getExpandedArea(markArea);
 		
-		Point2D templateDim = pageImage.toMilimeters(template.getWidth(),  template.getHeight());
-		
-		double marginX = maxDeltaX+templateDim.getX();
-		double marginY = maxDeltaY+templateDim.getY();
-		double startX = markCenter.getX()- marginX;
-		double startY = markCenter.getY()- marginY;
-		
-		Rectangle2D markArea=new Rectangle();
-		markArea.setFrame(startX, startY, marginX*2, marginY*2);
 		long start=System.currentTimeMillis();
 		SubImage subImage=this.pageImage.getSubimage(markArea, BufferedImage.TYPE_INT_RGB);
 		logger.debug("isMark(Point2D, boolean) - Subimage extracted in - (ms)=" + (System.currentTimeMillis()-start)); //$NON-NLS-1$
+		BufferedImage img=subImage;
 		
 		if (logger.isDebugEnabled())
 			UtilidadesFicheros.logSubImage(subImage);
 		
+		if(medianfilter == true)
+		 {
+			start=System.currentTimeMillis();
+			img= medianFilter(subImage);
+			logger.debug("scanAreaForBarcode(MedianFilter area=" + subImage.getWidth()+"x"+subImage.getHeight() + ") In (ms) "+(System.currentTimeMillis()-start)); //$NON-NLS-1$ //$NON-NLS-2$
+			 
+			 if (logger.isDebugEnabled())
+				 UtilidadesFicheros.logSubImage("debug_median",img);
+		 }
+		
+		
+		
 		// Start processing in pixels
+		Point2D markCenter=new Point();
+		markCenter.setLocation(markArea.getCenterX(),markArea.getCenterY());
 		
 		int templateWidth=template.getWidth();
 		int templateHeight=template.getHeight();
@@ -351,7 +254,7 @@ public class SolidCircleMarkScanner {
 	
 			double similarity = 1.0 - 
 				BufferedImageUtil.templateXOR(
-						subImage, 
+						img, 
 						(xTemplate  - templateWidth / 2 -offsetX), 
 						(yTemplate  - templateHeight / 2 -offsetY), 
 						template, dump);
@@ -362,11 +265,12 @@ public class SolidCircleMarkScanner {
 				{
 					maxsim = similarity;
 					maxsimX = xTemplate;
-					maxsimY = yTemplate;// + markradY * 2; // XXX
+					maxsimY = yTemplate;
 				}
-				// similarity = 1.0 - ConcentricCircle.templateXOR(grayimage,
+			
 				similarity = 1.0 - 
-					BufferedImageUtil.templateXOR(subImage, 
+					BufferedImageUtil.templateXOR(
+						img, 
 						2 *  markCenterPx.x - xTemplate - templateWidth / 2 -offsetX, 
 						2 *  markCenterPx.y - yTemplate - templateHeight / 2 -offsetY,
 						template, dump);
@@ -377,12 +281,13 @@ public class SolidCircleMarkScanner {
 				{
 					maxsim = similarity;
 					maxsimX = 2 *  markCenterPx.x - xTemplate;
-					maxsimY = 2 *  markCenterPx.y - yTemplate;// + markradY * 2; // XXX
+					maxsimY = 2 *  markCenterPx.y - yTemplate;
 				}
 
-				// similarity = 1.0 - ConcentricCircle.templateXOR(grayimage,
+			
 				similarity = 1.0 - 
-					BufferedImageUtil.templateXOR(subImage, 
+					BufferedImageUtil.templateXOR(
+							img, 
 							xTemplate - templateWidth / 2 -offsetX,
 							2 *  markCenterPx.y - yTemplate- templateHeight / 2-offsetY,
 							template, dump);
@@ -392,11 +297,12 @@ public class SolidCircleMarkScanner {
 				{
 					maxsim = similarity;
 					maxsimX = xTemplate;
-					maxsimY = 2 *  markCenterPx.y - yTemplate;// + markradY * 2; // XXX
+					maxsimY = 2 *  markCenterPx.y - yTemplate;
 				}
 
-				// similarity = 1.0 - ConcentricCircle.templateXOR(grayimage,
-				similarity = 1.0 - BufferedImageUtil.templateXOR(subImage, 
+				
+				similarity = 1.0 - BufferedImageUtil.templateXOR(
+						img, 
 						2 *  markCenterPx.x - xTemplate - templateWidth / 2 -offsetX,
 						yTemplate - templateHeight/ 2-offsetY,
 						template, dump);
@@ -421,6 +327,48 @@ public class SolidCircleMarkScanner {
 		else
 			return false;
 
+	}
+
+	/* (non-Javadoc)
+	 * @see org.uva.itast.blended.omr.scanners.MarkScanner#getExpandedArea(java.awt.geom.Rectangle2D)
+	 */
+	@Override
+	protected Rectangle2D getExpandedArea(Rectangle2D rect)
+	{
+		Point2D templateDim = pageImage.toMilimeters(template.getWidth(),  template.getHeight());
+		
+		double maxDeltaX = markWidth * SCAN_PERCENT;
+		double maxDeltaY = markHeight * SCAN_PERCENT;
+		double marginX = maxDeltaX+templateDim.getX();
+		double marginY = maxDeltaY+templateDim.getY();
+		double startX = rect.getCenterX()- marginX;
+		double startY = rect.getCenterY()- marginY;
+		
+		Rectangle2D markArea=new Rectangle();
+		markArea.setFrame(startX, startY, marginX*2, marginY*2);
+		return markArea;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.uva.itast.blended.omr.scanners.MarkScanner#getParsedCode(org.uva.itast.blended.omr.Field)
+	 */
+	@Override
+	public String getParsedCode(Field campo) throws MarkScannerException
+	{
+		
+		return ((Boolean)scanField(campo).getResult()).toString();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.uva.itast.blended.omr.scanners.MarkScanner#scanAreaForFieldData(java.awt.geom.Rectangle2D)
+	 */
+	@Override
+	public ScanResult scanAreaForFieldData(Rectangle2D coords)
+			throws MarkScannerException
+	{
+		boolean result=isMark(coords, dump);
+		ScanResult res=new ScanResult("SolidCircle",new Boolean(result));
+		return res;
 	}
 
 	
