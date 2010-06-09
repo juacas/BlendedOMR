@@ -3,6 +3,7 @@
  */
 package org.uva.itast;
 
+import java.awt.geom.AffineTransform;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -12,6 +13,7 @@ import junit.framework.TestCase;
 
 import org.uva.itast.blended.omr.OMRProcessor;
 import org.uva.itast.blended.omr.pages.PageImage;
+import org.uva.itast.blended.omr.pages.PagesCollection;
 
 
 /**
@@ -21,6 +23,44 @@ import org.uva.itast.blended.omr.pages.PageImage;
 public class TestMarkDetectionQuality extends TestCase
 {
 	private OMRProcessor	processor;
+	
+	public void testProcessMediumResImage()
+	{
+		try
+		{
+		URL url=getClass().getClassLoader().getResource("page-0007.jpg");
+		File testPath=new File(url.toURI());
+		prepareConfig(testPath);
+
+		Vector<PageImage> errores;
+		// detecci贸n de errores
+		
+		processor.setMedianFilter(true);
+		
+		url=getClass().getClassLoader().getResource("page-0007.jpg");
+		testPath=new File(url.toURI());
+
+		processor.setMedianFilter(false);
+		
+		PagesCollection pages = new PagesCollection(testPath);
+		// procesar ficheros
+		PageImage page=pages.getPageImage(0);
+		
+		AffineTransform align= page.getAllignmentInfo();
+		align.translate(5, -10);
+		page.setAlignmentInfo(align);
+		
+		errores= processor.processPages(pages);     		
+		assertTrue("Errors encountered",errores.isEmpty());
+		
+		
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			fail("Can't configure test case."+e);
+		}
+	}
 	public void testProcessLowResImage()
 	{
 		try
@@ -30,7 +70,7 @@ public class TestMarkDetectionQuality extends TestCase
 		prepareConfig(testPath);
 
 		Vector<PageImage> errores;
-		// detecci髇 de errores
+		// detecci贸n de errores
 		
 		processor.setMedianFilter(true);
 		
@@ -38,7 +78,7 @@ public class TestMarkDetectionQuality extends TestCase
 		testPath=new File(url.toURI());
 
 		processor.setMedianFilter(true);
-		errores= processor.processPath(testPath.getAbsolutePath());        		//se leen las p醙inas escaneadas
+		errores= processor.processPath(testPath.getAbsolutePath());        		//se leen las p谩ginas escaneadas
 		assertTrue("Errors encountered",errores.isEmpty());
 		
 		
@@ -59,7 +99,7 @@ public class TestMarkDetectionQuality extends TestCase
 		prepareConfig(testPath);
 
 		Vector<PageImage> errores;
-		// detecci髇 de errores
+		// detecci贸n de errores
 		
 		processor.setMedianFilter(true);
 		
@@ -67,7 +107,7 @@ public class TestMarkDetectionQuality extends TestCase
 		testPath=new File(url.toURI());
 
 		processor.setMedianFilter(true);
-		errores= processor.processPath(testPath.getAbsolutePath());        		//se leen las p醙inas escaneadas
+		errores= processor.processPath(testPath.getAbsolutePath());        		//se leen las p谩ginas escaneadas
 		assertTrue("Errors encountered",errores.isEmpty());
 		assertTrue("Activity code not detected readed.",processor.getFieldValue("ACTIVITYCODE")!=null);
 		
@@ -91,8 +131,8 @@ public class TestMarkDetectionQuality extends TestCase
 			outputDir.mkdir();
 		args[3]=outputDir.getAbsolutePath();
 		args[9]=new  File (testPath.getParentFile(),"prac_test_lab.fields").getAbsolutePath();
-		processor.readCommandLine(args);        						//se lee la l韓ea de comandos
-        processor.loadTemplate(processor.getDefinitionfile());	//se lee el fichero con la descripci髇 de las marcas
+		processor.readCommandLine(args);        						//se lee la l铆nea de comandos
+        processor.loadTemplate(processor.getDefinitionfile());	//se lee el fichero con la descripci贸n de las marcas
 		return args;
 	}
 }
