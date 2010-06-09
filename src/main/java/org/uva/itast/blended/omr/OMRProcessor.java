@@ -19,7 +19,7 @@ import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.PagesCollection;
 
 /**
- * @author Jesús Rodilana
+ * @author Jesï¿½s Rodilana
  */
 public class OMRProcessor {
 	/**
@@ -27,9 +27,9 @@ public class OMRProcessor {
 	 */
 	private static final Log logger = LogFactory.getLog(OMRProcessor.class);
 
-	// valor en píxeles de la altura de la imágen con la que se trabajara
+	// valor en pï¿½xeles de la altura de la imï¿½gen con la que se trabajara
 	public static final int _PAGE_HEIGHT_PIXELS = (int) (2339);
-	// valor en píxeles de la anchura de la imágen con la que se trabajara
+	// valor en pï¿½xeles de la anchura de la imï¿½gen con la que se trabajara
 	public static final int _PAGE_WIDTH_PIXELS = (int) (1700);
 
 	private String arg;
@@ -39,23 +39,23 @@ public class OMRProcessor {
 	private String inputPath;
 	// directorio donde se alojaran los resultados
 	private String outputdir;
-	// identificador que se utilizará para marcar los ficheros
+	// identificador que se utilizarï¿½ para marcar los ficheros
 	private String userid;
-	// identificador que contiene el número de documento que corresponde con una
+	// identificador que contiene el nï¿½mero de documento que corresponde con una
 	// actividad o cuestionario de
-	// Moodle. El último carácter recoge el número de página en caso de haber
-	// más de una, página
+	// Moodle. El ï¿½ltimo carï¿½cter recoge el nï¿½mero de pï¿½gina en caso de haber
+	// mï¿½s de una, pï¿½gina
 	private String activitycode;
-	// fichero con la descripción de las marcas
+	// fichero con la descripciï¿½n de las marcas
 	private String definitionfile;
-	// bandera para la opción de alineado
+	// bandera para la opciï¿½n de alineado
 	private boolean autoalign = false;
-	// bandera para la opción de alineado
+	// bandera para la opciï¿½n de alineado
 	private boolean medianfilter = false;
 	// marcador para el campo obligatorio -d
 	private boolean dflag = false;
 	
-	// plantilla para almacenar las páginas y los campos de definition file
+	// plantilla para almacenar las pï¿½ginas y los campos de definition file
 	PlantillaOMR template;
 
 	/**
@@ -73,7 +73,7 @@ public class OMRProcessor {
 		this.template = template;
 	}
 	/**
-	 * Constructor TestManipulation sin parámetros.
+	 * Constructor TestManipulation sin parï¿½metros.
 	 */
 	public OMRProcessor()
 	{
@@ -86,27 +86,27 @@ public class OMRProcessor {
 	public void loadTemplate(String filename) throws IOException
 	{
 		
-		template = new PlantillaOMR(filename); // se crea la plantilla según el
+		template = new PlantillaOMR(filename); // se crea la plantilla segï¿½n el
 	}		
 	/**
-	 * Método que lee la línea de comandos. Identifica que las opciones y
-	 * parámetros sean correctos y los almacena. uso: blended_omr [-i inputdir]
+	 * Mï¿½todo que lee la lï¿½nea de comandos. Identifica que las opciones y
+	 * parï¿½metros sean correctos y los almacena. uso: blended_omr [-i inputdir]
 	 * [-o outputdir] [-id1 USERID] [-id2 ACTIVITYCODE] [-a] [-f] -d
-	 * definitionfiles -a indica que hay que alinear la página -f indica que hay
-	 * que filtrar los campos (para imágenes de mala calidad)
+	 * definitionfiles -a indica que hay que alinear la pï¿½gina -f indica que hay
+	 * que filtrar los campos (para imï¿½genes de mala calidad)
 	 */
 	public void readCommandLine(String[] args)
 	{
 		int i = 0, j;
 
-		// detectamos todas las opciones (símbolo "-" delante)
+		// detectamos todas las opciones (sï¿½mbolo "-" delante)
 		while (i < args.length && args[i].startsWith("-"))
 		{
 			vflag = true;
 			arg = args[i++];
 
 			// opciones que requieren argumentos
-			// opción -i
+			// opciï¿½n -i
 			if (arg.equals("-i"))
 			{
 				if (i < args.length)
@@ -116,7 +116,7 @@ public class OMRProcessor {
 				if (vflag)
 					;
 			}
-			// opción -o
+			// opciï¿½n -o
 			else if (arg.equals("-o"))
 			{
 				if (i < args.length)
@@ -126,7 +126,7 @@ public class OMRProcessor {
 				if (vflag)
 					;
 			}
-			// opción -id1
+			// opciï¿½n -id1
 			else if (arg.equals("-id1"))
 			{
 				if (i < args.length)
@@ -136,7 +136,7 @@ public class OMRProcessor {
 				if (vflag)
 					;
 			}
-			// opción -id2
+			// opciï¿½n -id2
 			else if (arg.equals("-id2"))
 			{
 				if (i < args.length)
@@ -146,7 +146,7 @@ public class OMRProcessor {
 				if (vflag)
 					;
 			}
-			// opción -d
+			// opciï¿½n -d
 			else if (arg.equals("-d"))
 			{
 				if (i < args.length)
@@ -171,21 +171,21 @@ public class OMRProcessor {
 						if (vflag)
 							setAutoalign(true);
 						break;
-					// Opción medianfilter
+					// Opciï¿½n medianfilter
 					case 'f':
 						if (vflag)
 							setMedianFilter(true);
 						break;
 					default:
 						System.err
-								.println("Revise la línea de comandos: opción inválida "
+								.println("Revise la lï¿½nea de comandos: opciï¿½n invï¿½lida "
 										+ flag);
 						break;
 					}
 				}
 			}
 		}
-		// si hay más parámetros se muestra un texto de error
+		// si hay mï¿½s parï¿½metros se muestra un texto de error
 		if (i < args.length || dflag == false)
 			System.err
 					.println("uso: blended_omr [-i inputdir] [-o outputdir] [-id1 USERID] [-id2 ACTIVITYCODE] [-a] -d definitionfile");
@@ -277,7 +277,7 @@ public class OMRProcessor {
 	}
 
 	/**
-	 * Devuelve el nombre del archivo de definición de marcas
+	 * Devuelve el nombre del archivo de definiciï¿½n de marcas
 	 * 
 	 * @return definitionfile
 	 */
@@ -287,7 +287,7 @@ public class OMRProcessor {
 	}
 
 	/**
-	 * Marca el nombre del archivo de definición de marcas
+	 * Marca el nombre del archivo de definiciï¿½n de marcas
 	 * 
 	 * @param definitionfile
 	 */
@@ -297,7 +297,7 @@ public class OMRProcessor {
 	}
 
 	/**
-	 * Devuelve true o false en función de si la opción autoalign esta activada
+	 * Devuelve true o false en funciï¿½n de si la opciï¿½n autoalign esta activada
 	 * o no
 	 * 
 	 * @return autoalign
@@ -308,7 +308,7 @@ public class OMRProcessor {
 	}
 
 	/**
-	 * Marca true o false en función de si la opción autoalign esta activada o
+	 * Marca true o false en funciï¿½n de si la opciï¿½n autoalign esta activada o
 	 * no
 	 * 
 	 * @param autoalign
@@ -319,7 +319,7 @@ public class OMRProcessor {
 	}
 
 	/**
-	 * Devuelve true o false en función de si la opción medianfilter esta
+	 * Devuelve true o false en funciï¿½n de si la opciï¿½n medianfilter esta
 	 * activada o no
 	 * 
 	 * @return medianfilter
@@ -330,7 +330,7 @@ public class OMRProcessor {
 	}
 
 	/**
-	 * Marca true o false en función de si la opción medianfilter esta activada
+	 * Marca true o false en funciï¿½n de si la opciï¿½n medianfilter esta activada
 	 * o no
 	 * 
 	 * @param medianfilter
@@ -341,7 +341,7 @@ public class OMRProcessor {
 	}
 
 	/**
-	 * Método para escribir todos los valores de un campo, el parámetro key
+	 * Mï¿½todo para escribir todos los valores de un campo, el parï¿½metro key
 	 * indicara el nombre del campo
 	 * 
 	 * @param key
@@ -351,14 +351,14 @@ public class OMRProcessor {
 		Hashtable<String, Field> campos = template.getPagina(1).getCampos();
 		Field campo = (Field) campos.get(key);
 		System.out.println("Nombre : " + campo.getNombre());
-		System.out.println("Numero de Página : " + campo.getNumPag());
+		System.out.println("Numero de Pï¿½gina : " + campo.getNumPag());
 		System.out.println("Tipo : " + campo.getTipo());
 		
 		System.out.println("Coordenadas : " + campo.getBBox());
 	}
 
 	/**
-	 * Método para leer todas las páginas que haya en inputpath
+	 * Mï¿½todo para leer todas las pï¿½ginas que haya en inputpath
 	 * 
 	 * @param inputPath
 	 * @return {@link Vector} with {@link File} that was not processed (with errors)
@@ -366,7 +366,7 @@ public class OMRProcessor {
 	public Vector<PageImage> processPath(String inputPath)
 	{
 		File dir = new File(inputPath);
-		// obteneción de la lista de ficheros a procesar
+		// obteneciï¿½n de la lista de ficheros a procesar
 		File[] files = obtainFileList(dir);
 		PagesCollection pages = getPageCollection(files);
 		// procesar ficheros
@@ -374,13 +374,13 @@ public class OMRProcessor {
 	}
 
 	/**
-	 * Método para procesar las páginas
+	 * Mï¿½todo para procesar las pï¿½ginas
 	 * 
 	 * @param files
 	 * @throws IOException
 	 * @return {@link Vector} with Files not processed
 	 */
-	private Vector<PageImage> processPages(PagesCollection pages)
+	public Vector<PageImage> processPages(PagesCollection pages)
 	{
 		Vector<PageImage> errors = new Vector<PageImage>();
 		
@@ -391,7 +391,7 @@ public class OMRProcessor {
 			{
 				long taskStart = System.currentTimeMillis();
 
-				// se procesa la página
+				// se procesa la pï¿½gina
 				UtilidadesFicheros.procesarPagina(pageImage, isAutoalign(),
 						isMedianFilter(), outputdir, template);
 				
@@ -411,10 +411,9 @@ public class OMRProcessor {
 			{
 				// report files with errors
 
-				if (logger.isDebugEnabled())
-				{
-					logger.debug("processFileList(File[]) - Can't process page=" + pageImage.toString() + ", e=" + e,e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				}
+				
+				logger.error("processFileList(File[]) - Can't process page=" + pageImage.toString() + ", e=" + e,e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				
 				errors.add(pageImage);
 			}
 		}
@@ -445,7 +444,7 @@ public class OMRProcessor {
 	}
 
 	/**
-	 * Método que obtiene toda la lista de ficheros dada por dir, sí dir es un
+	 * Mï¿½todo que obtiene toda la lista de ficheros dada por dir, sï¿½ dir es un
 	 * fichero obtiene dicho fichero
 	 * 
 	 * @param path
@@ -461,7 +460,7 @@ public class OMRProcessor {
 			{
 				public boolean accept(File dir, String name)
 				{
-					name.toLowerCase(); // se convierte el nombre a minúsculas
+					name.toLowerCase(); // se convierte el nombre a minï¿½sculas
 					return name.endsWith(".jpg") || name.endsWith(".png")
 							|| name.endsWith(".pdf");
 				}

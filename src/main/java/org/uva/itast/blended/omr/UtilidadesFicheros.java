@@ -42,7 +42,7 @@ import com.sun.pdfview.PDFFile;
 
 /**
  * @author Juan Pablo de Castro
- * @author Jesús Rodilana
+ * @author Jesï¿½s Rodilana
  */
 public class UtilidadesFicheros
 {
@@ -57,7 +57,7 @@ public class UtilidadesFicheros
 	public static final String	IMAGE_TYPE				= "png";
 
 	/**
-	 * Método que lee una imagen y la transforma en un objeto de tipo
+	 * Mï¿½todo que lee una imagen y la transforma en un objeto de tipo
 	 * BufferedImage reescalado
 	 * 
 	 * @param filename
@@ -69,7 +69,7 @@ public class UtilidadesFicheros
 	
 
 	/**
-	 * Método que salva un objeto tipo imagen en un archivo físico de extensión
+	 * Mï¿½todo que salva un objeto tipo imagen en un archivo fï¿½sico de extensiï¿½n
 	 * png
 	 * 
 	 * @param imagen
@@ -85,8 +85,8 @@ public class UtilidadesFicheros
 	}
 
 	/**
-	 * Método que a partir de un fichero pdf de entrada devuelve el número su
-	 * páginas
+	 * Mï¿½todo que a partir de un fichero pdf de entrada devuelve el nï¿½mero su
+	 * pï¿½ginas
 	 * 
 	 * @param inputdir
 	 * @return pdffile.getNumpages();
@@ -102,15 +102,15 @@ public class UtilidadesFicheros
 		ByteBuffer buf = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel
 				.size());
 		PDFFile pdffile = new PDFFile(buf); // se crea un objeto de tipo PDFFile
-											// para almacenar las páginas
-		return pdffile.getNumPages(); // se obtiene el número de paginas
+											// para almacenar las pï¿½ginas
+		return pdffile.getNumPages(); // se obtiene el nï¿½mero de paginas
 	}
 
 
 
 	/**
-	 * Método que procesa una imágen dada por el inputpath y que llama a los
-	 * métodos que harán posible el procesado de los datos que contenga
+	 * Mï¿½todo que procesa una imï¿½gen dada por el inputpath y que llama a los
+	 * mï¿½todos que harï¿½n posible el procesado de los datos que contenga
 	 * 
 	 * @param inputpath
 	 * @param align
@@ -152,7 +152,7 @@ public class UtilidadesFicheros
 		procesarPagina(pageImage, align, medianfilter, outputdir, plantilla); // se
 																			// procesa
 																			// la
-																			// página
+																			// pï¿½gina
 		
 		saveOMRResults(pageImage.getFileName(), outputdir, plantilla, acticode, userid);// se salvan
 																	// los
@@ -162,8 +162,8 @@ public class UtilidadesFicheros
 	}
 
 	/**
-	 * Método que procesa una página a partir de un BufferedImage invocando a
-	 * los métodos que buscarán las marcas
+	 * Mï¿½todo que procesa una pï¿½gina a partir de un BufferedImage invocando a
+	 * los mï¿½todos que buscarï¿½n las marcas
 	 * 
 	 * @param pageImage
 	 * @param align
@@ -179,7 +179,7 @@ public class UtilidadesFicheros
 		if (align)
 			{
 			
-			pageImage.align(); //encapsula procesamiento y representación
+			pageImage.align(); //encapsula procesamiento y representaciï¿½n
 			
 			}
 		
@@ -214,11 +214,11 @@ public class UtilidadesFicheros
 																				// la
 																				// imagen
 		imageManipulator.locateConcentricCircles(); // se alinea si esta marcada
-													// la bandera de alineación
+													// la bandera de alineaciï¿½n
 	}
 */
 	/**
-	 * Método para buscar las marcas dentro de un objeto tipo Gray8Image
+	 * Mï¿½todo para buscar las marcas dentro de un objeto tipo Gray8Image
 	 * 
 	 * @param outputdir
 	 * @param plantilla
@@ -236,15 +236,15 @@ public class UtilidadesFicheros
 
 		for (int i = 0; i < plantilla.getNumPaginas(); i++)
 		{
-			// se recorren todas las marcas de una página determinada
+			// se recorren todas las marcas de una pï¿½gina determinada
 			Hashtable<String, Field> campos = plantilla.getPagina(i + 1)
 					.getCampos(); // Hastable para almacenar los campos que
-									// leemos del fichero de definición de
+									// leemos del fichero de definiciï¿½n de
 									// marcas
 			Collection<Field> campos_val = campos.values();
 			for (Field campo : campos_val)
 			{
-				// vamos a buscar en los campos leídos, en marcas[] están
+				// vamos a buscar en los campos leï¿½dos, en marcas[] estï¿½n
 				// almacenadas las keys
 				int tipo = campo.getTipo(); // se almacena el tipo para separar
 											// entre si es un barcode o un
@@ -267,7 +267,7 @@ public class UtilidadesFicheros
 	// XXX pasar medianfilter
 
 	/**
-	 * Método que busca marcas de tipo codebar en un objeto tipo BufferedImage
+	 * Mï¿½todo que busca marcas de tipo codebar en un objeto tipo BufferedImage
 	 * 
 	 * @param pageImage
 	 * @param campo
@@ -287,13 +287,15 @@ public class UtilidadesFicheros
 		{
 			campo.setValue(null);
 			campo.setValid(false);
+			if (logger.isDebugEnabled())
+				barcodeScanner.markBarcode(campo);
 		}
 		
 		//barcodeManipulator.markBarcode(campo);
 	}
 
 	/**
-	 * Método que busca marcas de tipo circle en un objeto tipo Gray8Image
+	 * Mï¿½todo que busca marcas de tipo circle en un objeto tipo Gray8Image
 	 * 
 	 * @param i
 	 *
@@ -313,7 +315,7 @@ public class UtilidadesFicheros
 		Point2D center=new Point();
 		center.setLocation(bbox.getCenterX(),bbox.getCenterY());
 	
-		// leemos la anchura de las marcas en milímetros
+		// leemos la anchura de las marcas en milï¿½metros
 		double markWidth = Math.max(1, bbox.getWidth());
 		double markHeight = Math.max(1,bbox.getHeight());
 		SolidCircleMarkScanner markScanner = new SolidCircleMarkScanner(pageImage,markWidth,markHeight,medianfilter);
@@ -348,7 +350,7 @@ public class UtilidadesFicheros
 	}
 
 	/**
-	 * Método para guardar los resultados del proceso de reconocimiento de
+	 * Mï¿½todo para guardar los resultados del proceso de reconocimiento de
 	 * marcas
 	 * 
 	 * @param outputdir
@@ -367,16 +369,16 @@ public class UtilidadesFicheros
 			
 			
 			int useridInt = Integer.parseInt(useridField.getValue()); // evita
-																		// inyección
+																		// inyecciï¿½n
 																		// de path
 																		// en el
-																		// código
+																		// cï¿½digo
 			int acticodeInt = Integer.parseInt(acticodeField.getValue()); // evita
-																			// inyección
+																			// inyecciï¿½n
 																			// de
 																			// path
 																			// en el
-																			// código
+																			// cï¿½digo
 
 			File dir = new File(outputdir); // que venga de parametro
 			File outputFile = new File(dir, "omr_result_" + useridInt + "_"

@@ -354,7 +354,7 @@ public AffineTransform getAllignmentInfo()
 		Rectangle rect=this.toPixels(rectMM);
 		Point upperLeft=this.toPixels(rectMM.getX(), rectMM.getY());
 		
-		//TODO: incluir la resolución preferida ahora asume la nativa de la imagen
+		//TODO: incluir la resoluciï¿½n preferida ahora asume la nativa de la imagen
 		Point reference=upperLeft;
 		
 		BufferedImage originalSubImage=getImagen().getSubimage(rect.x,rect.y, rect.width, rect.height);
@@ -379,6 +379,20 @@ public AffineTransform getAllignmentInfo()
 	{
 		
 		return toPixels(pointMM.getX(), pointMM.getY());
+	}
+
+	/**
+	 * @param templateRectPx
+	 * @return
+	 */
+	public Rectangle2D toMilimeters(Rectangle boxPx)
+	{
+		Point2D p1=toMilimeters(boxPx.x,boxPx.y);
+		Point2D p2=toMilimeters((int)boxPx.getMaxX(),(int)boxPx.getMaxY());
+		Rectangle2D bbox=new Rectangle();
+		bbox.setFrameFromDiagonal(p1, p2);
+		
+		return bbox;
 	}
 	
 }

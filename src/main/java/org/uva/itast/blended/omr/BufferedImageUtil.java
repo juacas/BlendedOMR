@@ -15,7 +15,7 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  *
- * @author Jesús Rodilana
+ * @author Jesï¿½s Rodilana
  */
 public class BufferedImageUtil {
 	
@@ -36,7 +36,16 @@ public class BufferedImageUtil {
 	public static double templateXOR(BufferedImage img, int x, int y,
 			BufferedImage template, boolean dump) {
 		int diff = 0, total = 0;
-
+if (y<0)
+{
+	logger.error("coordinate in XOR template should not be <0");
+	y=0;
+}
+if (x<0)
+{
+	logger.error("coordinate in XOR template should not be <0");
+	x=0;
+}
 		int templateHeight = template.getHeight();
 		int templateWidth = template.getWidth();
 		int imgHeight = img.getHeight();
@@ -79,7 +88,7 @@ public class BufferedImageUtil {
 	}
 
 	/**
-	 * Determina si un determinado píxel es blanco o no
+	 * Determina si un determinado pï¿½xel es blanco o no
 	 * @param template
 	 * @param j
 	 * @param i
@@ -90,7 +99,7 @@ public class BufferedImageUtil {
 	}
 
 	/**
-	 * Determina si un determinado píxel es negro o no
+	 * Determina si un determinado pï¿½xel es negro o no
 	 * @param template
 	 * @param j
 	 * @param i
@@ -108,12 +117,15 @@ public class BufferedImageUtil {
 	 * @return
 	 */
 	private static float getLuminance(BufferedImage img, int j, int i) {
-		int rgb = img.getRGB(i, j);
-		float red = ((rgb & 0xff0000) >> 16) / 255.f;
-		float green = ((rgb & 0xff00) >> 8) / 255.f;
-		float blue = (rgb & 0xff) / 255.f;
-		float luminance = (float) ((.299 * red) + (.587 * green) + (.114 * blue));
-		return luminance;
+		
+			int rgb = img.getRGB(i, j);
+			float red = ((rgb & 0xff0000) >> 16) / 255.f;
+			float green = ((rgb & 0xff00) >> 8) / 255.f;
+			float blue = (rgb & 0xff) / 255.f;
+			float luminance = (float) ((.299 * red) + (.587 * green) + (.114 * blue));
+			return luminance;
+		
+		
 	}
 
 	/**
