@@ -56,7 +56,6 @@ public abstract class MarkScanner
 	public ScanResult scanField(Field campo) throws MarkScannerException
 	{// TODO cambiar Object por un objeto mejor diseñado
 			 
-			  
 			  //se leen y almacenan las coordenadas
 			Rectangle2D coords = campo.getBBox();
 			Rectangle2D expandedBbox = getExpandedArea(coords);
