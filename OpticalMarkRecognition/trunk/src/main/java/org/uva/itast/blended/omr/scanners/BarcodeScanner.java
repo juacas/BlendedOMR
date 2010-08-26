@@ -15,6 +15,10 @@ import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -110,6 +114,19 @@ public final class BarcodeScanner extends MarkScanner
 		  // BufferedImageMonochromeBitmapSource seems to work bad with TYPE_BYTERGB
 		  
 		 SubImage subimage = pageImage.getSubimage(rect, BufferedImage.TYPE_BYTE_GRAY);		//se coge la subimagen, x,y,w,h (en píxeles)
+		 
+		 //TODO
+			//se coge la subimage
+			//BufferedImage subimage = getImagen().getSubimage(rect.x,rect.y,rect.width,rect.height);
+			
+			File rasterImageFile = new File("C:\\Documents and Settings\\Administrador\\Escritorio\\jj\\cb.png");
+	    	try {
+				ImageIO.write(subimage,"png", rasterImageFile);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			//TODO
 	
 		  if (subimage == null)
 			{
@@ -117,8 +134,8 @@ public final class BarcodeScanner extends MarkScanner
 			  //TODO: Lanzar otra Excepcion
 			  throw new RuntimeException("Can't extract subimage from page.");
 			}
-		if (logger.isDebugEnabled())
-			UtilidadesFicheros.logSubImage(subimage);  
+		//if (logger.isDebugEnabled())
+		//	UtilidadesFicheros.logSubImage(subimage);  
 		
 	    MonochromeBitmapSource source = new BufferedImageMonochromeBitmapSource(subimage);
 	    Result result=null;

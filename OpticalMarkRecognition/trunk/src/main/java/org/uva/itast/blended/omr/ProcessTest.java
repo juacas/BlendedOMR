@@ -21,6 +21,7 @@ public class ProcessTest {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
+		
 		// se crea un objeto tipo TestManipulation para todo lo que tenga que ver con sus métodos
 		OMRProcessor processor = new OMRProcessor();
 		// se lee la línea de comandos

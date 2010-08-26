@@ -45,7 +45,8 @@ public class Field {
 
 	private String valor;
     public static int CIRCLE=0;	//nos puede resultar más cómodo tratarlos como dos enteros, incluso podríamos valernos de boolean, aunque lo dejaremos así porque es más escalable
-	public static int CODEBAR=1;
+    public static int CODEBAR=1;
+    public static int FRAME=2;
 	private boolean valid=true;
 	
 	/**
@@ -81,6 +82,8 @@ public class Field {
             this.tipo = CIRCLE;
         } else if(tipos.equalsIgnoreCase("CODEBAR")) {
             this.tipo = CODEBAR;
+        }else if(tipos.equalsIgnoreCase("FRAME")) {
+            this.tipo = FRAME;
         }
         else
         	throw new IllegalArgumentException("Field type unsupported in:\""+ line+"\"");
