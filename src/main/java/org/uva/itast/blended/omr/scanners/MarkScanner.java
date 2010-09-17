@@ -1,6 +1,57 @@
-/**
- * 
- */
+/*
+* ====================================================================
+*
+* License:        GNU General Public License
+*
+* Note: Original work copyright to respective authors
+*
+* This file is part of Blended (c) 2009-2010 University of Valladolid..
+*
+* Blended is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2
+* of the License, or (at your option) any later version.
+*
+* Blended is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+*
+* Module developed at the University of Valladolid http://www.eduvalab.uva.es
+*
+* http://www.itnt.uva.es , http://www.eduvalab.uva.es
+*
+* Designed and directed by Juan Pablo de Castro with 
+* the effort of many other students of telecommunication 
+* engineering.
+* This module is provides as-is without any 
+* guarantee. Use it as your own risk.
+*
+* @author Juan Pablo de Castro
+* @author Jesus Rodilana
+* @author MarÃ­a JesÃºs VerdÃº 
+* @author Luisa Regueras 
+* @author Elena VerdÃº
+* 
+* @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+* @package blended
+ ***********************************************************************/
+
+ 
+
+/***********************************************************************
+ * Module developed at the University of Valladolid http://www.eduvalab.uva.es
+ * Designed and directed by Juan Pablo de Castro with 
+ * the effort of many other students of telecommunciation 
+ * engineering this module is provides as-is without any 
+ * guarantee. Use it as your own risk.
+ *
+ * @author Juan Pablo de Castro and Miguel Baraja Campesino and many others.
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @package blended
+ ***********************************************************************/
+
 package org.uva.itast.blended.omr.scanners;
 
 import java.awt.Rectangle;
@@ -15,11 +66,6 @@ import org.uva.itast.blended.omr.pages.PageImage;
 
 import com.google.zxing.ReaderException;
 
-/*
- *
- * @author Juan Pablo de Castro
- * @author juacas
- */
 public abstract class MarkScanner
 {
 	/**
@@ -31,7 +77,7 @@ public abstract class MarkScanner
 	PageImage	pageImage;
 	boolean medianfilter=false;
 	/**
-	 * Aplica un filtro para reconstruir imagenes de mala calidad, a través del valor de los píxeles vecinos
+	 * Aplica un filtro para reconstruir imagenes de mala calidad, a travï¿½s del valor de los pï¿½xeles vecinos
 	 * @param subimage
 	 */
 	public static BufferedImage medianFilter(BufferedImage subimage)
@@ -46,7 +92,7 @@ public abstract class MarkScanner
 	}
 
 	/**
-	 * Método que lee el valor de un código de barras contenido en un objeto tipo BufferedImage a partir de los patrones dados en un objeto tipo Campo
+	 * Mï¿½todo que lee el valor de un cï¿½digo de barras contenido en un objeto tipo BufferedImage a partir de los patrones dados en un objeto tipo Campo
 	 * @param campo
 	 * @param imagen
 	 * @param medianfilter 
@@ -54,13 +100,11 @@ public abstract class MarkScanner
 	 * @throws ReaderException
 	 */
 	public ScanResult scanField(Field campo) throws MarkScannerException
-	{// TODO cambiar Object por un objeto mejor diseñado
+	{// TODO cambiar Object por un objeto mejor diseï¿½ado
 			 
 			  //se leen y almacenan las coordenadas
 			Rectangle2D coords = campo.getBBox();
 			Rectangle2D expandedBbox = getExpandedArea(coords);
-	//		Rectangle area=pageImage.toPixels(coords);
-	//		Rectangle expandedArea=pageImage.toPixels(expandedBbox);
 			
 		    ScanResult result;
 			try
@@ -98,8 +142,8 @@ public abstract class MarkScanner
 		int y=(int) Math.min(coordUpperLeft.getY(), coordBottomRight.getY());
 		int xm=(int) Math.max(coordUpperLeft.getX(), coordBottomRight.getX());
 		int ym=(int) Math.max(coordUpperLeft.getY(), coordBottomRight.getY());
-		int width = xm-x;	//anchura en píxeles
-		int height = ym-y;	//altura en píxeles
+		int width = xm-x;	//anchura en pï¿½xeles
+		int height = ym-y;	//altura en pï¿½xeles
 		
 		return new Rectangle(x,y,width,height);
 	}

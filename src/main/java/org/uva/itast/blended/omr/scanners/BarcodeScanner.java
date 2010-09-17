@@ -1,9 +1,52 @@
 /*
- * BarcodeManipulation.java
+* ====================================================================
+*
+* License:        GNU General Public License
+*
+* Note: Original work copyright to respective authors
+*
+* This file is part of Blended (c) 2009-2010 University of Valladolid..
+*
+* Blended is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2
+* of the License, or (at your option) any later version.
+*
+* Blended is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+*
+* Module developed at the University of Valladolid http://www.eduvalab.uva.es
+*
+* http://www.itnt.uva.es , http://www.eduvalab.uva.es
+*
+* Designed and directed by Juan Pablo de Castro with 
+* the effort of many other students of telecommunication 
+* engineering.
+* This module is provides as-is without any 
+* guarantee. Use it as your own risk.
+*
+* @author Juan Pablo de Castro
+* @author Jesus Rodilana
+* @author María Jesús Verdú 
+* @author Luisa Regueras 
+* @author Elena Verdú
+* @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+* @package blended
+ ***********************************************************************/
+
+ 
+
+/***********************************************************************
+ * Module developed at the University of Valladolid http://www.eduvalab.uva.es
+ * Designed and directed by Juan Pablo de Castro with 
+ * the effort of many other students of telecommunciation 
+ * engineering this module is provides as-is without any 
+ * guarantee. Use it as your own risk.
  *
- * Creado en Abril-Mayo de 2009
- *
- */
+ ***********************************************************************/
 
 package org.uva.itast.blended.omr.scanners;
 
@@ -15,10 +58,6 @@ import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-
-import javax.imageio.ImageIO;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,12 +74,6 @@ import com.google.zxing.client.j2se.BufferedImageMonochromeBitmapSource;
 import com.google.zxing.client.result.ParsedResult;
 import com.google.zxing.client.result.ResultParser;
 
-/**
- * 
- * @author Juan Pablo de Castro
- * @author Jes�s Rodilana
- *
- */
 public final class BarcodeScanner extends MarkScanner
 {
 	/**
@@ -113,29 +146,16 @@ public final class BarcodeScanner extends MarkScanner
 		//[JPC] Need to be TYPE_BYTE_GRAY 
 		  // BufferedImageMonochromeBitmapSource seems to work bad with TYPE_BYTERGB
 		  
-		 SubImage subimage = pageImage.getSubimage(rect, BufferedImage.TYPE_BYTE_GRAY);		//se coge la subimagen, x,y,w,h (en p�xeles)
-		 
-		 //TODO
-			//se coge la subimage
-			//BufferedImage subimage = getImagen().getSubimage(rect.x,rect.y,rect.width,rect.height);
-			
-			File rasterImageFile = new File("C:\\Documents and Settings\\Administrador\\Escritorio\\jj\\cb.png");
-	    	try {
-				ImageIO.write(subimage,"png", rasterImageFile);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			//TODO
-	
-		  if (subimage == null)
+		 SubImage subimage = pageImage.getSubimage(rect, BufferedImage.TYPE_BYTE_GRAY);		//se coge la subimagen, x,y,w,h (en p�xeles)
+		
+		if (subimage == null)
 			{
 			  logger.error("leerBarcode(Campo) - " + pageImage.toString() + ": No es posible cargar la imagen", null); //$NON-NLS-1$ //$NON-NLS-2$
-			  //TODO: Lanzar otra Excepcion
+			  //Lanzar otra Excepcion
 			  throw new RuntimeException("Can't extract subimage from page.");
 			}
-		//if (logger.isDebugEnabled())
-		//	UtilidadesFicheros.logSubImage(subimage);  
+		if (logger.isDebugEnabled())
+			UtilidadesFicheros.logSubImage("codebar2D",subimage);  
 		
 	    MonochromeBitmapSource source = new BufferedImageMonochromeBitmapSource(subimage);
 	    Result result=null;
@@ -148,7 +168,8 @@ public final class BarcodeScanner extends MarkScanner
 			//retry after filtering
 		if(medianfilter == true)
 			 {
-				 UtilidadesFicheros.logSubImage(subimage);
+				if (logger.isDebugEnabled())
+					UtilidadesFicheros.logSubImage(subimage);
 	
 				long start=System.currentTimeMillis();
 				BufferedImage medianed= medianFilter(subimage);
