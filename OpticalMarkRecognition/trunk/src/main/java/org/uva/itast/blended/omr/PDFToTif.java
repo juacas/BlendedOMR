@@ -1,9 +1,55 @@
 /*
- * PDFToTif.java
+* ====================================================================
+*
+* License:        GNU General Public License
+*
+* Note: Original work copyright to respective authors
+*
+* This file is part of Blended (c) 2009-2010 University of Valladolid..
+*
+* Blended is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2
+* of the License, or (at your option) any later version.
+*
+* Blended is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+*
+* Module developed at the University of Valladolid http://www.eduvalab.uva.es
+*
+* http://www.itnt.uva.es , http://www.eduvalab.uva.es
+*
+* Designed and directed by Juan Pablo de Castro with 
+* the effort of many other students of telecommunication 
+* engineering.
+* This module is provides as-is without any 
+* guarantee. Use it as your own risk.
+*
+* @author Juan Pablo de Castro
+* @author Jesus Rodilana
+* @author MarÃ­a JesÃºs VerdÃº 
+* @author Luisa Regueras 
+* @author Elena VerdÃº
+* @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+* @package blended
+ ***********************************************************************/
+
+ 
+
+/***********************************************************************
+ * Module developed at the University of Valladolid http://www.eduvalab.uva.es
+ * Designed and directed by Juan Pablo de Castro with 
+ * the effort of many other students of telecommunciation 
+ * engineering this module is provides as-is without any 
+ * guarantee. Use it as your own risk.
  *
- * Creado en Febrero-Marzo de 2009
- *
- */
+ * @author Juan Pablo de Castro and Miguel Baraja Campesino and many others.
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @package blended
+ ***********************************************************************/
 
 package org.uva.itast.blended.omr;
 
@@ -25,10 +71,6 @@ import com.sun.pdfview.PDFFile;
 import com.sun.pdfview.PDFPage;
 import com.sun.pdfview.PDFRenderer;
 
-/**
- * 
- * @author Jesús Rodilana
- */
 
 public class PDFToTif {
 	public PDFToTif() {
@@ -36,21 +78,21 @@ public class PDFToTif {
 
 	public void convertirPDF(String filename) {
 		try {
-			System.out.println("Empezando conversión PDF a TIF");
-			// cargamos la imagen pdf para leerla
+			System.out.println("Empezando conversiï¿½n PDF a TIF");
+			// se carga la imagen pdf para leerla
 			RandomAccessFile raf = new RandomAccessFile(filename, "r");
 			FileChannel channel = raf.getChannel();
 			ByteBuffer buf = channel.map(FileChannel.MapMode.READ_ONLY, 0,
 					channel.size());
-			// creamos un objeto de tipo PDFFile para almacenar las páginas
+			// se crea un objeto de tipo PDFFile para almacenar las pï¿½ginas
 			PDFFile pdffile = new PDFFile(buf);
-			// cogemos la primera página
+			// se cogen la primera pï¿½gina
 			PDFPage page = pdffile.getPage(0);
-			// se captura la primera página
+			// se captura la primera pï¿½gina
 			BufferedImage imagen_pdf = leerImagenPDF(page);
 			// se guarda en el formato tif
 			salvarImagen(imagen_pdf, filename + ".tif");
-			System.out.println("Finalizando conversión PDF a TIF");
+			System.out.println("Finalizando conversiï¿½n PDF a TIF");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -74,7 +116,7 @@ public class PDFToTif {
 			// grises
 			imagenSalida = new BufferedImage(resizeWidth, resizeHeight,
 					BufferedImage.TYPE_BYTE_GRAY);
-			// creamos un objeto gráfico en dos dimensiones
+			// creamos un objeto grï¿½fico en dos dimensiones
 			imagenSalida.createGraphics();
 			imagenSalida.createGraphics().drawImage(imagenObjeto, 0, 0,
 					resizeWidth, resizeHeight, null);
@@ -82,7 +124,7 @@ public class PDFToTif {
 			salvarImagen(imagenSalida, filename + ".tif");
 			System.out.println("Finalizando reescalado de imagen");
 			/*
-			 * //Prueba para visualizar la imágen en una ventana externa JFrame
+			 * //Prueba para visualizar la imï¿½gen en una ventana externa JFrame
 			 * frame = new JFrame(); JLabel label = new JLabel(new
 			 * ImageIcon(imagenSalida)); frame.getContentPane().add(label,
 			 * BorderLayout.CENTER); frame.pack(); frame.setVisible(true);
@@ -95,7 +137,7 @@ public class PDFToTif {
 	public static void salvarImagen(Image imagen, String filename) {
 		try {
 			File imagen_tif = new File(filename);
-			// se elige el formato en el cual se guardará la imagen y se escribe
+			// se elige el formato en el cual se guardarï¿½ la imagen y se escribe
 			// en un fichero
 			ImageIO.write((RenderedImage) imagen, "tif", imagen_tif);
 		} catch (Exception e) {
@@ -116,7 +158,7 @@ public class PDFToTif {
 			// grises
 			img_pdf = new BufferedImage(resizeWidth, resizeHeight,
 					BufferedImage.TYPE_BYTE_GRAY);
-			// creamos un objeto gráfico en dos dimensiones
+			// creamos un objeto grï¿½fico en dos dimensiones
 			Graphics2D g2 = img_pdf.createGraphics();
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 					RenderingHints.VALUE_ANTIALIAS_ON);
@@ -126,7 +168,7 @@ public class PDFToTif {
 					0, 1700, 2339), null, Color.RED);
 			page.waitForFinish();
 			renderer.run();
-			// por último dibujamos la imagen
+			// por ï¿½ltimo dibujamos la imagen
 			img_pdf.createGraphics().drawImage(img_pdf, 0, 0, resizeWidth,
 					resizeHeight, null);
 		} catch (Exception e) {

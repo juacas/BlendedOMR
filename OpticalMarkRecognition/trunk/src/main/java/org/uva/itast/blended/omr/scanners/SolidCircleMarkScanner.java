@@ -1,6 +1,40 @@
-/*
- *
- */
+/************************************************
+ *  Note: Original work copyright to respective authors
+*
+* This file is part of Blended (c) 2009-2010 University of Valladolid..
+*
+* Blended is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2
+* of the License, or (at your option) any later version.
+*
+* Blended is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+*
+* Module developed at the University of Valladolid http://www.eduvalab.uva.es
+*
+* http://www.itnt.uva.es , http://www.eduvalab.uva.es
+*
+* Designed and directed by Juan Pablo de Castro with 
+* the effort of many other students of telecommunication 
+* engineering.
+* This module is provides as-is without any 
+* guarantee. Use it as your own risk.
+*
+* @author Juan Pablo de Castro
+* @author Jesus Rodilana
+* @author MarÃ­a JesÃºs VerdÃº 
+* @author Luisa Regueras 
+* @author Elena VerdÃº
+* 
+* @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+* @package blended
+ ***********************************************************************/
+
+ 
 
 package org.uva.itast.blended.omr.scanners;
 
@@ -24,10 +58,6 @@ import org.uva.itast.blended.omr.UtilidadesFicheros;
 import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.SubImage;
 
-
-/**
- * @author Juan Pablo de Castro
- */
 public class SolidCircleMarkScanner extends MarkScanner{
 	/**
 	 * 
@@ -53,7 +83,6 @@ public class SolidCircleMarkScanner extends MarkScanner{
 	double approxXscale;
 
 	double	approxYscale;
-	// Gray8Image template;
 	BufferedImage template;
 
 	
@@ -81,23 +110,29 @@ public class SolidCircleMarkScanner extends MarkScanner{
 		
 		this.approxXscale = pageimage.getPreferredHorizontalResolution();
 		this.approxYscale = pageimage.getPreferredVerticalResolution();
-		Rectangle2D area=new Rectangle();
-		area.setFrame(0, 0, markWidth, markHeight);
-		Rectangle dims= pageimage.toPixels(area);
+		
+		Point dims= pageimage.toPixels(markWidth, markHeight);
+		
+		if (logger.isDebugEnabled())
+		{
+			logger.debug("SolidCircleMarkScanner(PageImage, double, double, boolean) - markWidth : " + markWidth); //$NON-NLS-1$
+			logger.debug("SolidCircleMarkScanner(PageImage, double, double, boolean) - markHeight : " + markHeight); //$NON-NLS-1$
+			logger.debug("SolidCircleMarkScanner(PageImage, double, double, boolean) - dims.x : " + ((int) (dims.x * 1.15) + 1)); //$NON-NLS-1$
+			logger.debug("SolidCircleMarkScanner(PageImage, double, double, boolean) - dims.y : " + ((int) (dims.y * 1.15) + 1)); //$NON-NLS-1$
+		}
 		
 		template = new BufferedImage((
-				int) (dims.width * 1.15) + 1,
-				(int) (dims.height * 1.15) + 1,
+				int) (dims.x * 1.15) + 1,
+				(int) (dims.y * 1.15) + 1,
 				BufferedImage.TYPE_BYTE_BINARY);
 		
-		fillTemplate(template, dims.width / 2, approxXscale / approxYscale);
+		fillTemplate(template, dims.x / 2, approxXscale / approxYscale);
 		
 		this.markHeight = markWidth;
 		this.markWidth = markHeight;
 	}
-
-	// private void fillTemplate(Gray8Image templateimg, int markradX,
-	// double aspect)
+	
+	
 	private void fillTemplate(BufferedImage templateimg, int markradX,
 			double aspect) {
 		double centerX = templateimg.getWidth() / 2;
@@ -201,10 +236,12 @@ public class SolidCircleMarkScanner extends MarkScanner{
 		
 		// [JPC] this loop was refactored to start the analysis from the center
 		
-	
+		double maxDeltaX = markWidth * SCAN_PERCENT;
+		double maxDeltaY = markHeight * SCAN_PERCENT;
+		
+		
 		//Gets a subimage from  x-maxDeltaX-template.getWidth(),y-maxDeltaY ->  x+maxDeltaY,y+maxDeltaY
 		// stores the offsetX and offsetY to use original images's coordinates
-		Rectangle2D unexpandedArea=markArea;
 		markArea=getExpandedArea(markArea);
 		
 		long start=System.currentTimeMillis();
@@ -212,8 +249,8 @@ public class SolidCircleMarkScanner extends MarkScanner{
 		logger.debug("isMark(Point2D, boolean) - Subimage extracted in - (ms)=" + (System.currentTimeMillis()-start)); //$NON-NLS-1$
 		BufferedImage img=subImage;
 		
-		if (logger.isDebugEnabled())
-			UtilidadesFicheros.logSubImage(subImage);
+		//if (logger.isDebugEnabled())
+		//	UtilidadesFicheros.logSubImage(subImage);
 		
 		if(medianfilter == true)
 		 {
@@ -225,8 +262,6 @@ public class SolidCircleMarkScanner extends MarkScanner{
 				 UtilidadesFicheros.logSubImage("debug_median",img);
 		 }
 		
-		
-		
 		// Start processing in pixels
 		Point2D markCenter=new Point();
 		markCenter.setLocation(markArea.getCenterX(),markArea.getCenterY());
@@ -235,20 +270,15 @@ public class SolidCircleMarkScanner extends MarkScanner{
 		int templateHeight=template.getHeight();
 		Point markCenterPx=pageImage.toPixels(markCenter);
 		Rectangle markAreaPx=pageImage.toPixels(markArea);
-		Rectangle markUnexpandedAreaPx=pageImage.toPixels(unexpandedArea);
 		int offsetX=markAreaPx.x;
 		int offsetY=markAreaPx.y;
 		
-		double maxDeltaX = markWidth * SCAN_PERCENT;
-		double maxDeltaY = markHeight * SCAN_PERCENT;
-				
+		//Point maxDelta=pageImage.toPixelsPoint(maxDeltaX,maxDeltaY);
 		Point maxDelta=pageImage.toPixels(maxDeltaX,maxDeltaY);
-//		int maxDeltaXpx = maxDelta.x;
-//		int maxDeltaYpx = maxDelta.y;
-		int maxDeltaXpx = (int) (markAreaPx.width*SCAN_PERCENT);
-		int maxDeltaYpx = (int) (markAreaPx.height*SCAN_PERCENT);
+		int maxDeltaXpx = maxDelta.x;
+		int maxDeltaYpx = maxDelta.y;
 		
-		int deltaXYpx = Math.max(1, markUnexpandedAreaPx.width/SCAN_DELTA_DIVISOR);
+		int deltaXYpx = pageImage.toPixels(Math.max(1, markWidth / SCAN_DELTA_DIVISOR), 0).x;
 		
 		boolean markpoint = true;// for debugging the position of the templates.
 		start=System.currentTimeMillis();
@@ -341,13 +371,12 @@ public class SolidCircleMarkScanner extends MarkScanner{
 	@Override
 	protected Rectangle2D getExpandedArea(Rectangle2D rect)
 	{
-		Rectangle templateRectPx=new Rectangle(0,0,template.getWidth(),template.getHeight());
-		Rectangle2D templateArea = pageImage.toMilimeters(templateRectPx);
+		Point2D templateDim = pageImage.toMilimeters(template.getWidth(),  template.getHeight());
 		
 		double maxDeltaX = markWidth * SCAN_PERCENT;
 		double maxDeltaY = markHeight * SCAN_PERCENT;
-		double marginX = maxDeltaX+templateArea.getWidth();
-		double marginY = maxDeltaY+templateArea.getHeight();
+		double marginX = maxDeltaX+templateDim.getX();
+		double marginY = maxDeltaY+templateDim.getY();
 		double startX = rect.getCenterX()- marginX;
 		double startY = rect.getCenterY()- marginY;
 		

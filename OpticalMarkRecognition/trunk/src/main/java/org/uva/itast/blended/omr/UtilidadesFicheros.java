@@ -1,15 +1,47 @@
-/*
- * UtilidadesFicheros.java
- *
- * Creado en Febrero-Mayo de 2009
- *
- */
-
 package org.uva.itast.blended.omr;
+/*
+* ====================================================================
+*
+* License:        GNU General Public License
+*
+* Note: Original work copyright to respective authors
+*
+* This file is part of Blended (c) 2009-2010 University of Valladolid..
+*
+* Blended is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2
+* of the License, or (at your option) any later version.
+*
+* Blended is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+*
+* Module developed at the University of Valladolid http://www.eduvalab.uva.es
+*
+* http://www.itnt.uva.es , http://www.eduvalab.uva.es
+*
+* Designed and directed by Juan Pablo de Castro with 
+* the effort of many other students of telecommunication 
+* engineering.
+* This module is provides as-is without any 
+* guarantee. Use it as your own risk.
+*
+* @author Juan Pablo de Castro
+* @author Jesus Rodilana
+* @author María Jesús Verdú 
+* @author Luisa Regueras 
+* @author Elena Verdú
+* 
+* @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+* @package blended
+ ***********************************************************************/
+
 
 import java.awt.Image;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -40,10 +72,6 @@ import org.uva.itast.blended.omr.scanners.SolidCircleMarkScanner;
 
 import com.sun.pdfview.PDFFile;
 
-/**
- * @author Juan Pablo de Castro
- * @author Jes�s Rodilana
- */
 public class UtilidadesFicheros
 {
 	/**
@@ -123,16 +151,10 @@ public class UtilidadesFicheros
 			boolean medianfilter, String outputdir, PlantillaOMR plantilla, String acticode, String userid)
 			throws IOException
 	{
-		
-
 			long taskStart = System.currentTimeMillis();
-			
 			
 			processPageAndSaveResults(align, medianfilter,outputdir, plantilla, page, acticode, userid);
 			logger.debug("Page  ("+page.getFileName()+") processed in (ms)"+(System.currentTimeMillis()-taskStart)); //$NON-NLS-1$
-			
-		
-
 	}
 
 	/**
@@ -175,11 +197,11 @@ public class UtilidadesFicheros
 			boolean medianfilter, String outputdir, PlantillaOMR plantilla)
 			throws FileNotFoundException
 	{
-		
 		if (align)
 			{
+			//pageImage.align(); //encapsula procesamiento y representaci�n
+			pageImage.align(plantilla, pageImage);
 			
-			pageImage.align(); //encapsula procesamiento y representaci�n
 			
 			}
 		
@@ -193,30 +215,7 @@ public class UtilidadesFicheros
 		logger.debug("\tMarks scanned in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
 		
 	}
-
-	/**
-	 * @param grayimage
-	 */
-	/* TODO: Implementar alineamiento con BufferedImage
-	 * 
-	private static void alignImage(Gray8Image grayimage)
-	{
-		ImageManipulation imageManipulator = new ImageManipulation(grayimage); // se
-																				// crea
-																				// un
-																				// objeto
-																				// image
-																				// que
-																				// nos
-																				// permita
-																				// trabajar
-																				// con
-																				// la
-																				// imagen
-		imageManipulator.locateConcentricCircles(); // se alinea si esta marcada
-													// la bandera de alineaci�n
-	}
-*/
+	
 	/**
 	 * M�todo para buscar las marcas dentro de un objeto tipo Gray8Image
 	 * 
@@ -233,7 +232,6 @@ public class UtilidadesFicheros
 			boolean medianfilter) throws FileNotFoundException
 	{
 		
-
 		for (int i = 0; i < plantilla.getNumPaginas(); i++)
 		{
 			// se recorren todas las marcas de una p�gina determinada
@@ -242,6 +240,7 @@ public class UtilidadesFicheros
 									// leemos del fichero de definici�n de
 									// marcas
 			Collection<Field> campos_val = campos.values();
+					
 			for (Field campo : campos_val)
 			{
 				// vamos a buscar en los campos le�dos, en marcas[] est�n
@@ -254,7 +253,6 @@ public class UtilidadesFicheros
 				else if (tipo == Field.CODEBAR)
 					{
 					buscarMarcaCodebar(pageImage, campo, medianfilter);
-					
 					}
 			}
 			
@@ -264,7 +262,6 @@ public class UtilidadesFicheros
 		return plantilla;
 	}
 
-	// XXX pasar medianfilter
 
 	/**
 	 * M�todo que busca marcas de tipo codebar en un objeto tipo BufferedImage
@@ -310,11 +307,12 @@ public class UtilidadesFicheros
 			PageImage pageImage, Field campo, boolean medianfilter)
 	{
 		Rectangle2D bbox=campo.getBBox();//milimeters
-		Rectangle bboxPx = pageImage.toPixels(bbox);
+//		Rectangle bboxPx = pageImage.toPixels(bbox);//p�xeles
 		// center of the mark
 		Point2D center=new Point();
-		center.setLocation(bbox.getCenterX(),bbox.getCenterY());
-	
+		center.setLocation(bbox.getCenterX(),bbox.getCenterY()); //nos da el centro geom�trico del rect�ngulo
+		
+		
 		// leemos la anchura de las marcas en mil�metros
 		double markWidth = Math.max(1, bbox.getWidth());
 		double markHeight = Math.max(1,bbox.getHeight());
@@ -366,7 +364,6 @@ public class UtilidadesFicheros
 		Field useridField = campos.get(userid);
 		try
 		{
-			
 			
 			int useridInt = Integer.parseInt(useridField.getValue()); // evita
 																		// inyecci�n

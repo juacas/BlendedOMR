@@ -1,6 +1,43 @@
-/**
- * 
- */
+/*
+* ====================================================================
+*
+* License:        GNU General Public License
+*
+* Note: Original work copyright to respective authors
+*
+* This file is part of Blended (c) 2009-2010 University of Valladolid..
+*
+* Blended is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2
+* of the License, or (at your option) any later version.
+*
+* Blended is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+*
+* Module developed at the University of Valladolid http://www.eduvalab.uva.es
+*
+* http://www.itnt.uva.es , http://www.eduvalab.uva.es
+*
+* Designed and directed by Juan Pablo de Castro with 
+* the effort of many other students of telecommunication 
+* engineering.
+* This module is provides as-is without any 
+* guarantee. Use it as your own risk.
+* @author Juan Pablo de Castro
+* @author Jesus Rodilana
+* @author María Jesús Verdú 
+* @author Luisa Regueras 
+* @author Elena Verdú
+* 
+* @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+* @package blended
+ ***********************************************************************/
+
+ 
 package org.uva.itast;
 
 import java.awt.geom.AffineTransform;
@@ -15,11 +52,6 @@ import org.uva.itast.blended.omr.OMRProcessor;
 import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.PagesCollection;
 
-
-/**
- * @author juacas
- *
- */
 public class TestMarkDetectionQuality extends TestCase
 {
 	private OMRProcessor	processor;
@@ -47,7 +79,7 @@ public class TestMarkDetectionQuality extends TestCase
 		PageImage page=pages.getPageImage(0);
 		
 		AffineTransform align= page.getAllignmentInfo();
-		align.translate(5, -10);
+//		align.translate(5, -10);
 		page.setAlignmentInfo(align);
 		
 		errores= processor.processPages(pages);     		
@@ -78,7 +110,7 @@ public class TestMarkDetectionQuality extends TestCase
 		testPath=new File(url.toURI());
 
 		processor.setMedianFilter(true);
-		errores= processor.processPath(testPath.getAbsolutePath());        		//se leen las páginas escaneadas
+		errores= processor.processPath(testPath.getAbsolutePath());        		//se leen las p�ginas escaneadas
 		assertTrue("Errors encountered",errores.isEmpty());
 		
 		

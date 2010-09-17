@@ -1,9 +1,56 @@
 /*
- * Campo.java
+* ====================================================================
+*
+* License:        GNU General Public License
+*
+* Note: Original work copyright to respective authors
+*
+* This file is part of Blended (c) 2009-2010 University of Valladolid..
+*
+* Blended is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2
+* of the License, or (at your option) any later version.
+*
+* Blended is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+*
+* Module developed at the University of Valladolid http://www.eduvalab.uva.es
+*
+* http://www.itnt.uva.es , http://www.eduvalab.uva.es
+*
+* Designed and directed by Juan Pablo de Castro with 
+* the effort of many other students of telecommunication 
+* engineering.
+* This module is provides as-is without any 
+* guarantee. Use it as your own risk.
+*
+* @author Juan Pablo de Castro
+* @author Jesus Rodilana
+* @author MarÃ­a JesÃºs VerdÃº 
+* @author Luisa Regueras 
+* @author Elena VerdÃº
+* 
+* @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+* @package blended
+ ***********************************************************************/
+
+ 
+
+/***********************************************************************
+ * Module developed at the University of Valladolid http://www.eduvalab.uva.es
+ * Designed and directed by Juan Pablo de Castro with 
+ * the effort of many other students of telecommunciation 
+ * engineering this module is provides as-is without any 
+ * guarantee. Use it as your own risk.
  *
- * Creado en Abril-Mayo de 2009
- *
- */
+ * @author Juan Pablo de Castro and Miguel Baraja Campesino and many others.
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @package blended
+ ***********************************************************************/
 
 package org.uva.itast.blended.omr;
 
@@ -11,11 +58,6 @@ import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.StringTokenizer;
 
-/**
- * Almacena los distintos campos de un Campo de formulario
- * @author Jesús Rodilana
- *
- */
 public class Field {
 	
 	
@@ -44,13 +86,13 @@ public class Field {
 	}
 
 	private String valor;
-    public static int CIRCLE=0;	//nos puede resultar más cómodo tratarlos como dos enteros, incluso podríamos valernos de boolean, aunque lo dejaremos así porque es más escalable
+    public static int CIRCLE=0;	//nos puede resultar mï¿½s cï¿½modo tratarlos como dos enteros, incluso podrï¿½amos valernos de boolean, aunque lo dejaremos asï¿½ porque es mï¿½s escalable
     public static int CODEBAR=1;
     public static int FRAME=2;
 	private boolean valid=true;
 	
 	/**
-	 * Constructor de la clase Campo sin parámetros
+	 * Constructor de la clase Campo sin parï¿½metros
 	 *
 	 */
 	public Field(){
@@ -58,7 +100,7 @@ public class Field {
 	}
 	
 	/**
-	 * Constructor de la clase Campo, almacena los datos contenidos en line, según sean de cada tipo de los que almacena Campo
+	 * Constructor de la clase Campo, almacena los datos contenidos en line, segï¿½n sean de cada tipo de los que almacena Campo
 	 * @param line
 	 * @throws NullPointerException
 	 */
@@ -115,7 +157,7 @@ public class Field {
     }
 	
 	/**
-	 * Devuelve el numero de página a la que pertenece el campo
+	 * Devuelve el numero de pï¿½gina a la que pertenece el campo
 	 * @return numeroPagina
 	 */
 	public int getNumPag() {
