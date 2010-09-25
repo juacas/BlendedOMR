@@ -1,50 +1,13 @@
-package org.uva.itast.blended.omr;
 /*
-* ====================================================================
-*
-* License:        GNU General Public License
-*
-* Note: Original work copyright to respective authors
-*
-* This file is part of Blended (c) 2009-2010 University of Valladolid..
-*
-* Blended is free software; you can redistribute it and/or
-* modify it under the terms of the GNU General Public License
-* as published by the Free Software Foundation; either version 2
-* of the License, or (at your option) any later version.
-*
-* Blended is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-*
-* Module developed at the University of Valladolid http://www.eduvalab.uva.es
-*
-* http://www.itnt.uva.es , http://www.eduvalab.uva.es
-*
-* Designed and directed by Juan Pablo de Castro with 
-* the effort of many other students of telecommunication 
-* engineering.
-* This module is provides as-is without any 
-* guarantee. Use it as your own risk.
-*
-* @author Juan Pablo de Castro
-* @author Jesus Rodilana
-* @author MarÃ­a JesÃºs VerdÃº 
-* @author Luisa Regueras 
-* @author Elena VerdÃº
-* 
-* @license http://www.gnu.org/copyleft/gpl.html GNU Public License
-* @package blended
- ***********************************************************************/
+ * UtilidadesFicheros.java
+ *
+ * Creado en Febrero-Mayo de 2009
+ *
+ */
 
+package org.uva.itast.blended.omr;
 
 import java.awt.Image;
-import java.awt.Point;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -52,8 +15,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Collection;
@@ -64,14 +25,13 @@ import javax.imageio.ImageIO;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.uva.itast.blended.omr.pages.PageImage;
-import org.uva.itast.blended.omr.pages.SubImage;
-import org.uva.itast.blended.omr.scanners.BarcodeScanner;
-import org.uva.itast.blended.omr.scanners.MarkScannerException;
-import org.uva.itast.blended.omr.scanners.ScanResult;
-import org.uva.itast.blended.omr.scanners.SolidCircleMarkScanner;
 
+import com.google.zxing.ReaderException;
 import com.sun.pdfview.PDFFile;
 
+/**
+ * @author Jesús Rodilana
+ */
 public class UtilidadesFicheros
 {
 	/**
@@ -85,7 +45,7 @@ public class UtilidadesFicheros
 	public static final String	IMAGE_TYPE				= "png";
 
 	/**
-	 * Mï¿½todo que lee una imagen y la transforma en un objeto de tipo
+	 * Método que lee una imagen y la transforma en un objeto de tipo
 	 * BufferedImage reescalado
 	 * 
 	 * @param filename
@@ -97,7 +57,7 @@ public class UtilidadesFicheros
 	
 
 	/**
-	 * Mï¿½todo que salva un objeto tipo imagen en un archivo fï¿½sico de extensiï¿½n
+	 * Método que salva un objeto tipo imagen en un archivo físico de extensión
 	 * png
 	 * 
 	 * @param imagen
@@ -113,8 +73,8 @@ public class UtilidadesFicheros
 	}
 
 	/**
-	 * Mï¿½todo que a partir de un fichero pdf de entrada devuelve el nï¿½mero su
-	 * pï¿½ginas
+	 * Método que a partir de un fichero pdf de entrada devuelve el número su
+	 * páginas
 	 * 
 	 * @param inputdir
 	 * @return pdffile.getNumpages();
@@ -130,15 +90,15 @@ public class UtilidadesFicheros
 		ByteBuffer buf = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel
 				.size());
 		PDFFile pdffile = new PDFFile(buf); // se crea un objeto de tipo PDFFile
-											// para almacenar las pï¿½ginas
-		return pdffile.getNumPages(); // se obtiene el nï¿½mero de paginas
+											// para almacenar las páginas
+		return pdffile.getNumPages(); // se obtiene el número de paginas
 	}
 
 
 
 	/**
-	 * Mï¿½todo que procesa una imï¿½gen dada por el inputpath y que llama a los
-	 * mï¿½todos que harï¿½n posible el procesado de los datos que contenga
+	 * Método que procesa una imágen dada por el inputpath y que llama a los
+	 * métodos que harán posible el procesado de los datos que contenga
 	 * 
 	 * @param inputpath
 	 * @param align
@@ -151,10 +111,16 @@ public class UtilidadesFicheros
 			boolean medianfilter, String outputdir, PlantillaOMR plantilla, String acticode, String userid)
 			throws IOException
 	{
+		
+
 			long taskStart = System.currentTimeMillis();
+			
 			
 			processPageAndSaveResults(align, medianfilter,outputdir, plantilla, page, acticode, userid);
 			logger.debug("Page  ("+page.getFileName()+") processed in (ms)"+(System.currentTimeMillis()-taskStart)); //$NON-NLS-1$
+			
+		
+
 	}
 
 	/**
@@ -174,7 +140,7 @@ public class UtilidadesFicheros
 		procesarPagina(pageImage, align, medianfilter, outputdir, plantilla); // se
 																			// procesa
 																			// la
-																			// pï¿½gina
+																			// página
 		
 		saveOMRResults(pageImage.getFileName(), outputdir, plantilla, acticode, userid);// se salvan
 																	// los
@@ -184,8 +150,8 @@ public class UtilidadesFicheros
 	}
 
 	/**
-	 * Mï¿½todo que procesa una pï¿½gina a partir de un BufferedImage invocando a
-	 * los mï¿½todos que buscarï¿½n las marcas
+	 * Método que procesa una página a partir de un BufferedImage invocando a
+	 * los métodos que buscarán las marcas
 	 * 
 	 * @param pageImage
 	 * @param align
@@ -197,27 +163,55 @@ public class UtilidadesFicheros
 			boolean medianfilter, String outputdir, PlantillaOMR plantilla)
 			throws FileNotFoundException
 	{
+		
 		if (align)
 			{
-			//pageImage.align(); //encapsula procesamiento y representaciï¿½n
-			pageImage.align(plantilla, pageImage);
 			
+			pageImage.align(); //encapsula procesamiento y representación
 			
 			}
+		if (medianfilter)
+		{
+			
+			pageImage.medianFilter(); //encapsula procesamiento y representación
 		
+		}
 		
 		long taskStart = System.currentTimeMillis();
 		
-		searchMarks(outputdir, plantilla, pageImage, medianfilter); // se
+		buscarMarcas(outputdir, plantilla, pageImage, medianfilter); // se
 																				// buscan
 																				// las
 																				// marcas
 		logger.debug("\tMarks scanned in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
 		
 	}
-	
+
 	/**
-	 * Mï¿½todo para buscar las marcas dentro de un objeto tipo Gray8Image
+	 * @param grayimage
+	 */
+	/* TODO: Implementar alineamiento con BufferedImage
+	 * 
+	private static void alignImage(Gray8Image grayimage)
+	{
+		ImageManipulation imageManipulator = new ImageManipulation(grayimage); // se
+																				// crea
+																				// un
+																				// objeto
+																				// image
+																				// que
+																				// nos
+																				// permita
+																				// trabajar
+																				// con
+																				// la
+																				// imagen
+		imageManipulator.locateConcentricCircles(); // se alinea si esta marcada
+													// la bandera de alineación
+	}
+*/
+	/**
+	 * Método para buscar las marcas dentro de un objeto tipo Gray8Image
 	 * 
 	 * @param outputdir
 	 * @param plantilla
@@ -227,32 +221,33 @@ public class UtilidadesFicheros
 	 * @return plantilla
 	 * @throws FileNotFoundException
 	 */
-	public static PlantillaOMR searchMarks(String outputdir,
+	public static PlantillaOMR buscarMarcas(String outputdir,
 			PlantillaOMR plantilla,  PageImage pageImage, 
 			boolean medianfilter) throws FileNotFoundException
 	{
 		
+
 		for (int i = 0; i < plantilla.getNumPaginas(); i++)
 		{
-			// se recorren todas las marcas de una pï¿½gina determinada
-			Hashtable<String, Field> campos = plantilla.getPagina(i + 1)
+			// se recorren todas las marcas de una página determinada
+			Hashtable<String, Campo> campos = plantilla.getPagina(i + 1)
 					.getCampos(); // Hastable para almacenar los campos que
-									// leemos del fichero de definiciï¿½n de
+									// leemos del fichero de definición de
 									// marcas
-			Collection<Field> campos_val = campos.values();
-					
-			for (Field campo : campos_val)
+			Collection<Campo> campos_val = campos.values();
+			for (Campo campo : campos_val)
 			{
-				// vamos a buscar en los campos leï¿½dos, en marcas[] estï¿½n
+				// vamos a buscar en los campos leídos, en marcas[] están
 				// almacenadas las keys
 				int tipo = campo.getTipo(); // se almacena el tipo para separar
 											// entre si es un barcode o un
 											// circle
-				if (tipo == Field.CIRCLE)
+				if (tipo == Campo.CIRCLE)
 					buscarMarcaCircle(i, pageImage , campo, medianfilter);
-				else if (tipo == Field.CODEBAR)
+				else if (tipo == Campo.CODEBAR)
 					{
 					buscarMarcaCodebar(pageImage, campo, medianfilter);
+					
 					}
 			}
 			
@@ -262,37 +257,35 @@ public class UtilidadesFicheros
 		return plantilla;
 	}
 
+	// XXX pasar medianfilter
 
 	/**
-	 * Mï¿½todo que busca marcas de tipo codebar en un objeto tipo BufferedImage
+	 * Método que busca marcas de tipo codebar en un objeto tipo BufferedImage
 	 * 
 	 * @param pageImage
 	 * @param campo
 	 * @param medianfilter
 	 */
-	private static void buscarMarcaCodebar(PageImage pageImage, Field campo,boolean medianFilter)
+	private static void buscarMarcaCodebar(PageImage pageImage, Campo campo,boolean medianFilter)
 	{
 
 	
-		BarcodeScanner barcodeScanner=new BarcodeScanner(pageImage,medianFilter);
+		BarcodeManipulation barcodeManipulator=new BarcodeManipulation(pageImage,medianFilter);
 		try
 		{
-			campo.setValue( barcodeScanner.getParsedCode(campo) );
-			barcodeScanner.markBarcode(campo);
+			campo.setValue( barcodeManipulator.getParsedCode(campo) );
 		}
-		catch (MarkScannerException e)
+		catch (ReaderException e)
 		{
 			campo.setValue(null);
 			campo.setValid(false);
-			if (logger.isDebugEnabled())
-				barcodeScanner.markBarcode(campo);
 		}
 		
 		//barcodeManipulator.markBarcode(campo);
 	}
 
 	/**
-	 * Mï¿½todo que busca marcas de tipo circle en un objeto tipo Gray8Image
+	 * Método que busca marcas de tipo circle en un objeto tipo Gray8Image
 	 * 
 	 * @param i
 	 *
@@ -304,51 +297,54 @@ public class UtilidadesFicheros
 	 * @param medianfilter
 	 */
 	private static void buscarMarcaCircle(int i, 
-			PageImage pageImage, Field campo, boolean medianfilter)
+			PageImage pageImage, Campo campo, boolean medianfilter)
 	{
-		Rectangle2D bbox=campo.getBBox();//milimeters
-//		Rectangle bboxPx = pageImage.toPixels(bbox);//pï¿½xeles
-		// center of the mark
-		Point2D center=new Point();
-		center.setLocation(bbox.getCenterX(),bbox.getCenterY()); //nos da el centro geomï¿½trico del rectï¿½ngulo
-		
-		
-		// leemos la anchura de las marcas en milï¿½metros
-		double markWidth = Math.max(1, bbox.getWidth());
-		double markHeight = Math.max(1,bbox.getHeight());
-		SolidCircleMarkScanner markScanner = new SolidCircleMarkScanner(pageImage,markWidth,markHeight,medianfilter);
+		double x;
+		double y;
+		int xpixel;
+		int ypixel;
+		double markradXmm; // se trabajara con la posición de las marcas en
+							// milímetros
+		double markradYmm;
+		double[] coords = campo.getCoordenadas();
+		// "x" será la primera coordenada, "y" la segunda
+		//centra las coordenadas
+		x = coords[0]+coords[2]/2;
+		y = coords[1]+coords[3]/2;
+		// Pasamos el tamaño a píxeles _IMAGEWIDTHPIXELx_IMAGEHEIGTHPIXEL
+		xpixel = pageImage.toPixelsX(x);//(int) (x * pageImage.getHorizontalRatio());
+		ypixel = pageImage.toPixelsY(y);
+
+		// leemos la anchura de las marcas y las pasamos a píxeles
+		markradXmm = coords[2];
+		markradYmm = coords[3];
+		int markWidth = Math.max(5, pageImage.toPixelsX(markradXmm));
+		int markHeight = Math.max(5,pageImage.toPixelsY(markradYmm));
+		SolidCircleMark mark = new SolidCircleMark(pageImage,markWidth,	markHeight);
 
 		if (logger.isDebugEnabled())
 		{
 			logger.debug("buscarMarcaCircle - campo=" + campo); //$NON-NLS-1$
 		}
-		try
+
+		if (mark.isMark(xpixel, ypixel,false)) // se busca la marca que se desea
+											// encontrar
 		{
-			ScanResult res=markScanner.scanField(campo);
-			
-			if ( (Boolean)res.getResult() ) // se busca la marca que se desea encontrar
+			if (logger.isDebugEnabled())
 			{
-				if (logger.isDebugEnabled())
-				{
-					logger.debug("buscarMarcaCircle - >>>>>>>Found mark at " + bbox + " (mm) :" + campo); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-				}
-				campo.setValue("true");
-													// si se ha encontrado la marca
-				markScanner.putCircleMarkOnImage(pageImage);
-			} else
-			{
-				campo.setValue("false");
+				logger.debug("buscarMarcaCircle - >>>>>>>Found mark at " + x + "," + y + ":" + campo); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			}
-			campo.setValid(true);
-		}
-		catch (MarkScannerException e)
+			campo.setValue("true");
+												// si se ha encontrado la marca
+			mark.putCircleMarkOnImage(pageImage);
+		} else
 		{
-			campo.setValid(false);
+			campo.setValue("false");
 		}
 	}
 
 	/**
-	 * Mï¿½todo para guardar los resultados del proceso de reconocimiento de
+	 * Método para guardar los resultados del proceso de reconocimiento de
 	 * marcas
 	 * 
 	 * @param outputdir
@@ -359,23 +355,26 @@ public class UtilidadesFicheros
 	public static void saveOMRResults(String inputpath, String outputdir,
 			PlantillaOMR plantilla, String acticode, String userid) throws FileNotFoundException
 	{
-		Hashtable<String, Field> campos = plantilla.getPagina(1).getCampos();
-		Field acticodeField = campos.get(acticode);
-		Field useridField = campos.get(userid);
+
 		try
 		{
+			Hashtable<String, Campo> campos = plantilla.getPagina(1).getCampos();
+
+			//TODO: usar los nombres pasados en -id1 -id2
+			Campo acticodeField = campos.get(acticode);
+			Campo useridField = campos.get(userid);
 			
 			int useridInt = Integer.parseInt(useridField.getValue()); // evita
-																		// inyecciï¿½n
+																		// inyección
 																		// de path
 																		// en el
-																		// cï¿½digo
+																		// código
 			int acticodeInt = Integer.parseInt(acticodeField.getValue()); // evita
-																			// inyecciï¿½n
+																			// inyección
 																			// de
 																			// path
 																			// en el
-																			// cï¿½digo
+																			// código
 
 			File dir = new File(outputdir); // que venga de parametro
 			File outputFile = new File(dir, "omr_result_" + useridInt + "_"
@@ -389,7 +388,7 @@ public class UtilidadesFicheros
 						+ "]");
 				for (int k = 0; k < plantilla.getPagina(i + 1).getMarcas().size(); k++)
 				{
-					Field campo2 = campos.get(plantilla.getPagina(i + 1)
+					Campo campo2 = campos.get(plantilla.getPagina(i + 1)
 							.getMarcas().elementAt(k));
 					out.println(campo2.getNombre() + "=" + campo2.getValue());
 				}
@@ -400,59 +399,8 @@ public class UtilidadesFicheros
 		catch (NumberFormatException e)
 		{
 			// TODO Auto-generated catch block
-			logger.error("saveOMRResults:  Can't obtain "+acticode+"="+acticodeField.getValue()+" and "+userid+"="+useridField.getValue()+" for outputting report."); //$NON-NLS-1$
-			
+			logger.error("saveOMRResults:  Can't obtain ID1 and ID2 for outputting report."); //$NON-NLS-1$
 		}
 		return;
-	}
-
-	/**
-	 * @param subImage
-	 */
-	public static void logSubImage(String textId, BufferedImage subImage)
-	{
-		if (logger.isDebugEnabled()&& true)
-		{
-			long start=System.currentTimeMillis();
-			
-			
-			
-			try
-			{
-				URL url=UtilidadesFicheros.class.getClassLoader().getResource("Doc1.pdf");
-				File testPath=new File(new File(url.toURI()).getParentFile(),"output");
-				File imgFile=new File(testPath,"debug_"+textId+System.currentTimeMillis()+".png");
-				UtilidadesFicheros.salvarImagen(subImage, imgFile.getAbsolutePath(), "PNG");
-				logger.debug("Dumped "+textId+" in (ms) :"+(System.currentTimeMillis()-start));
-			}
-			catch (IOException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			catch (URISyntaxException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	
-	}
-	public static void logSubImage(SubImage subImage)
-	{
-		
-		logSubImage("subimage", subImage);
-	}
-
-	/**
-	 * @param prefix
-	 * @param medianed
-	 */
-	public static void logSubImage(String prefix, SubImage subImage)
-	{
-		Rectangle2D markArea=subImage.getBoundingBox();
-		logger.debug("Dumped subimage  "+markArea);
-		logSubImage(prefix,(BufferedImage)subImage);
-		
 	}
 }

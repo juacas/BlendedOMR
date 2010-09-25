@@ -16,13 +16,9 @@ limitations under the License.
 
 package com.jhlabs.image;
 
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.awt.image.BufferedImageOp;
-import java.awt.image.ColorModel;
+import java.awt.*;
+import java.awt.geom.*;
+import java.awt.image.*;
 
 /**
  * A convenience class which implements those methods of BufferedImageOp which are rarely changed.

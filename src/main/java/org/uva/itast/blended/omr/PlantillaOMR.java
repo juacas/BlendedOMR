@@ -1,56 +1,9 @@
 /*
-* ====================================================================
-*
-* License:        GNU General Public License
-*
-* Note: Original work copyright to respective authors
-*
-* This file is part of Blended (c) 2009-2010 University of Valladolid..
-*
-* Blended is free software; you can redistribute it and/or
-* modify it under the terms of the GNU General Public License
-* as published by the Free Software Foundation; either version 2
-* of the License, or (at your option) any later version.
-*
-* Blended is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-*
-* Module developed at the University of Valladolid http://www.eduvalab.uva.es
-*
-* http://www.itnt.uva.es , http://www.eduvalab.uva.es
-*
-* Designed and directed by Juan Pablo de Castro with 
-* the effort of many other students of telecommunication 
-* engineering.
-* This module is provides as-is without any 
-* guarantee. Use it as your own risk.
-*
-* @author Juan Pablo de Castro
-* @author Jesus Rodilana
-* @author MarÃ­a JesÃºs VerdÃº 
-* @author Luisa Regueras 
-* @author Elena VerdÃº
-* 
-* @license http://www.gnu.org/copyleft/gpl.html GNU Public License
-* @package blended
- ***********************************************************************/
-
- 
-
-/***********************************************************************
- * Module developed at the University of Valladolid http://www.eduvalab.uva.es
- * Designed and directed by Juan Pablo de Castro with 
- * the effort of many other students of telecommunciation 
- * engineering this module is provides as-is without any 
- * guarantee. Use it as your own risk.
+ * PlantillaOMR.java
  *
- * @author Juan Pablo de Castro and Miguel Baraja Campesino and many others.
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package blended
- ***********************************************************************/
+ * Creado en Abril-Mayo de 2009
+ *
+ */
 
 package org.uva.itast.blended.omr;
 
@@ -60,31 +13,36 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Vector;
 
+/**
+ * 
+ * @author Jesús Rodilana
+ *
+ */
 public class PlantillaOMR {
 	
 	
-	private Vector<PageTemplate> paginas;		//cada elemento almacena un nï¿½mero de pï¿½gina y el contenido de dicha pï¿½gina
+	private Vector<PaginaDefinicionMarcas> paginas;		//cada elemento almacena un número de página y el contenido de dicha página
 	
 	/**
 	 * Constructor de la clase PlantillaOMR, crea una plantilla a partir
-	 * del nï¿½mero de pï¿½ginas y el definitionfile, ademï¿½s crea una PaginaDefinicionMarcas
-	 * por cada pï¿½gina del definitonfile y las almacena en la plantilla
+	 * del número de páginas y el definitionfile, además crea una PaginaDefinicionMarcas
+	 * por cada página del definitonfile y las almacena en la plantilla
 	 * @param definitionfile
 	 * @throws IOException
 	 */
 	public PlantillaOMR(String definitionfile) throws IOException
 	{
 		
-		paginas = new Vector<PageTemplate>();	//instanciamos el vector paginas
+		paginas = new Vector<PaginaDefinicionMarcas>();	//instanciamos el vector paginas
 		String line;
 		
 		BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(definitionfile)));
 		while((line = in.readLine()) != null && !line.equals("")) {
-            	if(line.startsWith("[Page"))            			//se identifica la pï¿½gina
+            	if(line.startsWith("[Page"))            			//se identifica la página
             	{
             		String num=line.substring(5,line.length()-1);	//Obtener i de [Pagei]
             		int numpag=Integer.parseInt(num);
-            		PageTemplate pagina = new PageTemplate(numpag);		//se crea una nueva pï¿½gina, parï¿½metros: definitionfile e i, este ï¿½ltimo indica el nï¿½mero de pï¿½gina
+            		PaginaDefinicionMarcas pagina = new PaginaDefinicionMarcas(numpag);		//se crea una nueva página, parámetros: definitionfile e i, este último indica el número de página
         			pagina.leerMarcas(in);							//se leen las marcas
         			paginas.add(numpag-1, pagina);					//se guardan a partir del elemento 0 (numpag-1)
             	}
@@ -93,24 +51,24 @@ public class PlantillaOMR {
 	}
 	
 	/**
-	 *  Devuelve una pï¿½gina determinada, dada por i
+	 *  Devuelve una página determinada, dada por i
 	 *  @param pagina se numera empezando en 1
 	 *  @return pagina.elementAt(pagina-1)
 	 */
-	public PageTemplate getPagina(int pagina) {
+	public PaginaDefinicionMarcas getPagina(int pagina) {
 		return paginas.elementAt(pagina-1);
 	}
 	
 	/**
-	 * Devuelve el vector paginas donde estï¿½n almacenadas todas las pï¿½ginas de una plantilla
+	 * Devuelve el vector paginas donde están almacenadas todas las páginas de una plantilla
 	 * @return paginas
 	 */
-	public Vector<PageTemplate> getPaginas() {
+	public Vector<PaginaDefinicionMarcas> getPaginas() {
 		return paginas;
 	}
 	
 	/**
-	 * Devuelve el nï¿½mero de paginas que tiene la plantilla
+	 * Devuelve el número de paginas que tiene la plantilla
 	 * @return paginas.size()
 	 */
 	public int getNumPaginas() {
