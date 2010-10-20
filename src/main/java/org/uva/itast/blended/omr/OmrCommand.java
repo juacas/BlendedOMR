@@ -41,7 +41,7 @@
 
 package org.uva.itast.blended.omr;
 
-public class ProcessTest {
+public class OmrCommand {
 
 	/**
 	 * M�todo main del programa
