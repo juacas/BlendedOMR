@@ -55,10 +55,21 @@
 package org.uva.itast.blended.omr;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 import java.util.Vector;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -100,21 +111,47 @@ public class OMRProcessor {
 	private boolean dflag = false;
 	
 	// plantilla para almacenar las p�ginas y los campos de definition file
-	PlantillaOMR template;
+	Map<String,PlantillaOMR> templates=new HashMap<String,PlantillaOMR>();
+
+	private PlantillaOMR	selectedTemplate;
 
 	/**
 	 * @return the template
 	 */
-	protected PlantillaOMR getTemplate()
+	public Map<String,PlantillaOMR> getTemplates()
 	{
+		return templates;
+	}
+	/**
+	 * gets the last selected template
+	 * @return
+	 */
+	public PlantillaOMR getActiveTemplate()
+	{
+		return selectedTemplate;
+	}
+	/**
+	 * Many parts of OMR uses the field {@link #selectedTemplate} through {@link #getActiveTemplate()}
+	 * hence it is needed to mark the default template with this method
+	 * @param id
+	 * @return
+	 */
+	public PlantillaOMR selectTemplate(String id)
+	{
+		selectedTemplate=templates.get(id);
+		return selectTemplate(selectedTemplate);
+	}
+	public PlantillaOMR selectTemplate(PlantillaOMR template)
+	{
+		this.selectedTemplate=template;
 		return template;
 	}
 	/**
 	 * @param template the template to set
 	 */
-	protected void setTemplate(PlantillaOMR template)
+	protected void addTemplate(PlantillaOMR template)
 	{
-		this.template = template;
+		templates.put(template.getTemplateID(), template);
 	}
 	/**
 	 * Constructor TestManipulation sin par�metros.
@@ -123,15 +160,55 @@ public class OMRProcessor {
 	{
 	}
 	/**
-	 * Load template
-	 * @param filename
+	 * Load templates from a directory of Zip file
+	 * @param path
 	 * @throws IOException
 	 */
-	public void loadTemplate(String filename) throws IOException
+	public void loadTemplate(String path) throws IOException
 	{
-		template = new PlantillaOMR(filename); // se crea la plantilla seg�n el
+		PlantillaOMR template=new PlantillaOMR(path); // se crea la plantilla seg�n el
+		addTemplate(template);
+		selectTemplate(template);
+	}
+	
+	public void loadTemplateCollection(String path) throws ZipException, IOException
+	{
+		File file=new File(path);
+		List<InputStream> contents=obtainInputStreamsFromPath(file,".*\\.fields");
 		
-	}		
+		// read contents of templates
+		for (InputStream inputStream : contents)
+		{
+			addTemplate(new PlantillaOMR(inputStream));
+		}
+	}
+	/**
+	 * @param file
+	 * @return 
+	 * @throws ZipException
+	 * @throws IOException
+	 * @throws FileNotFoundException
+	 */
+	private List<InputStream> obtainInputStreamsFromPath(File file, String regExpr) throws ZipException, IOException, FileNotFoundException
+	{
+		List<InputStream> contents;
+		
+		if (file.getName().endsWith(".zip"))
+		{
+			ZipFile zip=new ZipFile(file);
+			contents=inputStreamsFromZip(zip, regExpr);
+		}
+		else
+		{
+			File[] filelist=obtainFileList(file,regExpr );
+			contents=new ArrayList<InputStream>();
+			for (int i=0; i < filelist.length; i++)
+			{
+				contents.add(new FileInputStream(filelist[i]));
+			}
+		}
+		return contents;
+	}
 	/**
 	 * M�todo que lee la l�nea de comandos. Identifica que las opciones y
 	 * par�metros sean correctos y los almacena. uso: blended_omr [-i inputdir]
@@ -141,13 +218,17 @@ public class OMRProcessor {
 	 */
 	public void readCommandLine(String[] args)
 	{
-		int i = 0, j;
-
+		int i=0, j;
+		// first argument may be the command. Ignore it
+		if (!args[i].startsWith("-"))
+		{
+			i++;
+		}
 		// detectamos todas las opciones (s�mbolo "-" delante)
 		while (i < args.length && args[i].startsWith("-"))
 		{
-			vflag = true;
-			arg = args[i++];
+			vflag=true;
+			arg=args[i++];
 
 			// opciones que requieren argumentos
 			// opci�n -i
@@ -156,7 +237,7 @@ public class OMRProcessor {
 				if (i < args.length)
 					setInputPath(args[i++]);
 				else
-					System.err.println("-i requiere un path");
+					System.err.println("-i need a path");
 				if (vflag)
 					;
 			}
@@ -166,7 +247,7 @@ public class OMRProcessor {
 				if (i < args.length)
 					setOutputdir(args[i++]);
 				else
-					System.err.println("-o requiere un path");
+					System.err.println("-o need a path");
 				if (vflag)
 					;
 			}
@@ -176,17 +257,19 @@ public class OMRProcessor {
 				if (i < args.length)
 					setUserid(args[i++]);
 				else
-					System.err.println("-id1 requiere un USERID");
+					System.err.println("-id1 need an USERID");
 				if (vflag)
 					;
 			}
 			// opci�n -id2
 			else if (arg.equals("-id2"))
 			{
+				System.err.println("warning -id2 deprecated");
+				
 				if (i < args.length)
 					setActivitycode(args[i++]);
 				else
-					System.err.println("-id2 requiere un ACTIVITYCODE");
+					System.err.println("-id2 need an TEMPLATEID");
 				if (vflag)
 					;
 			}
@@ -196,21 +279,20 @@ public class OMRProcessor {
 				if (i < args.length)
 					setDefinitionfile(args[i++]);
 				else
-					System.err.println("-d requiere un definitionfile");
+					System.err.println("-d need a path to definition files");
 				if (vflag)
 				{
 					// System.out.println("DefinitionFile = " + definitionfile);
-					dflag = true;
+					dflag=true;
 				}
 			}
 			// opciones que no requieren argumentos (flags)
 			else
 			{
-				for (j = 1; j < arg.length(); j++)
+				for (j=1; j < arg.length(); j++)
 				{
-					flag = arg.charAt(j);
-					switch (flag)
-					{
+					flag=arg.charAt(j);
+					switch (flag) {
 					case 'a':
 						if (vflag)
 							setAutoalign(true);
@@ -221,21 +303,22 @@ public class OMRProcessor {
 							setMedianFilter(true);
 						break;
 					default:
-						System.err
-								.println("Revise la l�nea de comandos: opci�n inv�lida "
-										+ flag);
-						break;
+						throw new IllegalArgumentException("Check command line: invalid option " + flag);
+						
 					}
 				}
 			}
 		}
+
 		// si hay m�s par�metros se muestra un texto de error
 		if (i < args.length || dflag == false)
-			System.err
-					.println("uso: blended_omr [-i inputdir] [-o outputdir] [-id1 USERID] [-id2 ACTIVITYCODE] [-a] -d definitionfile");
+		{
+			throw new IllegalArgumentException("Usage: " + args[0] + " [-i inputdir] [-o outputdir] [-id1 USERID] [-id2 ACTIVITYCODE] [-a] -d definitionfile");
+
+		}
 		else
 		{
-				logger.debug("leerLineaComandos(String[]) Command-Line OK- arg=" + arg); //$NON-NLS-1$
+			logger.debug("leerLineaComandos(String[]) Command-Line OK- arg=" + arg); //$NON-NLS-1$
 		}
 	}
 
@@ -306,7 +389,7 @@ public class OMRProcessor {
 	 */
 	public String getFieldValue(String fieldName)
 	{
-		return getTemplate().getPagina(1).getCampos().get(fieldName).getValue();
+		return getActiveTemplate().getPagina(1).getCampos().get(fieldName).getValue();
 	
 	}
 
@@ -392,7 +475,7 @@ public class OMRProcessor {
 	 */
 	public void escribirValoresCampo(String key)
 	{
-		Hashtable<String, Field> campos = template.getPagina(1).getCampos();
+		Hashtable<String, Field> campos = getActiveTemplate().getPagina(1).getCampos();
 		Field campo = (Field) campos.get(key);
 		System.out.println("Nombre : " + campo.getNombre());
 		System.out.println("Numero de P�gina : " + campo.getNumPag());
@@ -411,14 +494,14 @@ public class OMRProcessor {
 	{
 		File dir = new File(inputPath);
 		// obteneci�n de la lista de ficheros a procesar
-		File[] files = obtainFileList(dir);
+		File[] files = obtainFileList(dir,".*\\.(jpg|png|pdf)");
 		PagesCollection pages = getPageCollection(files);
 		// procesar ficheros
 		return processPages(pages);
 	}
 
 	/**
-	 * M�todo para procesar las p�ginas
+	 * Process a collection of pages
 	 * 
 	 * @param files
 	 * @throws IOException
@@ -435,13 +518,16 @@ public class OMRProcessor {
 			{
 				long taskStart = System.currentTimeMillis();
 
+				PlantillaOMR template=OMRUtils.findBestSuitedTemplate(pageImage, getTemplates(), medianfilter);
+				selectTemplate(template);
+
 				// se procesa la p�gina
-				UtilidadesFicheros.procesarPagina(pageImage, isAutoalign(),
+				OMRUtils.processPage(pageImage, isAutoalign(),
 						isMedianFilter(), outputdir, template);
 				
 				// se salvan los resultados en archivo
-				UtilidadesFicheros.saveOMRResults(pageImage.getFileName(),
-						outputdir, template, activitycode, userid);
+				OMRUtils.saveOMRResults(pageImage.getFileName(),
+						outputdir, template, OMRUtils.TEMPLATEID_FIELDNAME , userid);
 
 				pageImage.outputMarkedPage(outputdir);
 
@@ -494,7 +580,7 @@ public class OMRProcessor {
 	 * @param path
 	 * @return
 	 */
-	private File[] obtainFileList(File path)
+	private File[] obtainFileList(File path, final String regExp)
 	{
 		File[] files; // almacenamos en un array de File[] los path de los
 						// ficheros
@@ -505,13 +591,40 @@ public class OMRProcessor {
 				public boolean accept(File dir, String name)
 				{
 					name.toLowerCase(); // se convierte el nombre a min�sculas
-					return name.endsWith(".jpg") || name.endsWith(".png")
-							|| name.endsWith(".pdf");
+					return name.matches(regExp);
 				}
 			});
 		} else
 		{
 			files = new File[] { path };
+		}
+		return files;
+	}
+	/**
+	 * 
+	 * @param path
+	 * @return
+	 * @throws ZipException
+	 * @throws IOException
+	 */
+	public static List<InputStream> inputStreamsFromZip(ZipFile zipFile, String regExpr) throws ZipException, IOException
+	{
+		List<InputStream> files=new ArrayList<InputStream>();
+		
+		Enumeration<? extends ZipEntry> entries=zipFile.entries();
+		while (entries.hasMoreElements())
+		{
+			ZipEntry zipEntry=(ZipEntry) entries.nextElement();
+			if (!zipEntry.isDirectory() && zipEntry.getName().matches(regExpr))
+			{
+				if (logger.isInfoEnabled())
+				{
+					logger.info("filesFromZip(File) - ZipEntry zipEntry=" + zipEntry); //$NON-NLS-1$
+				}
+				
+				files.add(zipFile.getInputStream(zipEntry));
+			}
+
 		}
 		return files;
 	}
