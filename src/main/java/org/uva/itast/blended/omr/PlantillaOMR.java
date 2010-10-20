@@ -57,13 +57,17 @@ package org.uva.itast.blended.omr;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Vector;
 
 public class PlantillaOMR {
 	
+	// to identificate and index the templates with it
+	String templateID;
 	
-	private Vector<PageTemplate> paginas;		//cada elemento almacena un n�mero de p�gina y el contenido de dicha p�gina
+	private Vector<PageTemplate> paginas=new Vector<PageTemplate>();	//instanciamos el vector paginas;
+	//cada elemento almacena un n�mero de p�gina y el contenido de dicha p�gina
 	
 	/**
 	 * Constructor de la clase PlantillaOMR, crea una plantilla a partir
@@ -73,13 +77,29 @@ public class PlantillaOMR {
 	 * @throws IOException
 	 */
 	public PlantillaOMR(String definitionfile) throws IOException
+	{	
+		FileInputStream inputStream=new FileInputStream(definitionfile);
+		load(inputStream);
+	}
+	public PlantillaOMR(InputStream inputStream) throws IOException
+	{	
+		load(inputStream);
+	}
+	/**
+	 * @param inputStream
+	 * @throws IOException
+	 */
+	private void load(InputStream inputStream) throws IOException
 	{
-		
-		paginas = new Vector<PageTemplate>();	//instanciamos el vector paginas
 		String line;
-		
-		BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(definitionfile)));
+		BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
 		while((line = in.readLine()) != null && !line.equals("")) {
+				if (line.startsWith("TemplateId="))
+				{
+					String[] parts=line.split("=");
+					this.templateID=parts[1];
+				}
+				else
             	if(line.startsWith("[Page"))            			//se identifica la p�gina
             	{
             		String num=line.substring(5,line.length()-1);	//Obtener i de [Pagei]
@@ -115,6 +135,13 @@ public class PlantillaOMR {
 	 */
 	public int getNumPaginas() {
 		return paginas.size();
+	}
+	/**
+	 * @return the templateID
+	 */
+	public String getTemplateID()
+	{
+		return templateID;
 	}
 
 	

@@ -58,6 +58,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Collection;
 import java.util.Hashtable;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
@@ -72,16 +73,16 @@ import org.uva.itast.blended.omr.scanners.SolidCircleMarkScanner;
 
 import com.sun.pdfview.PDFFile;
 
-public class UtilidadesFicheros
+public class OMRUtils
 {
 	/**
 	 * Logger for this class
 	 */
 	private static final Log	logger					= LogFactory
-																.getLog(UtilidadesFicheros.class);
+																.getLog(OMRUtils.class);
 
 	public static final String	USERID_FIELDNAME		= "USERID";
-	public static final String	ACTIVITYCODE_FIELDNAME	= "ACTIVITYCODE";
+	public static final String	TEMPLATEID_FIELDNAME	= "TEMPLATEFIELD";
 	public static final String	IMAGE_TYPE				= "png";
 
 	/**
@@ -147,13 +148,13 @@ public class UtilidadesFicheros
 	 * @param plantilla
 	 * @throws IOException
 	 */
-	public static void procesarImagenes(PageImage page, boolean align,
-			boolean medianfilter, String outputdir, PlantillaOMR plantilla, String acticode, String userid)
+	public static void processsPageAnSaveResultsWithLogging(PageImage page, boolean align,
+			boolean medianfilter, String outputdir, Map<String,PlantillaOMR> plantillas, String acticode, String userid)
 			throws IOException
 	{
 			long taskStart = System.currentTimeMillis();
 			
-			processPageAndSaveResults(align, medianfilter,outputdir, plantilla, page, acticode, userid);
+			processPageAndSaveResults(align, medianfilter,outputdir, plantillas, page, acticode, userid);
 			logger.debug("Page  ("+page.getFileName()+") processed in (ms)"+(System.currentTimeMillis()-taskStart)); //$NON-NLS-1$
 	}
 
@@ -167,15 +168,15 @@ public class UtilidadesFicheros
 	 * @throws FileNotFoundException
 	 */
 	public static void processPageAndSaveResults(boolean align,
-			boolean medianfilter, String outputdir, PlantillaOMR plantilla,
+			boolean medianfilter, String outputdir, Map<String,PlantillaOMR> plantillas,
 			PageImage pageImage, String acticode, String userid) throws FileNotFoundException
 	{
+		PlantillaOMR plantilla=findBestSuitedTemplate(pageImage, plantillas, medianfilter);
 		
-		procesarPagina(pageImage, align, medianfilter, outputdir, plantilla); // se
+		processPage(pageImage, align, medianfilter, outputdir, plantilla); // se
 																			// procesa
 																			// la
 																			// p�gina
-		
 		saveOMRResults(pageImage.getFileName(), outputdir, plantilla, acticode, userid);// se salvan
 																	// los
 																	// resultados
@@ -185,26 +186,27 @@ public class UtilidadesFicheros
 
 	/**
 	 * M�todo que procesa una p�gina a partir de un BufferedImage invocando a
-	 * los m�todos que buscar�n las marcas
-	 * 
+	 * los m�todos que buscar�n las marcas.
+	 * All templates passed as argument must share the location of the TemplateIdentification
+	 * in the screen 
+	 * TODO refactor this. Not to be static.
 	 * @param pageImage
 	 * @param align
 	 * @param outputdir
-	 * @param plantilla in/out devuelve los valores reconocidos
+	 * @param plantillas usado como in/out devuelve los valores reconocidos
 	 * @throws FileNotFoundException
 	 */
-	public static void procesarPagina(PageImage pageImage, boolean align,
+	public static void processPage(PageImage pageImage, boolean align,
 			boolean medianfilter, String outputdir, PlantillaOMR plantilla)
 			throws FileNotFoundException
 	{
+		
+		
 		if (align)
 			{
 			//pageImage.align(); //encapsula procesamiento y representaci�n
 			pageImage.align(plantilla, pageImage);
-			
-			
 			}
-		
 		
 		long taskStart = System.currentTimeMillis();
 		
@@ -214,6 +216,52 @@ public class UtilidadesFicheros
 																				// marcas
 		logger.debug("\tMarks scanned in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
 		
+	}
+	public static void processPage(PageImage pageImage, boolean align,
+		boolean medianfilter, String outputdir, Map<String,PlantillaOMR> plantillas)
+		throws FileNotFoundException
+{
+		PlantillaOMR plantilla=findBestSuitedTemplate(pageImage, plantillas, medianfilter);
+		processPage(pageImage, align, medianfilter, outputdir, plantilla);
+}
+	/**
+	 * Scan the page searching the {@value #TEMPLATEID_FIELDNAME} tag and select the proper
+	 * template in the map.
+	 * If no valid TemplateId code is found the first item in the map is selected.
+	 * @param pageImage
+	 * @param plantillas
+	 * @param medianfilter
+	 * @return
+	 */
+	public static PlantillaOMR findBestSuitedTemplate(PageImage pageImage, Map<String, PlantillaOMR> plantillas, boolean medianfilter)
+	{
+		/**
+		 * Get any (first) template to recognize the TemplateID.
+		 */
+		PlantillaOMR aTemplate=plantillas.values().iterator().next();
+		PageTemplate firstPage=aTemplate.getPagina(1);
+		Field campo=firstPage.getCampos().get(TEMPLATEID_FIELDNAME);
+		if (campo==null)
+			throw new RuntimeException("No "+TEMPLATEID_FIELDNAME+" field found! in the templates in use.");
+		scanField(pageImage, campo, medianfilter);
+		String templateId=campo.getValue();
+		// extract the page number
+		if (templateId != null)
+		{
+			templateId=templateId.substring(0, templateId.length() - 1);
+		}
+		/**
+		 * get the actual template
+		 */
+		PlantillaOMR plantilla=plantillas.get(templateId);
+		if (plantilla != null)
+		{
+			return plantilla;
+		}
+		else
+		{
+			return plantillas.values().iterator().next();
+		}
 	}
 	
 	/**
@@ -245,21 +293,32 @@ public class UtilidadesFicheros
 			{
 				// vamos a buscar en los campos le�dos, en marcas[] est�n
 				// almacenadas las keys
-				int tipo = campo.getTipo(); // se almacena el tipo para separar
-											// entre si es un barcode o un
-											// circle
-				if (tipo == Field.CIRCLE)
-					buscarMarcaCircle(i, pageImage , campo, medianfilter);
-				else if (tipo == Field.CODEBAR)
-					{
-					buscarMarcaCodebar(pageImage, campo, medianfilter);
-					}
+				scanField(pageImage, campo, medianfilter);
 			}
 			
 			pageImage.labelPageAsProcessed();
  			
 		}
 		return plantilla;
+	}
+
+	/**
+	 * @param pageImage
+	 * @param campo
+	 * @param i
+	 * @param medianfilter
+	 */
+	private static void scanField(PageImage pageImage, Field campo, boolean medianfilter)
+	{
+		int tipo = campo.getTipo(); // se almacena el tipo para separar
+									// entre si es un barcode o un
+									// circle
+		if (tipo == Field.CIRCLE)
+			buscarMarcaCircle(pageImage , campo, medianfilter);
+		else if (tipo == Field.CODEBAR)
+			{
+			buscarMarcaCodebar(pageImage, campo, medianfilter);
+			}
 	}
 
 
@@ -303,7 +362,7 @@ public class UtilidadesFicheros
 	 * @param campo
 	 * @param medianfilter
 	 */
-	private static void buscarMarcaCircle(int i, 
+	private static void buscarMarcaCircle( 
 			PageImage pageImage, Field campo, boolean medianfilter)
 	{
 		Rectangle2D bbox=campo.getBBox();//milimeters
@@ -419,10 +478,10 @@ public class UtilidadesFicheros
 			
 			try
 			{
-				URL url=UtilidadesFicheros.class.getClassLoader().getResource("Doc1.pdf");
+				URL url=OMRUtils.class.getClassLoader().getResource("Doc1.pdf");
 				File testPath=new File(new File(url.toURI()).getParentFile(),"output");
 				File imgFile=new File(testPath,"debug_"+textId+System.currentTimeMillis()+".png");
-				UtilidadesFicheros.salvarImagen(subImage, imgFile.getAbsolutePath(), "PNG");
+				OMRUtils.salvarImagen(subImage, imgFile.getAbsolutePath(), "PNG");
 				logger.debug("Dumped "+textId+" in (ms) :"+(System.currentTimeMillis()-start));
 			}
 			catch (IOException e)

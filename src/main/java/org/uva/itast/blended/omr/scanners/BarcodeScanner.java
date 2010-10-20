@@ -62,7 +62,7 @@ import java.awt.image.BufferedImage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.uva.itast.blended.omr.Field;
-import org.uva.itast.blended.omr.UtilidadesFicheros;
+import org.uva.itast.blended.omr.OMRUtils;
 import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.SubImage;
 
@@ -155,7 +155,7 @@ public final class BarcodeScanner extends MarkScanner
 			  throw new RuntimeException("Can't extract subimage from page.");
 			}
 		if (logger.isDebugEnabled())
-			UtilidadesFicheros.logSubImage("codebar2D",subimage);  
+			OMRUtils.logSubImage("codebar2D",subimage);  
 		
 	    MonochromeBitmapSource source = new BufferedImageMonochromeBitmapSource(subimage);
 	    Result result=null;
@@ -169,14 +169,14 @@ public final class BarcodeScanner extends MarkScanner
 		if(medianfilter == true)
 			 {
 				if (logger.isDebugEnabled())
-					UtilidadesFicheros.logSubImage(subimage);
+					OMRUtils.logSubImage(subimage);
 	
 				long start=System.currentTimeMillis();
 				BufferedImage medianed= medianFilter(subimage);
 				logger.debug("scanAreaForBarcode(MedianFilter area=" + subimage.getWidth()+"x"+subimage.getHeight() + ") In (ms) "+(System.currentTimeMillis()-start)); //$NON-NLS-1$ //$NON-NLS-2$
 				 
 				 if (logger.isDebugEnabled())
-					 UtilidadesFicheros.logSubImage("debug_median",medianed);
+					 OMRUtils.logSubImage("debug_median",medianed);
 				 
 				 source = new BufferedImageMonochromeBitmapSource(medianed);
 				 try

@@ -47,12 +47,18 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 import java.util.Vector;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 
 import org.junit.Test;
 import org.uva.itast.blended.omr.OMRProcessor;
+import org.uva.itast.blended.omr.PlantillaOMR;
 import org.uva.itast.blended.omr.pages.PageImage;
 
 public class TestOMRProcessor
@@ -138,8 +144,10 @@ public class TestOMRProcessor
 		processor.readCommandLine(args);
 		processor.loadTemplate(processor.getDefinitionfile());
 		
+		Map<String,PlantillaOMR> templates= processor.getTemplates();
 		
-		
+		assertTrue(templates.size()==1); // 
+		assertTrue(templates.containsKey("000071949057"));
 		//TODO make asserts and failure cases
 		
 	}
@@ -205,12 +213,48 @@ public class TestOMRProcessor
        
 		URL url=getClass().getClassLoader().getResource("56605.pdf");
 		File testPath=new File(url.toURI());
+		
+		// use a single, common, template definition
 		prepareConfig(testPath);
+		
 		Vector<PageImage> errores;
 		// detecci�n de errores
-	processor.setMedianFilter(true);
+		processor.setMedianFilter(true);
 		errores= processor.processPath(testPath.getAbsolutePath());        		//se leen las p�ginas escaneadas
 		assertTrue("Errors encountered",errores.isEmpty());
+		
+		}
+		catch (Exception e)
+		{
+			fail("Can't configure test case."+e);
+		}
+	}
+	@Test
+	public void testProcessMultiPagePDFmultiDefinitions()
+	{
+	try
+		{
+//		  if (false) 
+//	    	   return;
+       
+		URL url=getClass().getClassLoader().getResource("56605.pdf");
+		File testPath=new File(url.toURI());
+		
+		// use a single, common, template definition
+		prepareConfig(testPath);
+		
+		Vector<PageImage> errores;
+		// detecci�n de errores
+		// use a collection of templates from a directory
+		File dir=testPath.getParentFile();
+		processor.getTemplates().clear();
+		processor.loadTemplateCollection(dir.getAbsolutePath());
+		
+		// detecci�n de errores
+		processor.setMedianFilter(true);
+		errores= processor.processPath(testPath.getAbsolutePath());        		//se leen las p�ginas escaneadas
+		assertTrue("Errors encountered",errores.isEmpty());
+		
 		}
 		catch (Exception e)
 		{
@@ -225,7 +269,7 @@ public class TestOMRProcessor
 	{
 		processor = new OMRProcessor();
 	      
-		String argLine="-i /var/moodledata/blended/123/ -o /tmp/blended -id1 USERID -id2 ACTIVITYCODE -d /tmp/formato2313.txt";
+		String argLine="-i /var/moodledata/blended/123/ -o /tmp/blended -id1 USERID -id2 ACTIVITYCODE -d /tmp/formato2313.fields";
 		String[] args= argLine.split(" ");
 		
 		File outputDir=new File(testPath.getParentFile(),"output");
@@ -237,5 +281,20 @@ public class TestOMRProcessor
         processor.loadTemplate(processor.getDefinitionfile());	//se lee el fichero con la descripci�n de las marcas
 		return args;
 	}
+	
+	@Test
+	public void testFilesFromZip() throws URISyntaxException, ZipException, IOException
+	{
+		URL url = getClass().getClassLoader().getResource("form_test.zip");
+		File testPath = new File(url.toURI());
+		ZipFile zip=new ZipFile(testPath);
+		List<InputStream> files=OMRProcessor.inputStreamsFromZip(zip,".*");
+		assertTrue("ZIP empty", files.size()>0);
+		 files=OMRProcessor.inputStreamsFromZip(zip,".*\\.jpg");
+		assertTrue("ZIP empty", files.size()==0);
+		 files=OMRProcessor.inputStreamsFromZip(zip,".*\\.fields");
+		assertTrue("ZIP empty", files.size()>0);
+		int abyte=files.get(0).read();
+		}
 
 }

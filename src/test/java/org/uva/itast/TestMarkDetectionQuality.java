@@ -51,6 +51,7 @@ import java.util.Vector;
 
 import org.junit.Test;
 import org.uva.itast.blended.omr.OMRProcessor;
+import org.uva.itast.blended.omr.OMRUtils;
 import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.PagesCollection;
 
@@ -146,7 +147,7 @@ public class TestMarkDetectionQuality
 		processor.setMedianFilter(true);
 		errores= processor.processPath(testPath.getAbsolutePath());        		//se leen las páginas escaneadas
 		assertTrue("Errors encountered",errores.isEmpty());
-		assertTrue("Activity code not detected readed.",processor.getFieldValue("ACTIVITYCODE")!=null);
+		assertTrue("Activity code not detected readed.",processor.getFieldValue(OMRUtils.TEMPLATEID_FIELDNAME)!=null);
 		
 		}
 		catch (Exception e)

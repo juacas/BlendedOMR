@@ -54,10 +54,17 @@ public class OmrCommand {
 		// se crea un objeto tipo TestManipulation para todo lo que tenga que ver con sus m�todos
 		OMRProcessor processor = new OMRProcessor();
 		// se lee la l�nea de comandos
-		processor.readCommandLine(args);
-		// se lee el fichero con la descripci�n de las marcas
-		processor.loadTemplate(processor.getDefinitionfile());
-		// se leen las p�ginas escaneadas
-		processor.processPath(processor.getInputPath());
+		try
+		{
+			processor.readCommandLine(args);
+			// se lee el fichero con la descripci�n de las marcas
+			processor.loadTemplate(processor.getDefinitionfile());
+			// se leen las p�ginas escaneadas
+			processor.processPath(processor.getInputPath());
+		}
+		catch (IllegalArgumentException e)
+		{
+			System.out.print("OmrCommand bad arguments: "+e.getMessage());
+		}
 	}
 }

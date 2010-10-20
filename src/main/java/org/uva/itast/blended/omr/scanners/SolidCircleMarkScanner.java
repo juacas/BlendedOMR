@@ -54,7 +54,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.uva.itast.blended.omr.BufferedImageUtil;
 import org.uva.itast.blended.omr.Field;
-import org.uva.itast.blended.omr.UtilidadesFicheros;
+import org.uva.itast.blended.omr.OMRUtils;
 import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.SubImage;
 
@@ -250,7 +250,7 @@ public class SolidCircleMarkScanner extends MarkScanner{
 		BufferedImage img=subImage;
 		
 		//if (logger.isDebugEnabled())
-		//	UtilidadesFicheros.logSubImage(subImage);
+		//	OMRUtils.logSubImage(subImage);
 		
 		if(medianfilter == true)
 		 {
@@ -259,7 +259,7 @@ public class SolidCircleMarkScanner extends MarkScanner{
 			logger.debug("scanAreaForBarcode(MedianFilter area=" + subImage.getWidth()+"x"+subImage.getHeight() + ") In (ms) "+(System.currentTimeMillis()-start)); //$NON-NLS-1$ //$NON-NLS-2$
 			 
 			 if (logger.isDebugEnabled())
-				 UtilidadesFicheros.logSubImage("debug_median",img);
+				 OMRUtils.logSubImage("debug_median",img);
 		 }
 		
 		// Start processing in pixels

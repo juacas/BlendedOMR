@@ -21,6 +21,7 @@
   				<include>*.jpg</include>
   				<include>*.pdf</include>
   				<include>*.fields</include>
+  				<include>*.zip</include>
   			</includes>
   		</testResource>
   	</testResources>
