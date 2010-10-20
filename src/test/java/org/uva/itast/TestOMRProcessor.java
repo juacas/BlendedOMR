@@ -42,71 +42,69 @@
 
 package org.uva.itast;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Vector;
 
-import junit.framework.TestCase;
-
+import org.junit.Test;
 import org.uva.itast.blended.omr.OMRProcessor;
 import org.uva.itast.blended.omr.pages.PageImage;
 
-public class TestOMRProcessor extends TestCase
+public class TestOMRProcessor
 {
 
 	private OMRProcessor	processor;
-
-	/* (non-Javadoc)
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	@Override
-	protected void setUp() throws Exception
-	{
-		// TODO Auto-generated method stub
-		super.setUp();
-		  
-	}
-
-	/* (non-Javadoc)
-	 * @see junit.framework.TestCase#tearDown()
-	 */
-	@Override
-	protected void tearDown() throws Exception
-	{
-		// TODO Auto-generated method stub
-		super.tearDown();
-	}
 
 	/**
 	 * Test method for {@link org.uva.itast.blended.omr.OMRProcessor#readCommandLine(java.lang.String[])}.
 	 * @throws URISyntaxException 
 	 */
+	@Test
 	public void testLeerLineaComandos() throws URISyntaxException
 	{
 		processor = new OMRProcessor();
-		String [] args = new String[11];
-		args[0]="-i"; 
+		String [] args = new String[12];
+		int ai=0;
+		args[ai++]="commandName";
+		args[ai++]="-i"; 
 		URL url_1 = getClass().getClassLoader().getResource("p2.pdf");
 		File testPath_1 = new File(url_1.toURI());
-		args[1] = testPath_1.toString();
-		args[2]="-a";
-		args[3]="-o";
+		args[ai++] = testPath_1.toString();
+		args[ai++]="-a";
+		args[ai++]="-o";
 		URL url_4 = getClass().getClassLoader().getResource("");
 		File testPath_4 = new File(url_4.toURI());
-		args[4] = testPath_4.toString();
-		args[5]="-id1";
-		args[6]="USERID";
-		args[7]="-id2";
-		args[8]="ACTIVITYCODE";
-		args[9]="-d";
+		args[ai++] = testPath_4.toString();
+		args[ai++]="-id1";
+		args[ai++]="USERID";
+		args[ai++]="-id2";
+		args[ai++]="ACTIVITYCODE";
+		args[ai++]="-d";
 		URL url = getClass().getClassLoader().getResource("prac_test_lab.fields");
 		File testPath = new File(url.toURI());
-		args[10] = testPath.toString();
+		args[ai++] = testPath.toString();
 		
 		processor.readCommandLine(args);
+		assertTrue(processor.getInputPath().equals(testPath_1.getPath()));
 		//TODO Place asserts and failure cases
+		
+		try
+		{
+			args[3]="+a";
+			processor.readCommandLine(args);
+			fail("Bad command line not detected.");
+		}
+		catch (IllegalArgumentException e)
+		{
+			// Error detected
+		}
+		
+		
 	}
 
 	/**
@@ -114,6 +112,7 @@ public class TestOMRProcessor extends TestCase
 	 * @throws URISyntaxException 
 	 * @throws IOException 
 	 */
+	@Test
 	public void testLeerDefinitionfile() throws URISyntaxException, IOException
 	{
 		OMRProcessor processor = new OMRProcessor();
@@ -138,7 +137,11 @@ public class TestOMRProcessor extends TestCase
 		
 		processor.readCommandLine(args);
 		processor.loadTemplate(processor.getDefinitionfile());
+		
+		
+		
 		//TODO make asserts and failure cases
+		
 	}
 
 	/**
@@ -152,6 +155,7 @@ public class TestOMRProcessor extends TestCase
 	/**
 	 * Test method for {@link org.uva.itast.blended.omr.OMRProcessor#processPath(java.lang.String)}.
 	 */
+	@Test
 	public void testProcessPath()
 	{
 		try
@@ -191,7 +195,7 @@ public class TestOMRProcessor extends TestCase
 			fail("Can't configure test case."+e);
 		}
 	}
-	
+	@Test
 	public void testProcessMultiPagePDF()
 	{
 	try

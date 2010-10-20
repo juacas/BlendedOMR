@@ -40,22 +40,25 @@
  
 package org.uva.itast;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.awt.geom.AffineTransform;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Vector;
 
-import junit.framework.TestCase;
-
+import org.junit.Test;
 import org.uva.itast.blended.omr.OMRProcessor;
 import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.PagesCollection;
 
-public class TestMarkDetectionQuality extends TestCase
+public class TestMarkDetectionQuality
 {
 	private OMRProcessor	processor;
 	
+	@Test
 	public void testProcessMediumResImage()
 	{
 		try
@@ -93,6 +96,7 @@ public class TestMarkDetectionQuality extends TestCase
 			fail("Can't configure test case."+e);
 		}
 	}
+	@Test
 	public void testProcessLowResImage()
 	{
 		try
@@ -121,6 +125,7 @@ public class TestMarkDetectionQuality extends TestCase
 			fail("Can't configure test case."+e);
 		}
 	}
+	@Test
 	public void testProcessDitheredImage()
 	{
 		try
