@@ -246,7 +246,7 @@ public class SolidCircleMarkScanner extends MarkScanner{
 		
 		long start=System.currentTimeMillis();
 		SubImage subImage=this.pageImage.getSubimage(markArea, BufferedImage.TYPE_INT_RGB);
-		logger.debug("isMark(Point2D, boolean) - Subimage extracted in - (ms)=" + (System.currentTimeMillis()-start)); //$NON-NLS-1$
+		logger.debug("isMark(Point2D, boolean) - Subimage extracted in (ms)=" + (System.currentTimeMillis()-start)); //$NON-NLS-1$
 		BufferedImage img=subImage;
 		
 		//if (logger.isDebugEnabled())

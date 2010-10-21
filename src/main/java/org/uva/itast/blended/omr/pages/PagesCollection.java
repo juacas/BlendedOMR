@@ -138,7 +138,7 @@ public class PagesCollection implements Iterable<PageImage>
 		for (int i=0;i<numPagesPDF;i++)
 			{
 			PageImage page=new PDFPageImage(inputpath,pdffile,i);
-			pages.add(page);
+			addPage(page);
 			}
 		
 		}
@@ -148,6 +148,14 @@ public class PagesCollection implements Iterable<PageImage>
 		
 		}
 		
+	}
+
+	/**
+	 * @param page
+	 */
+	public void addPage(PageImage page)
+	{
+		pages.add(page);
 	}
 
 	/* (non-Javadoc)
