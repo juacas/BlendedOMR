@@ -68,7 +68,7 @@ public class PageTemplate {
 	private static final Log			logger	= LogFactory.getLog(PageTemplate.class);
 	
 	private int numPagina;					//p�gina sobre la cu�l versa la informaci�n
-	private Hashtable<String,Field> campos= new Hashtable<String, Field>();	//Hastable para almacenar los campos que leemos del fichero de definici�n de marcas
+	private Hashtable<String,Field> fields= new Hashtable<String, Field>();	//Hastable para almacenar los fields que leemos del fichero de definici�n de marcas
 	private Vector<String> marcas= new Vector<String>();		//vector para buscar marcas, aqu� est�n almacenadas las keys
 	
 	/**
@@ -99,11 +99,11 @@ public class PageTemplate {
             		in.reset();
             		return;
             	}
-            	else									//lectura de campos de una l�nea
+            	else									//lectura de fields de una l�nea
             	{
             		Field campo = new Field(line);
-                    campos.put(campo.getNombre(), campo);
-                	marcas.add(campo.getNombre());		//almacenamos en el array marcas[] la clave
+                    fields.put(campo.getName(), campo);
+                	marcas.add(campo.getName());		//almacenamos en el array marcas[] la clave
             	}
             	in.mark(20);
             }
@@ -111,26 +111,26 @@ public class PageTemplate {
 	}
 
 	/**
-	 * M�todo que devuelve el vector marcas, que contiene las claves de los campos
+	 * M�todo que devuelve el vector marcas, que contiene las claves de los fields
 	 * @return marcas
 	 */
-	public Vector<String> getMarcas() {
+	public Vector<String> getMarks() {
 		return marcas;
 	}
 
 	/**
-	 * M�todo que devuelve el Hastable campos, que contiene los campos
-	 * @return campos
+	 * M�todo que devuelve el Hastable fields, que contiene los fields
+	 * @return fields
 	 */
-	public Hashtable<String,Field> getCampos() {
-		return campos;
+	public Hashtable<String,Field> getFields() {
+		return fields;
 	}
 	
 	/**
 	 * M�todo para extraer el n�mero de una p�gina determinada de la plantilla
 	 * @return numPagina
 	 */
-	public int getNumPagina() {
+	public int getPageNumber() {
 		return numPagina;
 	}
 }

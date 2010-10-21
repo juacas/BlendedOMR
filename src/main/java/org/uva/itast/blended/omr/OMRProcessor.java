@@ -30,9 +30,9 @@
 *
 * @author Juan Pablo de Castro
 * @author Jesus Rodilana
-* @author María Jesús Verdú 
+* @author MarÃ­a JesÃºs VerdÃº 
 * @author Luisa Regueras 
-* @author Elena Verdú
+* @author Elena VerdÃº
 * 
 * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
 * @package blended
@@ -85,9 +85,9 @@ public class OMRProcessor {
 	 */
 	private static final Log logger = LogFactory.getLog(OMRProcessor.class);
 
-	// valor en p�xeles de la altura de la im�gen con la que se trabajara
+	// valor en pï¿½xeles de la altura de la imï¿½gen con la que se trabajara
 	public static final int _PAGE_HEIGHT_PIXELS = (int) (2339);
-	// valor en p�xeles de la anchura de la im�gen con la que se trabajara
+	// valor en pï¿½xeles de la anchura de la imï¿½gen con la que se trabajara
 	public static final int _PAGE_WIDTH_PIXELS = (int) (1700);
 
 	private String arg;
@@ -97,31 +97,31 @@ public class OMRProcessor {
 	private String inputPath;
 	// directorio donde se alojaran los resultados
 	private String outputdir;
-	// identificador que se utilizar� para marcar los ficheros
+	// identificador que se utilizarï¿½ para marcar los ficheros
 	private String userid;
-	// identificador que contiene el n�mero de documento que corresponde con una
+	// identificador que contiene el nï¿½mero de documento que corresponde con una
 	// actividad o cuestionario de
-	// Moodle. El �ltimo car�cter recoge el n�mero de p�gina en caso de haber
-	// m�s de una, p�gina
+	// Moodle. El ï¿½ltimo carï¿½cter recoge el nï¿½mero de pï¿½gina en caso de haber
+	// mï¿½s de una, pï¿½gina
 	private String activitycode;
-	// fichero con la descripci�n de las marcas
+	// fichero con la descripciï¿½n de las marcas
 	private String definitionfile;
-	// bandera para la opci�n de alineado
+	// bandera para la opciï¿½n de alineado
 	private boolean autoalign = false;
-	// bandera para la opci�n de alineado
+	// bandera para la opciï¿½n de alineado
 	private boolean medianfilter = false;
 	// marcador para el campo obligatorio -d
 	private boolean dflag = false;
 	
-	// plantilla para almacenar las p�ginas y los campos de definition file
-	Map<String,PlantillaOMR> templates=new HashMap<String,PlantillaOMR>();
+	// plantilla para almacenar las pï¿½ginas y los campos de definition file
+	Map<String,OMRTemplate> templates=new HashMap<String,OMRTemplate>();
 
-	private PlantillaOMR	selectedTemplate;
+	private OMRTemplate	selectedTemplate;
 
 	/**
 	 * @return the template
 	 */
-	public Map<String,PlantillaOMR> getTemplates()
+	public Map<String,OMRTemplate> getTemplates()
 	{
 		return templates;
 	}
@@ -129,7 +129,7 @@ public class OMRProcessor {
 	 * gets the last selected template
 	 * @return
 	 */
-	public PlantillaOMR getActiveTemplate()
+	public OMRTemplate getActiveTemplate()
 	{
 		return selectedTemplate;
 	}
@@ -139,12 +139,12 @@ public class OMRProcessor {
 	 * @param id
 	 * @return
 	 */
-	public PlantillaOMR selectTemplate(String id)
+	public OMRTemplate selectTemplate(String id)
 	{
 		selectedTemplate=templates.get(id);
 		return selectTemplate(selectedTemplate);
 	}
-	public PlantillaOMR selectTemplate(PlantillaOMR template)
+	public OMRTemplate selectTemplate(OMRTemplate template)
 	{
 		this.selectedTemplate=template;
 		return template;
@@ -152,12 +152,12 @@ public class OMRProcessor {
 	/**
 	 * @param template the template to set
 	 */
-	protected void addTemplate(PlantillaOMR template)
+	protected void addTemplate(OMRTemplate template)
 	{
 		templates.put(template.getTemplateID(), template);
 	}
 	/**
-	 * Constructor TestManipulation sin par�metros.
+	 * Constructor TestManipulation sin parï¿½metros.
 	 */
 	public OMRProcessor()
 	{
@@ -169,7 +169,7 @@ public class OMRProcessor {
 	 */
 	public void loadTemplate(String path) throws IOException
 	{
-		PlantillaOMR template=new PlantillaOMR(path); // se crea la plantilla seg�n el
+		OMRTemplate template=new OMRTemplate(path); // se crea la plantilla segï¿½n el
 		addTemplate(template);
 		selectTemplate(template);
 	}
@@ -182,7 +182,7 @@ public class OMRProcessor {
 		// read contents of templates
 		for (InputStream inputStream : contents)
 		{
-			addTemplate(new PlantillaOMR(inputStream));
+			addTemplate(new OMRTemplate(inputStream));
 		}
 	}
 	/**
@@ -232,14 +232,14 @@ public class OMRProcessor {
 		{
 			i++;
 		}
-		// detectamos todas las opciones (s�mbolo "-" delante)
+		// detectamos todas las opciones (sï¿½mbolo "-" delante)
 		while (i < args.length && args[i].startsWith("-"))
 		{
 			vflag=true;
 			arg=args[i++];
 
 			// opciones que requieren argumentos
-			// opci�n -i
+			// opciï¿½n -i
 			if (arg.equals("-i"))
 			{
 				if (i < args.length)
@@ -249,7 +249,7 @@ public class OMRProcessor {
 				if (vflag)
 					;
 			}
-			// opci�n -o
+			// opciï¿½n -o
 			else if (arg.equals("-o"))
 			{
 				if (i < args.length)
@@ -259,7 +259,7 @@ public class OMRProcessor {
 				if (vflag)
 					;
 			}
-			// opci�n -id1
+			// opciï¿½n -id1
 			else if (arg.equals("-id1"))
 			{
 				if (i < args.length)
@@ -269,7 +269,7 @@ public class OMRProcessor {
 				if (vflag)
 					;
 			}
-			// opci�n -id2
+			// opciï¿½n -id2
 			else if (arg.equals("-id2"))
 			{
 				System.err.println("warning -id2 deprecated");
@@ -281,7 +281,7 @@ public class OMRProcessor {
 				if (vflag)
 					;
 			}
-			// opci�n -d
+			// opciï¿½n -d
 			else if (arg.equals("-d"))
 			{
 				if (i < args.length)
@@ -305,7 +305,7 @@ public class OMRProcessor {
 						if (vflag)
 							setAutoalign(true);
 						break;
-					// Opci�n medianfilter
+					// Opciï¿½n medianfilter
 					case 'f':
 						if (vflag)
 							setMedianFilter(true);
@@ -318,7 +318,7 @@ public class OMRProcessor {
 			}
 		}
 
-		// si hay m�s par�metros se muestra un texto de error
+		// si hay mï¿½s parï¿½metros se muestra un texto de error
 		if (i < args.length || dflag == false)
 		{
 			throw new IllegalArgumentException("Usage: " + args[0] + " [-i inputdir] [-o outputdir] [-id1 USERID] [-id2 ACTIVITYCODE] [-a] -d definitionfile");
@@ -397,7 +397,7 @@ public class OMRProcessor {
 	 */
 	public String getFieldValue(String fieldName)
 	{
-		return getActiveTemplate().getPagina(1).getCampos().get(fieldName).getValue();
+		return getActiveTemplate().getPage(1).getFields().get(fieldName).getValue();
 	
 	}
 
@@ -412,7 +412,7 @@ public class OMRProcessor {
 	}
 
 	/**
-	 * Devuelve el nombre del archivo de definici�n de marcas
+	 * Devuelve el nombre del archivo de definiciï¿½n de marcas
 	 * 
 	 * @return definitionfile
 	 */
@@ -422,7 +422,7 @@ public class OMRProcessor {
 	}
 
 	/**
-	 * Marca el nombre del archivo de definici�n de marcas
+	 * Marca el nombre del archivo de definiciï¿½n de marcas
 	 * 
 	 * @param definitionfile
 	 */
@@ -432,7 +432,7 @@ public class OMRProcessor {
 	}
 
 	/**
-	 * Devuelve true o false en funci�n de si la opci�n autoalign esta activada
+	 * Devuelve true o false en funciï¿½n de si la opciï¿½n autoalign esta activada
 	 * o no
 	 * 
 	 * @return autoalign
@@ -443,7 +443,7 @@ public class OMRProcessor {
 	}
 
 	/**
-	 * Marca true o false en funci�n de si la opci�n autoalign esta activada o
+	 * Marca true o false en funciï¿½n de si la opciï¿½n autoalign esta activada o
 	 * no
 	 * 
 	 * @param autoalign
@@ -454,7 +454,7 @@ public class OMRProcessor {
 	}
 
 	/**
-	 * Devuelve true o false en funci�n de si la opci�n medianfilter esta
+	 * Devuelve true o false en funciï¿½n de si la opciï¿½n medianfilter esta
 	 * activada o no
 	 * 
 	 * @return medianfilter
@@ -465,7 +465,7 @@ public class OMRProcessor {
 	}
 
 	/**
-	 * Marca true o false en funci�n de si la opci�n medianfilter esta activada
+	 * Marca true o false en funciï¿½n de si la opciï¿½n medianfilter esta activada
 	 * o no
 	 * 
 	 * @param medianfilter
@@ -476,24 +476,24 @@ public class OMRProcessor {
 	}
 
 	/**
-	 * M�todo para escribir todos los valores de un campo, el par�metro key
+	 * Mï¿½todo para escribir todos los valores de un campo, el parï¿½metro key
 	 * indicara el nombre del campo
 	 * 
 	 * @param key
 	 */
-	public void escribirValoresCampo(String key)
+	public void writeFieldValues(String key)
 	{
-		Hashtable<String, Field> campos = getActiveTemplate().getPagina(1).getCampos();
+		Hashtable<String, Field> campos = getActiveTemplate().getPage(1).getFields();
 		Field campo = (Field) campos.get(key);
-		System.out.println("Nombre : " + campo.getNombre());
-		System.out.println("Numero de P�gina : " + campo.getNumPag());
+		System.out.println("Nombre : " + campo.getName());
+		System.out.println("Numero de Pï¿½gina : " + campo.getNumPag());
 		System.out.println("Tipo : " + campo.getTipo());
 		
 		System.out.println("Coordenadas : " + campo.getBBox());
 	}
 
 	/**
-	 * M�todo para leer todas las p�ginas que haya en inputpath
+	 * Mï¿½todo para leer todas las pï¿½ginas que haya en inputpath
 	 * 
 	 * @param inputPath
 	 * @return {@link Vector} with {@link File} that was not processed (with errors)
@@ -504,7 +504,7 @@ public class OMRProcessor {
 	{
 		PagesCollection pages;
 		File dir = new File(inputPath);
-		// obteneci�n de la lista de ficheros a procesar
+		// obteneciï¿½n de la lista de ficheros a procesar
 		if (!dir.isDirectory() && inputPath.endsWith(".zip"))
 		{
 			ZipFile zip=new ZipFile(dir);
@@ -543,22 +543,27 @@ public class OMRProcessor {
 	{
 		Vector<PageImage> errors = new Vector<PageImage>();
 		
-		
+		int count=1;
 		for (PageImage pageImage : pages)
 		{
 			try
 			{
 				long taskStart = System.currentTimeMillis();
 
-				PlantillaOMR template=OMRUtils.findBestSuitedTemplate(pageImage, getTemplates(), medianfilter);
+				if (logger.isInfoEnabled())
+				{
+					logger.info("Start processing pageImage "+count++ +"/"+pages.getNumPages()+"(" + pageImage.getName()+")"); //$NON-NLS-1$
+				}
+
+				OMRTemplate template=OMRUtils.findBestSuitedTemplate(pageImage, getTemplates(), medianfilter);
 				selectTemplate(template);
 
-				// se procesa la p�gina
+				// se procesa la pï¿½gina
 				OMRUtils.processPage(pageImage, isAutoalign(),
 						isMedianFilter(), outputdir, template);
 				
 				// se salvan los resultados en archivo
-				OMRUtils.saveOMRResults(pageImage.getFileName(),
+				OMRUtils.saveOMRResults(pageImage.getName(),
 						outputdir, template, OMRUtils.TEMPLATEID_FIELDNAME , userid);
 
 				pageImage.outputMarkedPage(outputdir);
@@ -567,13 +572,12 @@ public class OMRProcessor {
 				// pageImage.outputWorkingPage(outputdir);
 
 				pageImage.freeMemory();
-				logger.debug("Page  "+pageImage+" processed in (ms)"+(System.currentTimeMillis()-taskStart)); //$NON-NLS-1$
+				logger.info("Page  "+pageImage+" processed in "+(System.currentTimeMillis()-taskStart)+" ms."); //$NON-NLS-1$
 			}
 			catch (Exception e)
 			{
 				// report files with errors
 
-				
 				logger.error("processFileList(File[]) - Can't process page=" + pageImage.toString() ,e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				
 				errors.add(pageImage);
@@ -606,7 +610,7 @@ public class OMRProcessor {
 	}
 
 	/**
-	 * M�todo que obtiene toda la lista de ficheros dada por dir, s� dir es un
+	 * Mï¿½todo que obtiene toda la lista de ficheros dada por dir, sï¿½ dir es un
 	 * fichero obtiene dicho fichero
 	 * 
 	 * @param path
@@ -622,7 +626,7 @@ public class OMRProcessor {
 			{
 				public boolean accept(File dir, String name)
 				{
-					name.toLowerCase(); // se convierte el nombre a min�sculas
+					name.toLowerCase(); // se convierte el nombre a minï¿½sculas
 					return name.matches(regExp);
 				}
 			});
@@ -649,7 +653,7 @@ public class OMRProcessor {
 		{
 			if (logger.isInfoEnabled())
 		{
-			logger.info("filesFromZip(File) - ZipEntry zipEntry=" + zipEntr); //$NON-NLS-1$
+			logger.debug("filesFromZip(File) - ZipEntry zipEntry=" + zipEntr); //$NON-NLS-1$
 		}
 		
 		files.add(zipFile.getInputStream(zipEntr));

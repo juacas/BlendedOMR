@@ -142,6 +142,7 @@ public class PDFPageImage extends PageImage
 	{
 		long start=System.currentTimeMillis();
 		getPage();
+		
 		try
 		{
 			BufferedImage imagen = renderFullPageImage(page);
@@ -180,9 +181,9 @@ public class PDFPageImage extends PageImage
 	 * @see org.uva.itast.blended.omr.PageImage#getFileName()
 	 */
 	@Override
-	public String getFileName()
+	public String getName()
 	{
-		return filePath.getAbsolutePath();
+		return "Page "+pageNumber+" of "+filePath.getAbsolutePath();
 	}
 	/**
 	 * M�todo que lee una imagen pdf y la transforma en un objeto de tipo

@@ -62,7 +62,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.uva.itast.blended.omr.BufferedImageUtil;
 import org.uva.itast.blended.omr.Field;
-import org.uva.itast.blended.omr.PlantillaOMR;
+import org.uva.itast.blended.omr.OMRTemplate;
 
 public abstract class PageImage
 {
@@ -79,11 +79,11 @@ public abstract class PageImage
 	 */
 	public BufferedImage getImagen()
 	{
-		if (imagen==null)
+		if (image==null)
 		{
 			setImagen(createImage());
 		}
-		return imagen;
+		return image;
 	}
 
 	/**
@@ -91,7 +91,7 @@ public abstract class PageImage
 	 */
 	abstract BufferedImage createImage();
 
-	private BufferedImage	imagen;
+	private BufferedImage	image;
 	private BufferedImage	reportImage;
 	private AffineTransform	alignmentTransform;
 	private double alignmentSlope;
@@ -102,13 +102,13 @@ public abstract class PageImage
 	 */
 	protected void setImagen(BufferedImage imagen)
 	{
-		this.imagen = imagen;
+		this.image = imagen;
 		// configure alignment information
 		resetAlignmentInfo();
 	}
 
 	/**
-	 * @param imagen
+	 * @param image
 	 */
 	public void resetAlignmentInfo()
 	{
@@ -140,7 +140,7 @@ public abstract class PageImage
 	 * @return marcasalign (array de 4 Point2D con la posiciï¿½n de las cuatro marcas de alineaciï¿½n)
 	 * @throws IOException 
 	 */
-		public Point2D[] align(PlantillaOMR plantilla, PageImage pageImage)
+		public Point2D[] align(OMRTemplate plantilla, PageImage pageImage)
 		{
 			long taskStart = System.currentTimeMillis();
 			AffineTransform transform=new AffineTransform();
@@ -171,7 +171,7 @@ public abstract class PageImage
 			for (int i = 0; i < plantilla.getNumPaginas(); i++)
 			{
 				// Hastable para almacenar los campos que leemos del fichero de definiciï¿½n de marcas
-				Hashtable<String, Field> campos = plantilla.getPagina(i + 1).getCampos();
+				Hashtable<String, Field> campos = plantilla.getPage(i + 1).getFields();
 				Collection<Field> campos_val = campos.values();
 				for (Field campo : campos_val)
 				{
@@ -188,7 +188,7 @@ public abstract class PageImage
 						ebottomright.setLocation(coords.getX()+coords.getWidth(), coords.getY()+coords.getHeight());
 						
 						//Se buscan las marcas de alineaciï¿½n
-						marcasalign = buscarMarcaAlign(campo, pageImage);
+						marcasalign = searchAlignMarks(campo, pageImage);
 						
 						//Se calcula la escala (distancia entre dos puntos es igual a la raiz cuadrada de: (x2-x1)^2+(y2-y1)^2
 						dist_original_x = 
@@ -228,7 +228,7 @@ public abstract class PageImage
 			//Rotaciï¿½n
 		if (logger.isDebugEnabled())
 		{
-			logger.debug("align(PlantillaOMR, PageImage) - ï¿½ngulo de rotaciï¿½n: " + angulo_rotacion); //$NON-NLS-1$
+			logger.debug("align(OMRTemplate, PageImage) - ï¿½ngulo de rotaciï¿½n: " + angulo_rotacion); //$NON-NLS-1$
 		}
 			transform.rotate(angulo_rotacion, center_x, center_y);
 			
@@ -240,16 +240,16 @@ public abstract class PageImage
 
 		if (logger.isDebugEnabled())
 		{
-			logger.debug("align(PlantillaOMR, PageImage) - Traslado de x: " + punto_translado.getX()); //$NON-NLS-1$
-			logger.debug("align(PlantillaOMR, PageImage) - Traslado de y: " + punto_translado.getY()); //$NON-NLS-1$
+			logger.debug("align(OMRTemplate, PageImage) - Traslado de x: " + punto_translado.getX()); //$NON-NLS-1$
+			logger.debug("align(OMRTemplate, PageImage) - Traslado de y: " + punto_translado.getY()); //$NON-NLS-1$
 		}
 			transform.translate(punto_translado.getX(), punto_translado.getY());
 			
 			//se escala la transformada
 		if (logger.isDebugEnabled())
 		{
-			logger.debug("align(PlantillaOMR, PageImage) - Escala de x: " + escala_x); //$NON-NLS-1$
-			logger.debug("align(PlantillaOMR, PageImage) - Escala de y: " + escala_y); //$NON-NLS-1$
+			logger.debug("align(OMRTemplate, PageImage) - Escala de x: " + escala_x); //$NON-NLS-1$
+			logger.debug("align(OMRTemplate, PageImage) - Escala de y: " + escala_y); //$NON-NLS-1$
 		}
 			transform.scale(alignmentTransform.getScaleX()/escala_x, alignmentTransform.getScaleY()/escala_y);
 			setAlignmentInfo(transform);
@@ -266,7 +266,7 @@ public abstract class PageImage
 	 * @return realpoint (array de 4 Point2D con la posiciï¿½n de las cuatro marcas de alineaciï¿½n)
 	 * @throws IOException 
 	 */
-		private Point2D[] buscarMarcaAlign(Field campo, PageImage pageImage) 
+		private Point2D[] searchAlignMarks(Field campo, PageImage pageImage) 
 		{
 			Rectangle2D coords = campo.getBBox();
 			
@@ -697,25 +697,26 @@ public abstract class PageImage
 	/**
 	 * @return
 	 */
-	public abstract String getFileName();
+	public abstract String getName();
 
 	/**
 	 * Free up memory resources
 	 */
 	public void freeMemory()
 	{
+		long tstart=System.currentTimeMillis();
 		long freeMem=Runtime.getRuntime().freeMemory();
 		long availMem=Runtime.getRuntime().totalMemory();
 		reportImage.flush();
 		reportImage=null;
 		
-		imagen.flush();
+		image.flush();
 		setImagen(null);
 		System.gc();
 
 		if (logger.isDebugEnabled())
 		{
-			logger.debug("endUse() -TotalMem"+availMem/1024/1024+" MB freeMem Before=" + freeMem/1024/1024 + ", freeMem After=" + Runtime.getRuntime().freeMemory()/1024/1024); //$NON-NLS-1$ //$NON-NLS-2$
+			logger.debug("endUse()-Free Memory in "+(System.currentTimeMillis()-tstart)+" ms TotalMem:"+availMem/1024/1024+" MB freeMem Before:" + freeMem/1024/1024 + ", freeMem After:" + Runtime.getRuntime().freeMemory()/1024/1024); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
 
