@@ -68,7 +68,7 @@ public class Field {
 	public String toString()
 	{
 		
-		return this.nombre+" at ("+bbox.getX()+", "+bbox.getY()+")";
+		return this.nombre+" at ("+bbox.getX()+", "+bbox.getY()+")"+getValue()==null?"":"="+getValue();
 	}
 
 	private String nombre;

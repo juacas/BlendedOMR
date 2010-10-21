@@ -31,9 +31,9 @@ package org.uva.itast.blended.omr;
 *
 * @author Juan Pablo de Castro
 * @author Jesus Rodilana
-* @author María Jesús Verdú 
+* @author MarÃƒÂ­a JesÃƒÂºs VerdÃƒÂº 
 * @author Luisa Regueras 
-* @author Elena Verdú
+* @author Elena VerdÃƒÂº
 * 
 * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
 * @package blended
@@ -86,7 +86,7 @@ public class OMRUtils
 	public static final String	IMAGE_TYPE				= "png";
 
 	/**
-	 * M�todo que lee una imagen y la transforma en un objeto de tipo
+	 * MÃ¯Â¿Â½todo que lee una imagen y la transforma en un objeto de tipo
 	 * BufferedImage reescalado
 	 * 
 	 * @param filename
@@ -98,7 +98,7 @@ public class OMRUtils
 	
 
 	/**
-	 * M�todo que salva un objeto tipo imagen en un archivo f�sico de extensi�n
+	 * MÃ¯Â¿Â½todo que salva un objeto tipo imagen en un archivo fÃ¯Â¿Â½sico de extensiÃ¯Â¿Â½n
 	 * png
 	 * 
 	 * @param imagen
@@ -114,8 +114,8 @@ public class OMRUtils
 	}
 
 	/**
-	 * M�todo que a partir de un fichero pdf de entrada devuelve el n�mero su
-	 * p�ginas
+	 * MÃ¯Â¿Â½todo que a partir de un fichero pdf de entrada devuelve el nÃ¯Â¿Â½mero su
+	 * pÃ¯Â¿Â½ginas
 	 * 
 	 * @param inputdir
 	 * @return pdffile.getNumpages();
@@ -131,15 +131,15 @@ public class OMRUtils
 		ByteBuffer buf = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel
 				.size());
 		PDFFile pdffile = new PDFFile(buf); // se crea un objeto de tipo PDFFile
-											// para almacenar las p�ginas
-		return pdffile.getNumPages(); // se obtiene el n�mero de paginas
+											// para almacenar las pÃ¯Â¿Â½ginas
+		return pdffile.getNumPages(); // se obtiene el nÃ¯Â¿Â½mero de paginas
 	}
 
 
 
 	/**
-	 * M�todo que procesa una im�gen dada por el inputpath y que llama a los
-	 * m�todos que har�n posible el procesado de los datos que contenga
+	 * MÃ¯Â¿Â½todo que procesa una imÃ¯Â¿Â½gen dada por el inputpath y que llama a los
+	 * mÃ¯Â¿Â½todos que harÃ¯Â¿Â½n posible el procesado de los datos que contenga
 	 * 
 	 * @param inputpath
 	 * @param align
@@ -176,7 +176,7 @@ public class OMRUtils
 		processPage(pageImage, align, medianfilter, outputdir, plantilla); // se
 																			// procesa
 																			// la
-																			// p�gina
+																			// pÃ¯Â¿Â½gina
 		saveOMRResults(pageImage.getFileName(), outputdir, plantilla, acticode, userid);// se salvan
 																	// los
 																	// resultados
@@ -185,8 +185,8 @@ public class OMRUtils
 	}
 
 	/**
-	 * M�todo que procesa una p�gina a partir de un BufferedImage invocando a
-	 * los m�todos que buscar�n las marcas.
+	 * MÃ¯Â¿Â½todo que procesa una pÃ¯Â¿Â½gina a partir de un BufferedImage invocando a
+	 * los mÃ¯Â¿Â½todos que buscarÃ¯Â¿Â½n las marcas.
 	 * All templates passed as argument must share the location of the TemplateIdentification
 	 * in the screen 
 	 * TODO refactor this. Not to be static.
@@ -204,7 +204,7 @@ public class OMRUtils
 		
 		if (align)
 			{
-			//pageImage.align(); //encapsula procesamiento y representaci�n
+			//pageImage.align(); //encapsula procesamiento y representaciÃ¯Â¿Â½n
 			pageImage.align(plantilla, pageImage);
 			}
 		
@@ -236,36 +236,47 @@ public class OMRUtils
 	public static PlantillaOMR findBestSuitedTemplate(PageImage pageImage, Map<String, PlantillaOMR> plantillas, boolean medianfilter)
 	{
 		/**
-		 * Get any (first) template to recognize the TemplateID.
+		 * Get any (first) template with information for recognizing the TemplateID.
 		 */
-		PlantillaOMR aTemplate=plantillas.values().iterator().next();
-		PageTemplate firstPage=aTemplate.getPagina(1);
-		Field campo=firstPage.getCampos().get(TEMPLATEID_FIELDNAME);
-		if (campo==null)
-			throw new RuntimeException("No "+TEMPLATEID_FIELDNAME+" field found! in the templates in use.");
-		scanField(pageImage, campo, medianfilter);
-		String templateId=campo.getValue();
-		// extract the page number
-		if (templateId != null)
+		
+		for (PlantillaOMR aTemplate : plantillas.values())
 		{
-			templateId=templateId.substring(0, templateId.length() - 1);
+			PageTemplate firstPage=aTemplate.getPagina(1);
+			Field campo=firstPage.getCampos().get(TEMPLATEID_FIELDNAME);
+			if (campo!=null)
+				{
+				
+				scanField(pageImage, campo, medianfilter);
+				String templateId=campo.getValue();
+				// extract the page number
+				if (templateId != null)
+				{
+					templateId=templateId.substring(0, templateId.length() - 1);
+				}
+				/**
+				 * get the actual template
+				 */
+				PlantillaOMR plantilla=plantillas.get(templateId);
+				if (plantilla != null)
+				{
+					return plantilla;
+				}
+				else // return current template instead
+				{
+					logger.warn("findBestSuitedTemplate: Using a default template! May render unexpected results if documents have different structure!!", null); //$NON-NLS-1$
+					return aTemplate;
+				}
+				}
+
+			logger.warn("findBestSuitedTemplate- Template do not have a "+TEMPLATEID_FIELDNAME+" field. Try the next.", null); //$NON-NLS-1$
 		}
-		/**
-		 * get the actual template
-		 */
-		PlantillaOMR plantilla=plantillas.get(templateId);
-		if (plantilla != null)
-		{
-			return plantilla;
-		}
-		else
-		{
-			return plantillas.values().iterator().next();
-		}
+		throw new RuntimeException("No "+TEMPLATEID_FIELDNAME+" field found! in the templates in use.");
+		
+	
 	}
 	
 	/**
-	 * M�todo para buscar las marcas dentro de un objeto tipo Gray8Image
+	 * MÃ¯Â¿Â½todo para buscar las marcas dentro de un objeto tipo Gray8Image
 	 * 
 	 * @param outputdir
 	 * @param plantilla
@@ -282,16 +293,16 @@ public class OMRUtils
 		
 		for (int i = 0; i < plantilla.getNumPaginas(); i++)
 		{
-			// se recorren todas las marcas de una p�gina determinada
+			// se recorren todas las marcas de una pÃ¯Â¿Â½gina determinada
 			Hashtable<String, Field> campos = plantilla.getPagina(i + 1)
 					.getCampos(); // Hastable para almacenar los campos que
-									// leemos del fichero de definici�n de
+									// leemos del fichero de definiciÃ¯Â¿Â½n de
 									// marcas
 			Collection<Field> campos_val = campos.values();
 					
 			for (Field campo : campos_val)
 			{
-				// vamos a buscar en los campos le�dos, en marcas[] est�n
+				// vamos a buscar en los campos leÃ¯Â¿Â½dos, en marcas[] estÃ¯Â¿Â½n
 				// almacenadas las keys
 				scanField(pageImage, campo, medianfilter);
 			}
@@ -323,7 +334,7 @@ public class OMRUtils
 
 
 	/**
-	 * M�todo que busca marcas de tipo codebar en un objeto tipo BufferedImage
+	 * MÃ¯Â¿Â½todo que busca marcas de tipo codebar en un objeto tipo BufferedImage
 	 * 
 	 * @param pageImage
 	 * @param campo
@@ -351,7 +362,7 @@ public class OMRUtils
 	}
 
 	/**
-	 * M�todo que busca marcas de tipo circle en un objeto tipo Gray8Image
+	 * MÃ¯Â¿Â½todo que busca marcas de tipo circle en un objeto tipo Gray8Image
 	 * 
 	 * @param i
 	 *
@@ -366,13 +377,13 @@ public class OMRUtils
 			PageImage pageImage, Field campo, boolean medianfilter)
 	{
 		Rectangle2D bbox=campo.getBBox();//milimeters
-//		Rectangle bboxPx = pageImage.toPixels(bbox);//p�xeles
+//		Rectangle bboxPx = pageImage.toPixels(bbox);//pÃ¯Â¿Â½xeles
 		// center of the mark
 		Point2D center=new Point();
-		center.setLocation(bbox.getCenterX(),bbox.getCenterY()); //nos da el centro geom�trico del rect�ngulo
+		center.setLocation(bbox.getCenterX(),bbox.getCenterY()); //nos da el centro geomÃ¯Â¿Â½trico del rectÃ¯Â¿Â½ngulo
 		
 		
-		// leemos la anchura de las marcas en mil�metros
+		// leemos la anchura de las marcas en milÃ¯Â¿Â½metros
 		double markWidth = Math.max(1, bbox.getWidth());
 		double markHeight = Math.max(1,bbox.getHeight());
 		SolidCircleMarkScanner markScanner = new SolidCircleMarkScanner(pageImage,markWidth,markHeight,medianfilter);
@@ -407,7 +418,7 @@ public class OMRUtils
 	}
 
 	/**
-	 * M�todo para guardar los resultados del proceso de reconocimiento de
+	 * MÃ¯Â¿Â½todo para guardar los resultados del proceso de reconocimiento de
 	 * marcas
 	 * 
 	 * @param outputdir
@@ -425,16 +436,16 @@ public class OMRUtils
 		{
 			
 			int useridInt = Integer.parseInt(useridField.getValue()); // evita
-																		// inyecci�n
+																		// inyecciÃ¯Â¿Â½n
 																		// de path
 																		// en el
-																		// c�digo
+																		// cÃ¯Â¿Â½digo
 			int acticodeInt = Integer.parseInt(acticodeField.getValue()); // evita
-																			// inyecci�n
+																			// inyecciÃ¯Â¿Â½n
 																			// de
 																			// path
 																			// en el
-																			// c�digo
+																			// cÃ¯Â¿Â½digo
 
 			File dir = new File(outputdir); // que venga de parametro
 			File outputFile = new File(dir, "omr_result_" + useridInt + "_"
@@ -444,11 +455,12 @@ public class OMRUtils
 			for (int i = 0; i < plantilla.getNumPaginas(); i++)
 			{
 				out.println("Filename=" + inputpath);
-				out.println("[Page" + plantilla.getPagina(i + 1).getNumPagina()
+				PageTemplate pagina=plantilla.getPagina(i + 1);
+				out.println("[Page" + pagina.getNumPagina()
 						+ "]");
-				for (int k = 0; k < plantilla.getPagina(i + 1).getMarcas().size(); k++)
+				for (int k = 0; k < pagina.getMarcas().size(); k++)
 				{
-					Field campo2 = campos.get(plantilla.getPagina(i + 1)
+					Field campo2 = campos.get(pagina
 							.getMarcas().elementAt(k));
 					out.println(campo2.getNombre() + "=" + campo2.getValue());
 				}
@@ -459,7 +471,7 @@ public class OMRUtils
 		catch (NumberFormatException e)
 		{
 			// TODO Auto-generated catch block
-			logger.error("saveOMRResults:  Can't obtain "+acticode+"="+acticodeField.getValue()+" and "+userid+"="+useridField.getValue()+" for outputting report."); //$NON-NLS-1$
+			logger.error("saveOMRResults:  Can't obtain "+acticode+"="+acticodeField+" and "+userid+"="+useridField+" for outputting report."); //$NON-NLS-1$
 			
 		}
 		return;

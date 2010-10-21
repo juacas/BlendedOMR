@@ -84,6 +84,10 @@ public class ImageFilePage extends PageImage
 	
 	}
 
+	public ImageFilePage()
+	{
+	}
+
 	/* (non-Javadoc)
 	 * @see org.uva.itast.blended.omr.PageImage#getImagen()
 	 */
@@ -109,19 +113,21 @@ public class ImageFilePage extends PageImage
 	@Override
 	public String toString()
 	{
-		return filePath.getName();
+		return getFileName();
 	}
 
 	/**
 	 * @return
 	 * @throws IOException 
 	 */
-	private BufferedImage loadImageFile() throws IOException
+	protected BufferedImage loadImageFile() throws IOException
 	{
 		BufferedImage imagen;
 		
 		long start=System.currentTimeMillis();
 		imagen = ImageIO.read(filePath);
+		if (imagen ==null)
+			throw new IOException("File "+filePath+"do not contain a valid image");
 //		if(false)
 //			imagen = reescalar();	
 		logger.debug("Image page ("+filePath.getName()+") converted in (ms)"+(System.currentTimeMillis()-start)); //$NON-NLS-1$

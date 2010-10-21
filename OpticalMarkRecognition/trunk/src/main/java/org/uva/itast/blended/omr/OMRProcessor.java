@@ -75,8 +75,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.PagesCollection;
+import org.uva.itast.blended.omr.pages.ZippedImageFilePage;
 
 public class OMRProcessor {
+	public static final String	IMAGE_TYPES_REG_EXPR	=".*\\.(jpg|png|pdf)";
+
 	/**
 	 * Logger for this class
 	 */
@@ -209,13 +212,18 @@ public class OMRProcessor {
 		}
 		return contents;
 	}
+	
+	static final String CMD_USAGE="Command line usage:  command [-a] [-f] [-i inputdir][-o outputdir] [-id1 USERID] -d [definitionfiles]\n" +
+			"	-i path with the images to be processed. Can be a file, a multipage PDF, directory with images or a Zip with images.\n" +
+			"	-d path with the template definition files to be processed. Can be a file, a directory or a Zip with files with .fields extension. Al template definitions must share the same TEMPLATEFIELD field.\n" +
+			"	-a try to align the page using the Align[FRAME] field\n" +
+			"	-f filter the images with a median filter to remove dithering or noise\n" +
+			"	-id1 name of the field used to compose the output file names with the TEMPLATEFIELD detected value.\n";
 	/**
-	 * M�todo que lee la l�nea de comandos. Identifica que las opciones y
-	 * par�metros sean correctos y los almacena. uso: blended_omr [-i inputdir]
-	 * [-o outputdir] [-id1 USERID] [-id2 ACTIVITYCODE] [-a] [-f] -d
-	 * definitionfiles -a indica que hay que alinear la p�gina -f indica que hay
-	 * que filtrar los campos (para im�genes de mala calidad)
-	 */
+	 *Process command line arguments as stated in {@link #CMD_USAGE} and configure the processor: 
+	 * {@value #CMD_USAGE}
+	 *@see #CMD_USAGE 
+	 */	
 	public void readCommandLine(String[] args)
 	{
 		int i=0, j;
@@ -489,17 +497,41 @@ public class OMRProcessor {
 	 * 
 	 * @param inputPath
 	 * @return {@link Vector} with {@link File} that was not processed (with errors)
+	 * @throws IOException 
+	 * @throws ZipException 
 	 */
-	public Vector<PageImage> processPath(String inputPath)
+	public Vector<PageImage> processPath(String inputPath) throws ZipException, IOException
 	{
+		PagesCollection pages;
 		File dir = new File(inputPath);
 		// obteneci�n de la lista de ficheros a procesar
-		File[] files = obtainFileList(dir,".*\\.(jpg|png|pdf)");
-		PagesCollection pages = getPageCollection(files);
+		if (!dir.isDirectory() && inputPath.endsWith(".zip"))
+		{
+			ZipFile zip=new ZipFile(dir);
+			
+			pages = getPageCollection(zip, selectZipEntries(zip, IMAGE_TYPES_REG_EXPR));
+		}
+		else
+		{
+			File[] files = obtainFileList(dir,IMAGE_TYPES_REG_EXPR);
+			
+			 pages = getPageCollection(files);
+		}
+			
 		// procesar ficheros
 		return processPages(pages);
 	}
 
+	protected PagesCollection getPageCollection(ZipFile zip, List<ZipEntry> selectedZipEntries)
+	{
+		PagesCollection pages=new PagesCollection();
+		
+		for (ZipEntry entry : selectedZipEntries)
+		{
+			pages.addPage(new ZippedImageFilePage(zip, entry));
+		}
+		return pages;
+	}
 	/**
 	 * Process a collection of pages
 	 * 
@@ -542,7 +574,7 @@ public class OMRProcessor {
 				// report files with errors
 
 				
-				logger.error("processFileList(File[]) - Can't process page=" + pageImage.toString() + ", e=" + e,e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				logger.error("processFileList(File[]) - Can't process page=" + pageImage.toString() ,e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				
 				errors.add(pageImage);
 			}
@@ -611,21 +643,38 @@ public class OMRProcessor {
 	{
 		List<InputStream> files=new ArrayList<InputStream>();
 		
+		List<ZipEntry> selectedEntries=selectZipEntries(zipFile, regExpr);
+		
+		for (ZipEntry zipEntr : selectedEntries)
+		{
+			if (logger.isInfoEnabled())
+		{
+			logger.info("filesFromZip(File) - ZipEntry zipEntry=" + zipEntr); //$NON-NLS-1$
+		}
+		
+		files.add(zipFile.getInputStream(zipEntr));
+		}
+		
+		return files;
+	}
+	/**
+	 * @param zipFile
+	 * @param regExpr
+	 * @return
+	 */
+	protected static List<ZipEntry> selectZipEntries(ZipFile zipFile, String regExpr)
+	{
 		Enumeration<? extends ZipEntry> entries=zipFile.entries();
+		List<ZipEntry> selectedEntries=new ArrayList<ZipEntry>();
 		while (entries.hasMoreElements())
 		{
 			ZipEntry zipEntry=(ZipEntry) entries.nextElement();
 			if (!zipEntry.isDirectory() && zipEntry.getName().matches(regExpr))
 			{
-				if (logger.isInfoEnabled())
-				{
-					logger.info("filesFromZip(File) - ZipEntry zipEntry=" + zipEntry); //$NON-NLS-1$
-				}
-				
-				files.add(zipFile.getInputStream(zipEntry));
+			selectedEntries.add(zipEntry);				
 			}
 
 		}
-		return files;
+		return selectedEntries;
 	}
 }

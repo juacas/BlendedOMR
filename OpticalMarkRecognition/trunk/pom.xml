@@ -54,7 +54,6 @@
             <outputDirectory>target</outputDirectory></configuration>
             </execution>
             </executions> 
-  			
   		</plugin>
   	</plugins>
   	<extensions>
@@ -92,12 +91,12 @@
      	<scope>test</scope>
      </dependency>
   </dependencies>
-  <url>http://www.itnt.uva.es</url>
+  <url>http://itastdevserver.tel.uva.es/proyectos/moodle-projects/wiki/blended/introduction</url>
    <scm>
-    <connection>scm:svn:https://itastmain.tel.uva.es/svn/PFC/PFC_OpticalMarkRecognition</connection>
-    <developerConnection>scm:svn:https://itastmain.tel.uva.es/svn/PFC/PFC_OpticalMarkRecognition</developerConnection>
+    <connection>scm:svn:http://itastdevserver.tel.uva.es/svn/moodle-projects/OpticalMarkRecognition/trunk</connection>
+    <developerConnection>scm:svn:http://itastdevserver.tel.uva.es/svn/moodle-projects/OpticalMarkRecognition/trunk</developerConnection>
     <tag>HEAD</tag>
-    <url>https://itastmain.tel.uva.es/svn/PFC/PFC_OpticalMarkRecognition</url>
+    <url>http://itastdevserver.tel.uva.es/svn/moodle-projects/OpticalMarkRecognition/trunk</url>
   </scm>
    <distributionManagement>
    </distributionManagement>

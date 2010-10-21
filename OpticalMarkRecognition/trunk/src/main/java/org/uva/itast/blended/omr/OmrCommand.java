@@ -45,7 +45,9 @@ public class OmrCommand {
 
 	/**
 	 * M�todo main del programa
-	 * 
+	 * Process the command line as described in {@link OMRProcessor#readCommandLine(String[])}
+	 * The arguments are: 
+	 * {@value OMRProcessor#CMD_USAGE}
 	 * @param args
 	 * @throws Exception
 	 */
@@ -64,7 +66,8 @@ public class OmrCommand {
 		}
 		catch (IllegalArgumentException e)
 		{
-			System.out.print("OmrCommand bad arguments: "+e.getMessage());
+			System.out.println("OmrCommand bad arguments: "+e.getMessage());
+			System.out.println(OMRProcessor.CMD_USAGE);
 		}
 	}
 }
