@@ -144,7 +144,7 @@ public class Field {
      * Devuelve el nombre del campo
      * @return nombre
      */
-	public String getNombre() {
+	public String getName() {
         return nombre;
     }
     

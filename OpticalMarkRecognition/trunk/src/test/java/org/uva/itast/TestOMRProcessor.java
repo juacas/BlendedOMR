@@ -30,9 +30,9 @@
 *
 * @author Juan Pablo de Castro
 * @author Jesus Rodilana
-* @author MarÃ­a JesÃºs VerdÃº 
+* @author MarÃƒÂ­a JesÃƒÂºs VerdÃƒÂº 
 * @author Luisa Regueras 
-* @author Elena VerdÃº
+* @author Elena VerdÃƒÂº
 * 
 * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
 * @package blended
@@ -60,7 +60,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Test;
 import org.uva.itast.blended.omr.OMRProcessor;
-import org.uva.itast.blended.omr.PlantillaOMR;
+import org.uva.itast.blended.omr.OMRTemplate;
 import org.uva.itast.blended.omr.pages.PageImage;
 
 public class TestOMRProcessor
@@ -150,7 +150,7 @@ public class TestOMRProcessor
 		processor.readCommandLine(args);
 		processor.loadTemplate(processor.getDefinitionfile());
 		
-		Map<String,PlantillaOMR> templates= processor.getTemplates();
+		Map<String,OMRTemplate> templates= processor.getTemplates();
 		
 		assertTrue(templates.size()==1); // 
 		assertTrue(templates.containsKey("000071949057"));
@@ -159,7 +159,7 @@ public class TestOMRProcessor
 	}
 
 	/**
-	 * Test method for {@link org.uva.itast.blended.omr.OMRProcessor#escribirValoresCampo(java.lang.String)}.
+	 * Test method for {@link org.uva.itast.blended.omr.OMRProcessor#writeFieldValues(java.lang.String)}.
 	 */
 	public void testEscribirValoresCampo()
 	{
@@ -179,12 +179,12 @@ public class TestOMRProcessor
 		prepareConfig(testPath);
 
 		Vector<PageImage> errores;
-		// detecciï¿½n de errores
+		// detecciÃ¯Â¿Â½n de errores
 		errores=processor.processPath("nonexistentfile.png");
 		assertTrue("Errors not detected ",errores.size()==1);
 		
 		processor.setMedianFilter(true);
-		errores= processor.processPath(testPath.getAbsolutePath());        		//se leen las pï¿½ginas escaneadas
+		errores= processor.processPath(testPath.getAbsolutePath());        		//se leen las pÃ¯Â¿Â½ginas escaneadas
 		assertTrue("Errors encountered."+errores,errores.isEmpty());
 	
 		
@@ -241,21 +241,31 @@ public class TestOMRProcessor
 		
 		// use a single, common, template definition
 		prepareConfig(testPath);
-		
-		Vector<PageImage> errores;
-		// detecciï¿½n de errores
-		// use a collection of templates from a directory
 		File dir=testPath.getParentFile();
-		processor.getTemplates().clear();
-		processor.loadTemplateCollection(dir.getAbsolutePath());
-		
-		detectErrors(testPath);
-		
+		Vector<PageImage> errores;
+
+			if (logger.isInfoEnabled())
+			{
+				logger.info("Test with definitions in a zip."); //$NON-NLS-1$
+			}
+
 		processor.getTemplates().clear();
 		File zipDefinitions=new File(dir,"form_test.zip");
 		processor.loadTemplateCollection(zipDefinitions.getAbsolutePath());
 		
 		detectErrors(testPath);
+		// detecciÃ¯Â¿Â½n de errores
+		// use a collection of templates from a directory
+		if (logger.isInfoEnabled())
+		{
+			logger.info("Test with definitions in a directory."); //$NON-NLS-1$
+		}
+		processor.getTemplates().clear();
+		processor.loadTemplateCollection(dir.getAbsolutePath());
+		
+		detectErrors(testPath);
+		
+		
 		}
 		catch (Exception e)
 		{
@@ -289,7 +299,7 @@ public class TestOMRProcessor
 		prepareConfig(testPath);
 		
 		Vector<PageImage> errores;
-		// detecciï¿½n de errores
+		// detecciÃ¯Â¿Â½n de errores
 		// use a collection of templates from a directory
 		File dir=testPath.getParentFile();
 		processor.getTemplates().clear();
@@ -315,10 +325,10 @@ public class TestOMRProcessor
 	private void detectErrors(File testPath) throws ZipException, IOException
 	{
 		Vector<PageImage> errores;
-		// detecciï¿½n de errores
+		// detecciÃ¯Â¿Â½n de errores
 		processor.setMedianFilter(true);
-		errores= processor.processPath(testPath.getAbsolutePath());        		//se leen las pï¿½ginas escaneadas
-		assertTrue("Errors encountered",errores.isEmpty());
+		errores= processor.processPath(testPath.getAbsolutePath());        		//se leen las pÃ¯Â¿Â½ginas escaneadas
+		assertTrue("Errors encountered"+errores,errores.isEmpty());
 	}
 	/**
 	 * @return
@@ -336,8 +346,8 @@ public class TestOMRProcessor
 			outputDir.mkdir();
 		args[3]=outputDir.getAbsolutePath();
 		args[9]=new  File (testPath.getParentFile(),"prac_test_lab.fields").getAbsolutePath();
-		processor.readCommandLine(args);        						//se lee la lï¿½nea de comandos
-        processor.loadTemplate(processor.getDefinitionfile());	//se lee el fichero con la descripciï¿½n de las marcas
+		processor.readCommandLine(args);        						//se lee la lÃ¯Â¿Â½nea de comandos
+        processor.loadTemplate(processor.getDefinitionfile());	//se lee el fichero con la descripciÃ¯Â¿Â½n de las marcas
 		return args;
 	}
 	

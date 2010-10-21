@@ -61,7 +61,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Vector;
 
-public class PlantillaOMR {
+public class OMRTemplate {
 	
 	// to identificate and index the templates with it
 	String templateID;
@@ -70,18 +70,18 @@ public class PlantillaOMR {
 	//cada elemento almacena un n�mero de p�gina y el contenido de dicha p�gina
 	
 	/**
-	 * Constructor de la clase PlantillaOMR, crea una plantilla a partir
+	 * Constructor de la clase OMRTemplate, crea una plantilla a partir
 	 * del n�mero de p�ginas y el definitionfile, adem�s crea una PaginaDefinicionMarcas
 	 * por cada p�gina del definitonfile y las almacena en la plantilla
 	 * @param definitionfile
 	 * @throws IOException
 	 */
-	public PlantillaOMR(String definitionfile) throws IOException
+	public OMRTemplate(String definitionfile) throws IOException
 	{	
 		FileInputStream inputStream=new FileInputStream(definitionfile);
 		load(inputStream);
 	}
-	public PlantillaOMR(InputStream inputStream) throws IOException
+	public OMRTemplate(InputStream inputStream) throws IOException
 	{	
 		load(inputStream);
 	}
@@ -117,7 +117,7 @@ public class PlantillaOMR {
 	 *  @param pagina se numera empezando en 1
 	 *  @return pagina.elementAt(pagina-1)
 	 */
-	public PageTemplate getPagina(int pagina) {
+	public PageTemplate getPage(int pagina) {
 		return paginas.elementAt(pagina-1);
 	}
 	

@@ -16,7 +16,7 @@ public class ZippedImageFilePage extends ImageFilePage
 	 * @see org.uva.itast.blended.omr.pages.ImageFilePage#getFileName()
 	 */
 	@Override
-	public String getFileName()
+	public String getName()
 	{
 		return zipFile.getName()+"->"+entry.getName();
 	}

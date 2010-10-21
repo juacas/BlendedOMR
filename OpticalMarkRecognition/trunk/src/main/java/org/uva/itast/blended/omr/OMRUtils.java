@@ -149,13 +149,13 @@ public class OMRUtils
 	 * @throws IOException
 	 */
 	public static void processsPageAnSaveResultsWithLogging(PageImage page, boolean align,
-			boolean medianfilter, String outputdir, Map<String,PlantillaOMR> plantillas, String acticode, String userid)
+			boolean medianfilter, String outputdir, Map<String,OMRTemplate> plantillas, String acticode, String userid)
 			throws IOException
 	{
 			long taskStart = System.currentTimeMillis();
 			
 			processPageAndSaveResults(align, medianfilter,outputdir, plantillas, page, acticode, userid);
-			logger.debug("Page  ("+page.getFileName()+") processed in (ms)"+(System.currentTimeMillis()-taskStart)); //$NON-NLS-1$
+			logger.debug("Page  ("+page.getName()+") processed in (ms)"+(System.currentTimeMillis()-taskStart)); //$NON-NLS-1$
 	}
 
 	/**
@@ -168,16 +168,16 @@ public class OMRUtils
 	 * @throws FileNotFoundException
 	 */
 	public static void processPageAndSaveResults(boolean align,
-			boolean medianfilter, String outputdir, Map<String,PlantillaOMR> plantillas,
+			boolean medianfilter, String outputdir, Map<String,OMRTemplate> plantillas,
 			PageImage pageImage, String acticode, String userid) throws FileNotFoundException
 	{
-		PlantillaOMR plantilla=findBestSuitedTemplate(pageImage, plantillas, medianfilter);
+		OMRTemplate plantilla=findBestSuitedTemplate(pageImage, plantillas, medianfilter);
 		
 		processPage(pageImage, align, medianfilter, outputdir, plantilla); // se
 																			// procesa
 																			// la
 																			// pÃ¯Â¿Â½gina
-		saveOMRResults(pageImage.getFileName(), outputdir, plantilla, acticode, userid);// se salvan
+		saveOMRResults(pageImage.getName(), outputdir, plantilla, acticode, userid);// se salvan
 																	// los
 																	// resultados
 																	// en
@@ -197,7 +197,7 @@ public class OMRUtils
 	 * @throws FileNotFoundException
 	 */
 	public static void processPage(PageImage pageImage, boolean align,
-			boolean medianfilter, String outputdir, PlantillaOMR plantilla)
+			boolean medianfilter, String outputdir, OMRTemplate plantilla)
 			throws FileNotFoundException
 	{
 		
@@ -218,10 +218,10 @@ public class OMRUtils
 		
 	}
 	public static void processPage(PageImage pageImage, boolean align,
-		boolean medianfilter, String outputdir, Map<String,PlantillaOMR> plantillas)
+		boolean medianfilter, String outputdir, Map<String,OMRTemplate> plantillas)
 		throws FileNotFoundException
 {
-		PlantillaOMR plantilla=findBestSuitedTemplate(pageImage, plantillas, medianfilter);
+		OMRTemplate plantilla=findBestSuitedTemplate(pageImage, plantillas, medianfilter);
 		processPage(pageImage, align, medianfilter, outputdir, plantilla);
 }
 	/**
@@ -229,25 +229,25 @@ public class OMRUtils
 	 * template in the map.
 	 * If no valid TemplateId code is found the first item in the map is selected.
 	 * @param pageImage
-	 * @param plantillas
+	 * @param templates
 	 * @param medianfilter
 	 * @return
 	 */
-	public static PlantillaOMR findBestSuitedTemplate(PageImage pageImage, Map<String, PlantillaOMR> plantillas, boolean medianfilter)
+	public static OMRTemplate findBestSuitedTemplate(PageImage pageImage, Map<String, OMRTemplate> templates, boolean medianfilter)
 	{
 		/**
 		 * Get any (first) template with information for recognizing the TemplateID.
 		 */
 		
-		for (PlantillaOMR aTemplate : plantillas.values())
+		for (OMRTemplate aTemplate : templates.values())
 		{
-			PageTemplate firstPage=aTemplate.getPagina(1);
-			Field campo=firstPage.getCampos().get(TEMPLATEID_FIELDNAME);
-			if (campo!=null)
+			PageTemplate firstPage=aTemplate.getPage(1);
+			Field field=firstPage.getFields().get(TEMPLATEID_FIELDNAME);
+			if (field!=null)
 				{
 				
-				scanField(pageImage, campo, medianfilter);
-				String templateId=campo.getValue();
+				scanField(pageImage, field, medianfilter);
+				String templateId=field.getValue();
 				// extract the page number
 				if (templateId != null)
 				{
@@ -256,7 +256,7 @@ public class OMRUtils
 				/**
 				 * get the actual template
 				 */
-				PlantillaOMR plantilla=plantillas.get(templateId);
+				OMRTemplate plantilla=templates.get(templateId);
 				if (plantilla != null)
 				{
 					return plantilla;
@@ -268,7 +268,7 @@ public class OMRUtils
 				}
 				}
 
-			logger.warn("findBestSuitedTemplate- Template do not have a "+TEMPLATEID_FIELDNAME+" field. Try the next.", null); //$NON-NLS-1$
+			logger.debug("findBestSuitedTemplate- Template do not have a "+TEMPLATEID_FIELDNAME+" field. Try the next.", null); //$NON-NLS-1$
 		}
 		throw new RuntimeException("No "+TEMPLATEID_FIELDNAME+" field found! in the templates in use.");
 		
@@ -286,16 +286,16 @@ public class OMRUtils
 	 * @return plantilla
 	 * @throws FileNotFoundException
 	 */
-	public static PlantillaOMR searchMarks(String outputdir,
-			PlantillaOMR plantilla,  PageImage pageImage, 
+	public static OMRTemplate searchMarks(String outputdir,
+			OMRTemplate plantilla,  PageImage pageImage, 
 			boolean medianfilter) throws FileNotFoundException
 	{
 		
 		for (int i = 0; i < plantilla.getNumPaginas(); i++)
 		{
 			// se recorren todas las marcas de una pÃ¯Â¿Â½gina determinada
-			Hashtable<String, Field> campos = plantilla.getPagina(i + 1)
-					.getCampos(); // Hastable para almacenar los campos que
+			Hashtable<String, Field> campos = plantilla.getPage(i + 1)
+					.getFields(); // Hastable para almacenar los campos que
 									// leemos del fichero de definiciÃ¯Â¿Â½n de
 									// marcas
 			Collection<Field> campos_val = campos.values();
@@ -328,7 +328,7 @@ public class OMRUtils
 			buscarMarcaCircle(pageImage , campo, medianfilter);
 		else if (tipo == Field.CODEBAR)
 			{
-			buscarMarcaCodebar(pageImage, campo, medianfilter);
+			searchBarcodeMark(pageImage, campo, medianfilter);
 			}
 	}
 
@@ -337,25 +337,25 @@ public class OMRUtils
 	 * MÃ¯Â¿Â½todo que busca marcas de tipo codebar en un objeto tipo BufferedImage
 	 * 
 	 * @param pageImage
-	 * @param campo
+	 * @param field
 	 * @param medianfilter
 	 */
-	private static void buscarMarcaCodebar(PageImage pageImage, Field campo,boolean medianFilter)
+	private static void searchBarcodeMark(PageImage pageImage, Field field,boolean medianFilter)
 	{
 
 	
 		BarcodeScanner barcodeScanner=new BarcodeScanner(pageImage,medianFilter);
 		try
 		{
-			campo.setValue( barcodeScanner.getParsedCode(campo) );
-			barcodeScanner.markBarcode(campo);
+			field.setValue( barcodeScanner.getParsedCode(field) );
+			barcodeScanner.markBarcode(field);
 		}
 		catch (MarkScannerException e)
 		{
-			campo.setValue(null);
-			campo.setValid(false);
+			field.setValue(null);
+			field.setValid(false);
 			if (logger.isDebugEnabled())
-				barcodeScanner.markBarcode(campo);
+				barcodeScanner.markBarcode(field);
 		}
 		
 		//barcodeManipulator.markBarcode(campo);
@@ -366,17 +366,16 @@ public class OMRUtils
 	 * 
 	 * @param i
 	 *
-	 * @param campo 
+	 * @param field 
 	 * @param markedImage 
 	 * @param mark
 	 * @param markedImage
-	 * @param campo
+	 * @param field
 	 * @param medianfilter
 	 */
-	private static void buscarMarcaCircle( 
-			PageImage pageImage, Field campo, boolean medianfilter)
+	private static void buscarMarcaCircle(PageImage pageImage, Field field, boolean medianfilter)
 	{
-		Rectangle2D bbox=campo.getBBox();//milimeters
+		Rectangle2D bbox=field.getBBox();//milimeters
 //		Rectangle bboxPx = pageImage.toPixels(bbox);//pÃ¯Â¿Â½xeles
 		// center of the mark
 		Point2D center=new Point();
@@ -390,30 +389,30 @@ public class OMRUtils
 
 		if (logger.isDebugEnabled())
 		{
-			logger.debug("buscarMarcaCircle - campo=" + campo); //$NON-NLS-1$
+			logger.debug("buscarMarcaCircle - campo=" + field); //$NON-NLS-1$
 		}
 		try
 		{
-			ScanResult res=markScanner.scanField(campo);
+			ScanResult res=markScanner.scanField(field);
 			
 			if ( (Boolean)res.getResult() ) // se busca la marca que se desea encontrar
 			{
 				if (logger.isDebugEnabled())
 				{
-					logger.debug("buscarMarcaCircle - >>>>>>>Found mark at " + bbox + " (mm) :" + campo); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+					logger.debug("buscarMarcaCircle - >>>>>>>Found mark at " + bbox + " (mm) :" + field); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 				}
-				campo.setValue("true");
+				field.setValue("true");
 													// si se ha encontrado la marca
 				markScanner.putCircleMarkOnImage(pageImage);
 			} else
 			{
-				campo.setValue("false");
+				field.setValue("false");
 			}
-			campo.setValid(true);
+			field.setValid(true);
 		}
 		catch (MarkScannerException e)
 		{
-			campo.setValid(false);
+			field.setValid(false);
 		}
 	}
 
@@ -427,42 +426,36 @@ public class OMRUtils
 	 * @throws FileNotFoundException
 	 */
 	public static void saveOMRResults(String inputpath, String outputdir,
-			PlantillaOMR plantilla, String acticode, String userid) throws FileNotFoundException
+			OMRTemplate plantilla, String templateIdName, String userIdName) throws FileNotFoundException
 	{
-		Hashtable<String, Field> campos = plantilla.getPagina(1).getCampos();
-		Field acticodeField = campos.get(acticode);
-		Field useridField = campos.get(userid);
+		Hashtable<String, Field> fields = plantilla.getPage(1).getFields();
+		Field templateIdField = fields.get(templateIdName);
+		Field useridField = fields.get(userIdName);
 		try
 		{
+			if (useridField==null || templateIdField==null) // simulate a NumberFormat.
+				throw new NumberFormatException("There is no "+TEMPLATEID_FIELDNAME+" field defined in the template!!");
 			
-			int useridInt = Integer.parseInt(useridField.getValue()); // evita
-																		// inyecciÃ¯Â¿Â½n
-																		// de path
-																		// en el
-																		// cÃ¯Â¿Â½digo
-			int acticodeInt = Integer.parseInt(acticodeField.getValue()); // evita
-																			// inyecciÃ¯Â¿Â½n
-																			// de
-																			// path
-																			// en el
-																			// cÃ¯Â¿Â½digo
+			/**
+			 * Force to cast to integer to avoid the injection of paths in the Ids.
+			 */
+			int useridInt = Integer.parseInt(useridField.getValue()); 
+			int templateIdInt = Integer.parseInt(templateIdField.getValue()); 																	
 
 			File dir = new File(outputdir); // que venga de parametro
 			File outputFile = new File(dir, "omr_result_" + useridInt + "_"
-					+ acticodeInt + ".txt");
+					+ templateIdInt + ".txt");
 
 			PrintWriter out = new PrintWriter(new FileOutputStream(outputFile,true));
 			for (int i = 0; i < plantilla.getNumPaginas(); i++)
 			{
 				out.println("Filename=" + inputpath);
-				PageTemplate pagina=plantilla.getPagina(i + 1);
-				out.println("[Page" + pagina.getNumPagina()
-						+ "]");
-				for (int k = 0; k < pagina.getMarcas().size(); k++)
+				PageTemplate page=plantilla.getPage(i + 1);
+				out.println("[Page" + page.getPageNumber()+ "]");
+				for (int k = 0; k < page.getMarks().size(); k++)
 				{
-					Field campo2 = campos.get(pagina
-							.getMarcas().elementAt(k));
-					out.println(campo2.getNombre() + "=" + campo2.getValue());
+					Field field = fields.get(page.getMarks().elementAt(k));
+					out.println(field.getName() + "=" + field.getValue());
 				}
 			}
 			out.close();
@@ -471,7 +464,7 @@ public class OMRUtils
 		catch (NumberFormatException e)
 		{
 			// TODO Auto-generated catch block
-			logger.error("saveOMRResults:  Can't obtain "+acticode+"="+acticodeField+" and "+userid+"="+useridField+" for outputting report."); //$NON-NLS-1$
+			logger.error("saveOMRResults: Report can't be written. Both ids are not available: "+templateIdName+"="+templateIdField+" and "+userIdName+"="+useridField+"."); //$NON-NLS-1$
 			
 		}
 		return;

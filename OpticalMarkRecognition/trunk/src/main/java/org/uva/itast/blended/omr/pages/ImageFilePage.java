@@ -113,7 +113,7 @@ public class ImageFilePage extends PageImage
 	@Override
 	public String toString()
 	{
-		return getFileName();
+		return getName();
 	}
 
 	/**
@@ -168,7 +168,7 @@ public class ImageFilePage extends PageImage
 	 * @see org.uva.itast.blended.omr.PageImage#getFileName()
 	 */
 	@Override
-	public String getFileName()
+	public String getName()
 	{
 		
 		return filePath.getAbsolutePath();
