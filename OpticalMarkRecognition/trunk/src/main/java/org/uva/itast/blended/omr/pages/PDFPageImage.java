@@ -146,7 +146,7 @@ public class PDFPageImage extends PageImage
 		try
 		{
 			BufferedImage imagen = renderFullPageImage(page);
-			setImagen(imagen);
+			setImage(imagen);
 		}
 		catch (InterruptedException e)
 		{
@@ -155,7 +155,7 @@ public class PDFPageImage extends PageImage
 		
 		logger.debug("PDF page "+pageNumber+" converted in (ms)"+(System.currentTimeMillis()-start)); //$NON-NLS-1$
 		
-		return super.getImagen();
+		return super.getImage();
 	}
 
 	/* (non-Javadoc)

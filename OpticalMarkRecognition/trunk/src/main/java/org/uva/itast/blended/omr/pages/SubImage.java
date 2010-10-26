@@ -77,8 +77,23 @@ public class SubImage extends BufferedImage
 	{
 		return reference;
 	}
-
+	/**
+	 * Point used as upper-left in the subimage extraction
+	 */
 	private Point	reference;
+	/**
+	 * Actual area captured from the original image. May not cover all the
+	 * subimage
+	 */
+	private Rectangle	capturedBoundingBox;
+
+	/**
+	 * @return the capturedBoundingBox
+	 */
+	public Rectangle getCapturedBoundingBox()
+	{
+		return capturedBoundingBox;
+	}
 
 	/**
 	 * @param width
@@ -89,7 +104,6 @@ public class SubImage extends BufferedImage
 	public SubImage(int width, int height, int imageType)
 	{
 		super(width, height, imageType);
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
@@ -113,6 +127,15 @@ public class SubImage extends BufferedImage
 	{
 		this.boundingBox=rect;
 		
+	}
+/**
+ * Sets the actual area captured from the original image.
+ * May not cover all the subimage.
+ * @param available
+ */
+	public void setCapturedBoundingBox(Rectangle available)
+	{
+		this.capturedBoundingBox=available;
 	}
 	
 

@@ -66,6 +66,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.SubImage;
+import org.uva.itast.blended.omr.scanners.AlignMarkRodilanaDetector;
 import org.uva.itast.blended.omr.scanners.BarcodeScanner;
 import org.uva.itast.blended.omr.scanners.MarkScannerException;
 import org.uva.itast.blended.omr.scanners.ScanResult;
@@ -205,7 +206,8 @@ public class OMRUtils
 		if (align)
 			{
 			//pageImage.align(); //encapsula procesamiento y representaciÃ¯Â¿Â½n
-			pageImage.align(plantilla, pageImage);
+			AlignMarkRodilanaDetector borderDetect=new AlignMarkRodilanaDetector(plantilla);
+			borderDetect.align(pageImage);
 			}
 		
 		long taskStart = System.currentTimeMillis();

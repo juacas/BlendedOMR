@@ -67,7 +67,6 @@ public class Field {
 	@Override
 	public String toString()
 	{
-		
 		return this.nombre+" at ("+bbox.getX()+", "+bbox.getY()+")"+getValue()==null?"":"="+getValue();
 	}
 
