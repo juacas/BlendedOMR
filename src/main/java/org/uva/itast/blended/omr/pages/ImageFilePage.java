@@ -58,6 +58,8 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import javax.imageio.ImageIO;
 
@@ -73,17 +75,33 @@ public class ImageFilePage extends PageImage
 	private static final Log	logger	= LogFactory.getLog(ImageFilePage.class);
 
 	private File	filePath;
-
+	private URL imageURL;
 	/**
+	 * 
 	 * @param imagen
 	 * @param align
 	 */
 	public ImageFilePage(File path)
 	{
-	this.filePath=path;
-	
+		this.filePath=path;
+		try
+		{
+			this.imageURL=path.toURI().toURL();
+		}
+		catch (MalformedURLException e)
+		{
+			logger.fatal("ImageFilePage(File)", e); //$NON-NLS-1$
+			throw new RuntimeException(e);
+		}
 	}
-
+	/**
+	 * Allow to load the image from any URL
+	 * @param imageUrl
+	 */
+	public ImageFilePage(URL imageUrl)
+	{
+	this.imageURL=imageUrl;
+	}
 	public ImageFilePage()
 	{
 	}
@@ -103,8 +121,8 @@ public class ImageFilePage extends PageImage
 		{
 			throw new RuntimeException("Can't load image "+filePath,e);
 		}
-		setImagen(image);
-		return super.getImagen();
+		setImage(image);
+		return super.getImage();
 	}
 
 	/* (non-Javadoc)
@@ -125,14 +143,13 @@ public class ImageFilePage extends PageImage
 		BufferedImage imagen;
 		
 		long start=System.currentTimeMillis();
-		imagen = ImageIO.read(filePath);
+		imagen = ImageIO.read(imageURL);
 		if (imagen ==null)
 			throw new IOException("File "+filePath+"do not contain a valid image");
 //		if(false)
 //			imagen = reescalar();	
-		logger.debug("Image page ("+filePath.getName()+") converted in (ms)"+(System.currentTimeMillis()-start)); //$NON-NLS-1$
+		logger.debug("Image page ("+imageURL.getFile()+") converted in (ms)"+(System.currentTimeMillis()-start)); //$NON-NLS-1$
 		
-
 		return imagen;
 	}
 	public  BufferedImage reescalar() throws IOException
@@ -180,7 +197,7 @@ public class ImageFilePage extends PageImage
 	@Override
 	public double getPreferredHorizontalResolution()
 	{
-		return getImagen().getWidth()/PageImage.a4width;
+		return getImage().getWidth()/PageImage.a4width;
 	}
 
 	/* (non-Javadoc)
@@ -189,7 +206,7 @@ public class ImageFilePage extends PageImage
 	@Override
 	public double getPreferredVerticalResolution()
 	{
-		return getImagen().getHeight()/PageImage.a4height;
+		return getImage().getHeight()/PageImage.a4height;
 	}
 
 	

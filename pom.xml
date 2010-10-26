@@ -44,7 +44,10 @@
 					<!-- forkMode>pertest</forkMode -->
 					<argLine>-Xmx128m</argLine>
 					<testFailureIgnore>false</testFailureIgnore>
-
+					<excludes>
+					<!-- This functionality is not ready even for testing -->
+						<exclude>**/Test*Alignment.java</exclude>
+					</excludes>
 				</configuration>
 			</plugin>
 			<!-- Define install-dir mvn -Dinstall-dir=directory install -->
