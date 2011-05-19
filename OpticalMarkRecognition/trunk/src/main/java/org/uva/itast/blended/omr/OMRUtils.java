@@ -265,7 +265,7 @@ public class OMRUtils
 				}
 				else // return current template instead
 				{
-					logger.warn("findBestSuitedTemplate: Using a default template! May render unexpected results if documents have different structure!!", null); //$NON-NLS-1$
+					logger.warn("findBestSuitedTemplate: Using a default template for id ="+templateId+"! May render unexpected results if documents have different structure!!", null); //$NON-NLS-1$
 					return aTemplate;
 				}
 				}
