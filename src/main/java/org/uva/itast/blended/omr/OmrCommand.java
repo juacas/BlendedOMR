@@ -60,7 +60,7 @@ public class OmrCommand {
 		{
 			processor.readCommandLine(args);
 			// se lee el fichero con la descripci�n de las marcas
-			processor.loadTemplate(processor.getDefinitionfile());
+			processor.initTemplates();
 			// se leen las p�ginas escaneadas
 			processor.processPath(processor.getInputPath());
 		}

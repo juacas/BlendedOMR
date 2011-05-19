@@ -173,7 +173,21 @@ public class OMRProcessor {
 		addTemplate(template);
 		selectTemplate(template);
 	}
-	
+	public void initTemplates() throws IOException
+	{
+		 String templatePath = this.getDefinitionfile();
+		 File path=new File(templatePath);
+		 if ((path.isFile() && path.getName().endsWith(".zip")) 
+				 || 
+			path.isDirectory())
+		 {
+			 loadTemplateCollection(templatePath);
+		 }
+		 else
+		 {
+			 loadTemplate(templatePath);
+		 }
+	}
 	public void loadTemplateCollection(String path) throws ZipException, IOException
 	{
 		File file=new File(path);
