@@ -250,24 +250,43 @@ public class OMRUtils
 				
 				scanField(pageImage, field, medianfilter);
 				String templateId=field.getValue();
+				int pageNumber;
+				
+				logger.info("TemplateId readed="+templateId);
+				
 				// extract the page number
 				if (templateId != null)
 				{
-					templateId=templateId.substring(0, templateId.length() - 1);
+					pageNumber = Integer.parseInt(templateId
+							.substring(templateId.length() - 1));
+					templateId = templateId.substring(0,
+							templateId.length() - 1);
+
+					/**
+					 * get the actual template
+					 */
+					logger.info("Loading Template =" + templateId);
+
+					OMRTemplate plantilla = templates.get(templateId);
+					plantilla.setSelectedPage(pageNumber);
+					if (plantilla != null) {
+						return plantilla;
+					} else // return current template instead
+					{
+						logger
+								.warn(
+										"findBestSuitedTemplate: Using a default template for id =" + templateId + "! May render unexpected results if documents have different structure!!", null); //$NON-NLS-1$
+						return aTemplate;
+					}
+
 				}
-				/**
-				 * get the actual template
-				 */
-				OMRTemplate plantilla=templates.get(templateId);
-				if (plantilla != null)
+				else
 				{
-					return plantilla;
+					logger.debug("findBestSuitedTemplate- Template "+TEMPLATEID_FIELDNAME+" has no value.", null); //$NON-NLS-1$
 				}
-				else // return current template instead
-				{
-					logger.warn("findBestSuitedTemplate: Using a default template for id ="+templateId+"! May render unexpected results if documents have different structure!!", null); //$NON-NLS-1$
-					return aTemplate;
-				}
+						
+				
+				
 				}
 
 			logger.debug("findBestSuitedTemplate- Template do not have a "+TEMPLATEID_FIELDNAME+" field. Try the next.", null); //$NON-NLS-1$
@@ -293,11 +312,9 @@ public class OMRUtils
 			boolean medianfilter) throws FileNotFoundException
 	{
 		
-		for (int i = 0; i < plantilla.getNumPaginas(); i++)
-		{
+		
 			// se recorren todas las marcas de una pÃ¯Â¿Â½gina determinada
-			Hashtable<String, Field> campos = plantilla.getPage(i + 1)
-					.getFields(); // Hastable para almacenar los campos que
+			Hashtable<String, Field> campos = plantilla.getPage(plantilla.getSelectedPage()).getFields(); // Hastable para almacenar los campos que
 									// leemos del fichero de definiciÃ¯Â¿Â½n de
 									// marcas
 			Collection<Field> campos_val = campos.values();
@@ -311,7 +328,7 @@ public class OMRUtils
 			
 			pageImage.labelPageAsProcessed();
  			
-		}
+		
 		return plantilla;
 	}
 
@@ -451,6 +468,7 @@ public class OMRUtils
 			PrintWriter out = new PrintWriter(new FileOutputStream(outputFile,true));
 			for (int i = 0; i < plantilla.getNumPaginas(); i++)
 			{
+				fields = plantilla.getPage(i+1).getFields();
 				out.println("Filename=" + inputpath);
 				PageTemplate page=plantilla.getPage(i + 1);
 				out.println("[Page" + page.getPageNumber()+ "]");
@@ -466,7 +484,7 @@ public class OMRUtils
 		catch (NumberFormatException e)
 		{
 			// TODO Auto-generated catch block
-			logger.error("saveOMRResults: Report can't be written. Both ids are not available: "+templateIdName+"="+templateIdField+" and "+userIdName+"="+useridField+"."); //$NON-NLS-1$
+			logger.error("saveOMRResults: Report can't be written. Both ids are not available: "+templateIdName+"="+templateIdField+" and "+userIdName+"="+useridField+".",e); //$NON-NLS-1$
 			
 		}
 		return;
@@ -477,19 +495,25 @@ public class OMRUtils
 	 */
 	public static void logSubImage(String textId, BufferedImage subImage)
 	{
-		if (logger.isDebugEnabled()&& true)
-		{
+		
 			long start=System.currentTimeMillis();
 			
 			
 			
 			try
 			{
-				URL url=OMRUtils.class.getClassLoader().getResource("Doc1.pdf");
-				File testPath=new File(new File(url.toURI()).getParentFile(),"output");
-				File imgFile=new File(testPath,"debug_"+textId+System.currentTimeMillis()+".png");
+				File imgFile=null;
+				URL url=OMRUtils.class.getClassLoader().getResource("Doc1.pdf"); //TODO: select debug directory other way
+				if (url!=null)
+					{
+					File testPath=new File(new File(url.toURI()).getParentFile(),"output");
+					imgFile=new File(testPath,"debug_"+textId+System.currentTimeMillis()+".png");
+					}
+				else
+					imgFile=File.createTempFile("debug_"+textId, ".png");
+				
 				OMRUtils.salvarImagen(subImage, imgFile.getAbsolutePath(), "PNG");
-				logger.debug("Dumped "+textId+" in (ms) :"+(System.currentTimeMillis()-start));
+				logger.debug("Dumped "+textId+" in (ms) (path="+imgFile+"):"+(System.currentTimeMillis()-start));
 			}
 			catch (IOException e)
 			{
@@ -501,7 +525,6 @@ public class OMRUtils
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
 	
 	}
 	public static void logSubImage(SubImage subImage)

@@ -67,6 +67,8 @@ public class OMRTemplate {
 	String templateID;
 	
 	private Vector<PageTemplate> paginas=new Vector<PageTemplate>();	//instanciamos el vector paginas;
+
+	private int selectedPageNumber;
 	//cada elemento almacena un n�mero de p�gina y el contenido de dicha p�gina
 	
 	/**
@@ -142,6 +144,14 @@ public class OMRTemplate {
 	public String getTemplateID()
 	{
 		return templateID;
+	}
+	public void setSelectedPage(int pageNumber) 
+	{
+	this.selectedPageNumber=pageNumber;
+	}
+	public int getSelectedPage()
+	{
+		return selectedPageNumber;
 	}
 
 	
