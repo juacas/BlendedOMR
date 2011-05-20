@@ -81,7 +81,7 @@ public final class BarcodeScanner extends MarkScanner
 	 */
 	static final Log	logger	= LogFactory.getLog(BarcodeScanner.class);
 
-	static final double	BARCODE_AREA_PERCENT	= 0.5d;
+	static final double	BARCODE_AREA_PERCENT	= 1.5d;
 
 	
 	
@@ -185,14 +185,29 @@ public final class BarcodeScanner extends MarkScanner
 				}
 				catch (ReaderException e1)
 				{
-					throw new MarkScannerException(e);
+					 if (logger.isErrorEnabled())
+						 {
+						 logger.error("Can't recognize any code in the field located at: "+rect+"(see debug output image)",e1);
+						 OMRUtils.logSubImage("debug_monochrome_barcode",subimage);
+						 }
+					throw new MarkScannerException(e1);
 				}
 				
 				 //subimage=medianed; // store medianed image for reporting
 				
 			 }
 		else
-			throw new MarkScannerException(e); // re-throw exception to notify caller 
+		{
+				if (logger.isErrorEnabled()) {
+					logger.error(
+							"Can't recognize any code in the field located at: "
+									+ rect + "(see debug output image)", e);
+					OMRUtils.logSubImage("debug_monochrome_barcode", subimage);
+				}
+
+				throw new MarkScannerException(e); // re-throw exception to
+													// notify caller
+			}
 		}
 		ScanResult scanResult=new ScanResult("Barcode",result);
 		return scanResult;
@@ -222,7 +237,7 @@ public final class BarcodeScanner extends MarkScanner
 		g.drawRoundRect(expandedRect.x, expandedRect.y, expandedRect.width, expandedRect.height, 3, 3);
 		
 		
-		g.setFont(new Font("Arial",Font.PLAIN,(int) (12/t.getScaleX())));
+		//g.setFont(new Font("Arial",Font.PLAIN,(int) (12/t.getScaleX())));
 		if (lastResult!=null)
 			g.drawString(((Result)lastResult.getResult()).getBarcodeFormat().toString()+"="+getParsedCode(lastResult), rect.x, rect.y);
 		

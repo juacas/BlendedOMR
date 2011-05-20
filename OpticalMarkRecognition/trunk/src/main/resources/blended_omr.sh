@@ -1,4 +1,3 @@
 #!/bin/bash
- 
-java -cp ./lib\
- -jar ./${project.build.finalName}.jar $*
+script_path=`dirname $0`
+java -cp $script_path/lib -jar $script_path/${project.build.finalName}.jar $*
