@@ -358,11 +358,21 @@ public abstract class PageImage
 	 */
 	public Graphics2D getReportingGraphics()
 	{
+		// TODO: Crear una transformacion equivalente a la de la página para la imagen reducida
 		BufferedImage reportingImage = this.getReportingImage();
 		Graphics2D g=reportingImage.createGraphics();
-		AffineTransform trans= g.getTransform();
-		trans.scale(reportingImage.getWidth()/(getPreferredHorizontalResolution()*PageImage.a4width),
-				reportingImage.getHeight()/(getPreferredVerticalResolution()*PageImage.a4height));
+		
+		AffineTransform origTransf=getAllignmentInfo();
+
+		AffineTransform trans=(AffineTransform) origTransf.clone();
+//		trans.scale(reportingImage.getWidth()/(getImage().getWidth()),
+//			reportingImage.getHeight()/(getImage().getHeight()));
+//		AffineTransform trans=g.getTransform();
+//		trans.scale(reportingImage.getWidth()/(getPreferredHorizontalResolution()*PageImage.a4width),
+//				reportingImage.getHeight()/(getPreferredVerticalResolution()*PageImage.a4height));
+		double scaleX=((double)reportingImage.getWidth())/(getImage().getWidth());
+		double scaleY=((double)reportingImage.getHeight())/(getImage().getHeight());
+		trans.scale(scaleX,scaleY);
 		g.setTransform(trans);
 		return g;
 	}

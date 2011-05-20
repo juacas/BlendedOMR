@@ -73,9 +73,11 @@ import java.util.zip.ZipFile;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.uva.itast.blended.omr.pages.AlignMarkDetector;
 import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.PagesCollection;
 import org.uva.itast.blended.omr.pages.ZippedImageFilePage;
+import org.uva.itast.blended.omr.scanners.AlignMarkHoughDetector;
 
 public class OMRProcessor {
 	public static final String	IMAGE_TYPES_REG_EXPR	=".*\\.(jpg|png|pdf)";
@@ -118,6 +120,7 @@ public class OMRProcessor {
 
 	private OMRTemplate	selectedTemplate;
 
+	
 	/**
 	 * @return the template
 	 */
@@ -379,7 +382,7 @@ public class OMRProcessor {
 	 * 
 	 * @param outputdir
 	 */
-	private void setOutputdir(String outputdir)
+	public void setOutputdir(String outputdir)
 	{
 		this.outputdir = outputdir;
 	}
@@ -569,11 +572,11 @@ public class OMRProcessor {
 					logger.info("Start processing pageImage "+count++ +"/"+pages.getNumPages()+"(" + pageImage.getName()+")"); //$NON-NLS-1$
 				}
 
-				OMRTemplate template=OMRUtils.findBestSuitedTemplate(pageImage, getTemplates(), medianfilter);
+				OMRTemplate template=OMRUtils.findBestSuitedTemplate(this,pageImage, getTemplates(), medianfilter);
 				selectTemplate(template);
 
 				// se procesa la pï¿½gina
-				OMRUtils.processPage(pageImage, isAutoalign(),
+				OMRUtils.processPage(this,pageImage, isAutoalign(),
 						isMedianFilter(), outputdir, template);
 				
 				// se salvan los resultados en archivo
@@ -694,5 +697,9 @@ public class OMRProcessor {
 
 		}
 		return selectedEntries;
+	}
+	public AlignMarkDetector getAlignMarkDetector()
+	{
+		return new AlignMarkHoughDetector(this.selectedTemplate, this);
 	}
 }

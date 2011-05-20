@@ -85,9 +85,10 @@ public class Field {
 	}
 
 	private String valor;
-    public static int CIRCLE=0;	//nos puede resultar m�s c�modo tratarlos como dos enteros, incluso podr�amos valernos de boolean, aunque lo dejaremos as� porque es m�s escalable
-    public static int CODEBAR=1;
-    public static int FRAME=2;
+    public static int CIRCLE=0;	
+    public static int SQUARE=1;
+    public static int CODEBAR=2;
+    public static int FRAME=3;
 	private boolean valid=true;
 	
 	/**
@@ -121,7 +122,9 @@ public class Field {
         
         if(tipos.equalsIgnoreCase("CIRCLE")) {
             this.tipo = CIRCLE;
-        } else if(tipos.equalsIgnoreCase("CODEBAR")) {
+        } else  if(tipos.equalsIgnoreCase("SQUARE")) {
+            this.tipo = SQUARE;
+        }else if(tipos.equalsIgnoreCase("CODEBAR")) {
             this.tipo = CODEBAR;
         }else if(tipos.equalsIgnoreCase("FRAME")) {
             this.tipo = FRAME;

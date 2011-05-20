@@ -62,6 +62,7 @@ import java.awt.image.BufferedImage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.uva.itast.blended.omr.Field;
+import org.uva.itast.blended.omr.OMRProcessor;
 import org.uva.itast.blended.omr.pages.PageImage;
 
 import com.google.zxing.ReaderException;
@@ -76,6 +77,8 @@ public abstract class MarkScanner
 	ScanResult	lastResult;
 	PageImage	pageImage;
 	boolean medianfilter=false;
+
+	protected OMRProcessor	omr;
 	/**
 	 * Aplica un filtro para reconstruir imagenes de mala calidad, a trav�s del valor de los p�xeles vecinos
 	 * @param subimage
@@ -157,11 +160,13 @@ public abstract class MarkScanner
 	}
 
 	/**
+	 * @param omr 
 	 * @param imagen
 	 * @param medianfilter
 	 */
-	public MarkScanner(PageImage imagen, boolean medianfilter)
+	public MarkScanner(OMRProcessor omr, PageImage imagen, boolean medianfilter)
 	{
+		this.omr=omr;
 		this.pageImage=imagen;
 		this.medianfilter=medianfilter;
 	}

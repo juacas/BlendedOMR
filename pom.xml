@@ -26,6 +26,17 @@
 					<include>*.zip</include>
 				</includes>
 			</testResource>
+			<testResource>
+				<directory>src/test/resources/blended_test</directory>
+				<includes>
+					<include>*.png</include>
+					<include>*.gif</include>
+					<include>*.jpg</include>
+					<include>*.pdf</include>
+					<include>*.fields</include>
+					<include>*.zip</include>
+				</includes>
+			</testResource>
 		</testResources>
 		<plugins>
 			<plugin>

@@ -11,6 +11,7 @@ import java.util.Vector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.uva.itast.blended.omr.BufferedImageUtil;
+import org.uva.itast.blended.omr.OMRProcessor;
 import org.uva.itast.blended.omr.OMRTemplate;
 import org.uva.itast.blended.omr.pages.AbstractAlignMarkDetector;
 import org.uva.itast.blended.omr.pages.PageImage;
@@ -23,9 +24,9 @@ public class AlignMarkRodilanaDetector extends AbstractAlignMarkDetector
 	 */
 	public static final Log	logger	=LogFactory.getLog(AlignMarkRodilanaDetector.class);
 
-	public AlignMarkRodilanaDetector(OMRTemplate template)
+	public AlignMarkRodilanaDetector(OMRTemplate template, OMRProcessor omrProcessor)
 	{
-		super(template);
+		super(template, omrProcessor);
 	}
 
 	/**
