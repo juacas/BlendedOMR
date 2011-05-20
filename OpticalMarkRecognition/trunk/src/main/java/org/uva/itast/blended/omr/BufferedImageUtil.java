@@ -268,7 +268,7 @@ public class BufferedImageUtil
 				if (luminance < f)
 					img.setRGB(x, y, 0xffffff);
 				else
-					img.setRGB(x, y, 0);
+					img.setRGB(x, y, 0x000000);
 			}
 	}
 	public static void invert(SubImage img)

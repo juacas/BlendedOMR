@@ -54,6 +54,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.uva.itast.blended.omr.BufferedImageUtil;
 import org.uva.itast.blended.omr.Field;
+import org.uva.itast.blended.omr.OMRProcessor;
 import org.uva.itast.blended.omr.OMRUtils;
 import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.SubImage;
@@ -71,7 +72,7 @@ public class SolidCircleMarkScanner extends MarkScanner{
 	/**
 	 *  porcentaje del radio para el barrido que se da para buscar la marca
 	 */
-	private static final double SCAN_PERCENT = 0.2d;
+	private static final double SCAN_PERCENT = 0.4d;
 	/**
 	 * Logger for this class
 	 */
@@ -103,9 +104,9 @@ public class SolidCircleMarkScanner extends MarkScanner{
 	 * @param approxXscale
 	 * @param approxYscale
 	 */
-	public SolidCircleMarkScanner(PageImage pageimage, double markWidth, double markHeight, boolean medianfilter) 
+	public SolidCircleMarkScanner(OMRProcessor omr,PageImage pageimage, double markWidth, double markHeight, boolean medianfilter) 
 	{
-		super(pageimage,medianfilter);
+		super(omr,pageimage,medianfilter);
 
 		
 		this.approxXscale = pageimage.getPreferredHorizontalResolution();
@@ -259,7 +260,7 @@ public class SolidCircleMarkScanner extends MarkScanner{
 			logger.debug("scanAreaForBarcode(MedianFilter area=" + subImage.getWidth()+"x"+subImage.getHeight() + ") In (ms) "+(System.currentTimeMillis()-start)); //$NON-NLS-1$ //$NON-NLS-2$
 			 
 			 if (logger.isDebugEnabled())
-				 OMRUtils.logSubImage("debug_median",img);
+				 OMRUtils.logSubImage(omr,"debug_median",img);
 		 }
 		
 		// Start processing in pixels
@@ -274,11 +275,12 @@ public class SolidCircleMarkScanner extends MarkScanner{
 		int offsetY=markAreaPx.y;
 		
 		//Point maxDelta=pageImage.toPixelsPoint(maxDeltaX,maxDeltaY);
-		Point maxDelta=pageImage.toPixels(maxDeltaX,maxDeltaY);
-		int maxDeltaXpx = maxDelta.x;
-		int maxDeltaYpx = maxDelta.y;
 		
-		int deltaXYpx = pageImage.toPixels(Math.max(1, markWidth / SCAN_DELTA_DIVISOR), 0).x;
+	
+		int maxDeltaXpx = (int) (maxDeltaX*pageImage.getAllignmentInfo().getScaleX());
+		int maxDeltaYpx = (int) (maxDeltaY*pageImage.getAllignmentInfo().getScaleY());
+		
+		int deltaXYpx = (int) (Math.max(1, markWidth / SCAN_DELTA_DIVISOR)*pageImage.getAllignmentInfo().getScaleX());
 		
 		boolean markpoint = true;// for debugging the position of the templates.
 		start=System.currentTimeMillis();

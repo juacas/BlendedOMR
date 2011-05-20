@@ -41,7 +41,7 @@ public void testFrameMarksDetection(double value) throws IOException
 	
 	OMRProcessor omr=new OMRProcessor();
 	omr.loadTemplate(templateUrl.getPath());
-	AlignMarkRodilanaDetector mark=new AlignMarkRodilanaDetector(omr.getActiveTemplate());
+	AlignMarkRodilanaDetector mark=new AlignMarkRodilanaDetector(omr.getActiveTemplate(),null);
 	PageImage pageImage=new ImageFilePage(imageUrl);
 	mark.setBufferWidth(8);
 	mark.align(pageImage);

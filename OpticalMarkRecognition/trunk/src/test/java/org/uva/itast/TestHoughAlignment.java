@@ -1,5 +1,6 @@
 package org.uva.itast;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.text.NumberFormat;
@@ -42,13 +43,15 @@ public void testFrameMarksDetection(double value) throws IOException
 	
 	OMRProcessor omr=new OMRProcessor();
 	omr.loadTemplate(templateUrl.getPath());
-	AlignMarkDetector detector=new AlignMarkHoughDetector(omr.getActiveTemplate());
+	File dir=new File(new File(templateUrl.getPath()).getParentFile(),"output");
+	omr.setOutputdir(dir.getAbsolutePath());	
+	AlignMarkDetector detector=new AlignMarkHoughDetector(omr.getActiveTemplate(), omr);
 	detector.setBufferWidth(10);
 	
 	PageImage pageImage=new ImageFilePage(imageUrl);
 
 	detector.align(pageImage);
-	Assert.assertTrue(Math.abs(Math.abs(detector.getAlignmentSlope()*180/Math.PI)-value)<0.1);
+	Assert.assertTrue(Math.abs(Math.abs(detector.getAlignmentSlope()*180/Math.PI)-value)<0.01);
 }
 public static @DataPoints double[] values={0,1.0,1.1,1.2,1.3,1.5,2.0,3.0};
 

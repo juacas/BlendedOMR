@@ -52,8 +52,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Collection;
@@ -64,9 +62,9 @@ import javax.imageio.ImageIO;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.uva.itast.blended.omr.pages.AlignMarkDetector;
 import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.SubImage;
-import org.uva.itast.blended.omr.scanners.AlignMarkRodilanaDetector;
 import org.uva.itast.blended.omr.scanners.BarcodeScanner;
 import org.uva.itast.blended.omr.scanners.MarkScannerException;
 import org.uva.itast.blended.omr.scanners.ScanResult;
@@ -149,13 +147,13 @@ public class OMRUtils
 	 * @param plantilla
 	 * @throws IOException
 	 */
-	public static void processsPageAnSaveResultsWithLogging(PageImage page, boolean align,
+	public static void processsPageAnSaveResultsWithLogging(OMRProcessor omr,PageImage page, boolean align,
 			boolean medianfilter, String outputdir, Map<String,OMRTemplate> plantillas, String acticode, String userid)
 			throws IOException
 	{
 			long taskStart = System.currentTimeMillis();
 			
-			processPageAndSaveResults(align, medianfilter,outputdir, plantillas, page, acticode, userid);
+			processPageAndSaveResults(omr, align, medianfilter,outputdir, plantillas, page, acticode, userid);
 			logger.debug("Page  ("+page.getName()+") processed in (ms)"+(System.currentTimeMillis()-taskStart)); //$NON-NLS-1$
 	}
 
@@ -168,13 +166,13 @@ public class OMRUtils
 	 * @param pageImage
 	 * @throws FileNotFoundException
 	 */
-	public static void processPageAndSaveResults(boolean align,
+	public static void processPageAndSaveResults(OMRProcessor omr,boolean align,
 			boolean medianfilter, String outputdir, Map<String,OMRTemplate> plantillas,
 			PageImage pageImage, String acticode, String userid) throws FileNotFoundException
 	{
-		OMRTemplate plantilla=findBestSuitedTemplate(pageImage, plantillas, medianfilter);
+		OMRTemplate plantilla=findBestSuitedTemplate(omr,pageImage, plantillas, medianfilter);
 		
-		processPage(pageImage, align, medianfilter, outputdir, plantilla); // se
+		processPage(omr,pageImage, align, medianfilter, outputdir, plantilla); // se
 																			// procesa
 																			// la
 																			// pÃ¯Â¿Â½gina
@@ -197,7 +195,7 @@ public class OMRUtils
 	 * @param plantillas usado como in/out devuelve los valores reconocidos
 	 * @throws FileNotFoundException
 	 */
-	public static void processPage(PageImage pageImage, boolean align,
+	public static void processPage(OMRProcessor omr, PageImage pageImage, boolean align,
 			boolean medianfilter, String outputdir, OMRTemplate plantilla)
 			throws FileNotFoundException
 	{
@@ -206,25 +204,25 @@ public class OMRUtils
 		if (align)
 			{
 			//pageImage.align(); //encapsula procesamiento y representaciÃ¯Â¿Â½n
-			AlignMarkRodilanaDetector borderDetect=new AlignMarkRodilanaDetector(plantilla);
+			AlignMarkDetector borderDetect=omr.getAlignMarkDetector();
 			borderDetect.align(pageImage);
 			}
 		
 		long taskStart = System.currentTimeMillis();
 		
-		searchMarks(outputdir, plantilla, pageImage, medianfilter); // se
+		searchMarks(omr,outputdir, plantilla, pageImage, medianfilter); // se
 																				// buscan
 																				// las
 																				// marcas
 		logger.debug("\tMarks scanned in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
 		
 	}
-	public static void processPage(PageImage pageImage, boolean align,
+	public static void processPage(OMRProcessor omr,PageImage pageImage, boolean align,
 		boolean medianfilter, String outputdir, Map<String,OMRTemplate> plantillas)
 		throws FileNotFoundException
 {
-		OMRTemplate plantilla=findBestSuitedTemplate(pageImage, plantillas, medianfilter);
-		processPage(pageImage, align, medianfilter, outputdir, plantilla);
+		OMRTemplate plantilla=findBestSuitedTemplate(omr,pageImage, plantillas, medianfilter);
+		processPage(omr, pageImage, align, medianfilter, outputdir, plantilla);
 }
 	/**
 	 * Scan the page searching the {@value #TEMPLATEID_FIELDNAME} tag and select the proper
@@ -235,7 +233,7 @@ public class OMRUtils
 	 * @param medianfilter
 	 * @return
 	 */
-	public static OMRTemplate findBestSuitedTemplate(PageImage pageImage, Map<String, OMRTemplate> templates, boolean medianfilter)
+	public static OMRTemplate findBestSuitedTemplate(OMRProcessor omr,PageImage pageImage, Map<String, OMRTemplate> templates, boolean medianfilter)
 	{
 		/**
 		 * Get any (first) template with information for recognizing the TemplateID.
@@ -248,7 +246,7 @@ public class OMRUtils
 			if (field!=null)
 				{
 				
-				scanField(pageImage, field, medianfilter);
+				scanField(omr,pageImage, field, medianfilter);
 				String templateId=field.getValue();
 				int pageNumber;
 				
@@ -307,7 +305,7 @@ public class OMRUtils
 	 * @return plantilla
 	 * @throws FileNotFoundException
 	 */
-	public static OMRTemplate searchMarks(String outputdir,
+	public static OMRTemplate searchMarks(OMRProcessor omr,String outputdir,
 			OMRTemplate plantilla,  PageImage pageImage, 
 			boolean medianfilter) throws FileNotFoundException
 	{
@@ -323,7 +321,7 @@ public class OMRUtils
 			{
 				// vamos a buscar en los campos leÃ¯Â¿Â½dos, en marcas[] estÃ¯Â¿Â½n
 				// almacenadas las keys
-				scanField(pageImage, campo, medianfilter);
+				scanField(omr,pageImage, campo, medianfilter);
 			}
 			
 			pageImage.labelPageAsProcessed();
@@ -338,16 +336,16 @@ public class OMRUtils
 	 * @param i
 	 * @param medianfilter
 	 */
-	private static void scanField(PageImage pageImage, Field campo, boolean medianfilter)
+	private static void scanField(OMRProcessor omr, PageImage pageImage, Field campo, boolean medianfilter)
 	{
 		int tipo = campo.getTipo(); // se almacena el tipo para separar
 									// entre si es un barcode o un
 									// circle
 		if (tipo == Field.CIRCLE)
-			buscarMarcaCircle(pageImage , campo, medianfilter);
+			buscarMarcaCircle(omr,pageImage , campo, medianfilter);
 		else if (tipo == Field.CODEBAR)
 			{
-			searchBarcodeMark(pageImage, campo, medianfilter);
+			searchBarcodeMark(omr,pageImage, campo, medianfilter);
 			}
 	}
 
@@ -359,11 +357,11 @@ public class OMRUtils
 	 * @param field
 	 * @param medianfilter
 	 */
-	private static void searchBarcodeMark(PageImage pageImage, Field field,boolean medianFilter)
+	private static void searchBarcodeMark(OMRProcessor omr,PageImage pageImage, Field field,boolean medianFilter)
 	{
 
 	
-		BarcodeScanner barcodeScanner=new BarcodeScanner(pageImage,medianFilter);
+		BarcodeScanner barcodeScanner=new BarcodeScanner(omr,pageImage,medianFilter);
 		try
 		{
 			field.setValue( barcodeScanner.getParsedCode(field) );
@@ -392,7 +390,7 @@ public class OMRUtils
 	 * @param field
 	 * @param medianfilter
 	 */
-	private static void buscarMarcaCircle(PageImage pageImage, Field field, boolean medianfilter)
+	private static void buscarMarcaCircle(OMRProcessor omr,PageImage pageImage, Field field, boolean medianfilter)
 	{
 		Rectangle2D bbox=field.getBBox();//milimeters
 //		Rectangle bboxPx = pageImage.toPixels(bbox);//pÃ¯Â¿Â½xeles
@@ -404,7 +402,7 @@ public class OMRUtils
 		// leemos la anchura de las marcas en milÃ¯Â¿Â½metros
 		double markWidth = Math.max(1, bbox.getWidth());
 		double markHeight = Math.max(1,bbox.getHeight());
-		SolidCircleMarkScanner markScanner = new SolidCircleMarkScanner(pageImage,markWidth,markHeight,medianfilter);
+		SolidCircleMarkScanner markScanner = new SolidCircleMarkScanner(omr,pageImage,markWidth,markHeight,medianfilter);
 
 		if (logger.isDebugEnabled())
 		{
@@ -493,7 +491,7 @@ public class OMRUtils
 	/**
 	 * @param subImage
 	 */
-	public static void logSubImage(String textId, BufferedImage subImage)
+	public static void logSubImage(OMRProcessor omr, String textId, BufferedImage subImage)
 	{
 		
 			long start=System.currentTimeMillis();
@@ -502,46 +500,39 @@ public class OMRUtils
 			
 			try
 			{
-				File imgFile=null;
-				URL url=OMRUtils.class.getClassLoader().getResource("Doc1.pdf"); //TODO: select debug directory other way
-				if (url!=null)
-					{
-					File testPath=new File(new File(url.toURI()).getParentFile(),"output");
-					imgFile=new File(testPath,"debug_"+textId+System.currentTimeMillis()+".png");
-					}
-				else
-					imgFile=File.createTempFile("debug_"+textId, ".png");
+
 				
+				File testPath=new File(new File(omr.getOutputdir()),"output");
+				File imgFile=new File(testPath,"debug_"+textId+System.currentTimeMillis()+".png");
+
 				OMRUtils.salvarImagen(subImage, imgFile.getAbsolutePath(), "PNG");
+
 				logger.debug("Dumped "+textId+" in (ms) (path="+imgFile+"):"+(System.currentTimeMillis()-start));
+
 			}
 			catch (IOException e)
 			{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			catch (URISyntaxException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			
 	
 	}
-	public static void logSubImage(SubImage subImage)
+	public static void logSubImage(OMRProcessor omr, SubImage subImage)
 	{
 		
-		logSubImage("subimage", subImage);
+		logSubImage(omr,"subimage", subImage);
 	}
 
 	/**
 	 * @param prefix
 	 * @param medianed
 	 */
-	public static void logSubImage(String prefix, SubImage subImage)
+	public static void logSubImage(OMRProcessor omr,String prefix, SubImage subImage)
 	{
 		Rectangle2D markArea=subImage.getBoundingBox();
 		logger.debug("Dumped subimage  "+markArea);
-		logSubImage(prefix,(BufferedImage)subImage);
+		logSubImage(omr, prefix,(BufferedImage)subImage);
 		
 	}
 }
