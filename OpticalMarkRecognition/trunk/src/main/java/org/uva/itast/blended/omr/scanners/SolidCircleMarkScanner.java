@@ -180,13 +180,23 @@ public class SolidCircleMarkScanner extends MarkScanner{
 	private void markPointInImage(int x, int y) {
 		Graphics2D g = pageImage.getReportingGraphics();
 		AffineTransform t=g.getTransform();
+		//undo the transformation to pixeles
+		
+		
+//		g.setColor(Color.WHITE);
+//		g.fillOval((int)(x - 1/t.getScaleX()),(int)( y - 1/t.getScaleY()), (int)(2/t.getScaleX()), (int)(2/t.getScaleY()));
+//		// g.drawRect(i-w/2-1, j-h/2-1, w, h);
+//		g.setColor(Color.BLACK);
+//		g.drawOval((int)(x - 1/t.getScaleX()), (int)(y - 1/t.getScaleY()), (int)(2/t.getScaleX()), (int)(2/t.getScaleY()));
+//		// g.drawRect(i-w/2, j-h/2, w, h);
 		g.setColor(Color.WHITE);
-		g.fillOval((int)(x - 1/t.getScaleX()),(int)( y - 1/t.getScaleY()), (int)(2/t.getScaleX()), (int)(2/t.getScaleY()));
+		g.fillOval((int)(x - 1),(int)( y - 1), (int)(2), (int)(2));
 		// g.drawRect(i-w/2-1, j-h/2-1, w, h);
 		g.setColor(Color.BLACK);
-		g.drawOval((int)(x - 1/t.getScaleX()), (int)(y - 1/t.getScaleY()), (int)(2/t.getScaleX()), (int)(2/t.getScaleY()));
+		g.drawOval((int)(x - 1), (int)(y - 1), (int)(2), (int)(2));
 		// g.drawRect(i-w/2, j-h/2, w, h);
-
+		
+	
 	}
 
 	
@@ -289,7 +299,10 @@ public class SolidCircleMarkScanner extends MarkScanner{
 
 			for (int yTemplate = markCenterPx.y; yTemplate <= markCenterPx.y + maxDeltaYpx; yTemplate += deltaXYpx)
 			{
-	
+			if (logger.isDebugEnabled())
+			{
+				OMRUtils.logSubImage(omr, subImage);
+			}
 			double similarity = 1.0 - 
 				BufferedImageUtil.templateXOR(
 						img, 

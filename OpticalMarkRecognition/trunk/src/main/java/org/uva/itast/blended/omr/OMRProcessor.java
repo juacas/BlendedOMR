@@ -88,7 +88,7 @@ public class OMRProcessor {
 	private static final Log logger = LogFactory.getLog(OMRProcessor.class);
 
 	// valor en pï¿½xeles de la altura de la imï¿½gen con la que se trabajara
-	public static final int _PAGE_HEIGHT_PIXELS = (int) (2339);
+	public static final int _PAGE_HEIGHT_PIXELS = (int) (2404);
 	// valor en pï¿½xeles de la anchura de la imï¿½gen con la que se trabajara
 	public static final int _PAGE_WIDTH_PIXELS = (int) (1700);
 
