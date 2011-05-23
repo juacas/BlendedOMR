@@ -406,7 +406,7 @@ public class OMRUtils
 
 		if (logger.isDebugEnabled())
 		{
-			logger.debug("buscarMarcaCircle - campo=" + field); //$NON-NLS-1$
+			logger.debug("buscarMarcaCircle - campo=" + field.getName()); //$NON-NLS-1$
 		}
 		try
 		{
@@ -416,7 +416,7 @@ public class OMRUtils
 			{
 				if (logger.isDebugEnabled())
 				{
-					logger.debug("buscarMarcaCircle - >>>>>>>Found mark at " + bbox + " (mm) :" + field); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+					logger.debug("buscarMarcaCircle - "+field.getName()+" >>>>>>>Found mark at " + bbox + " (mm) :" + field); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 				}
 				field.setValue("true");
 													// si se ha encontrado la marca

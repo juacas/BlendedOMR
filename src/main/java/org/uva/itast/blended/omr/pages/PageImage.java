@@ -65,7 +65,7 @@ public abstract class PageImage
 	static final Log	logger	= LogFactory.getLog(PageImage.class);
 	private static final int	REPORTING_WIDTH	= 1024;
 	public static double		a4width		= 210;										// mm
-	public static double		a4height	= 290;										// mm
+	public static double		a4height	= 297;										// mm
 	private BufferedImage	image;
 	private BufferedImage	reportImage;
 	private AffineTransform	alignmentTransform;
@@ -354,6 +354,7 @@ public abstract class PageImage
 
 	/**
 	 * Scaled graphics for drawing on a small version of the page.
+	 * Transform is set for drawing in pixels refered to the original scanned image
 	 * @return
 	 */
 	public Graphics2D getReportingGraphics()
@@ -362,9 +363,9 @@ public abstract class PageImage
 		BufferedImage reportingImage = this.getReportingImage();
 		Graphics2D g=reportingImage.createGraphics();
 		
-		AffineTransform origTransf=getAllignmentInfo();
-
-		AffineTransform trans=(AffineTransform) origTransf.clone();
+//		AffineTransform origTransf=getAllignmentInfo();
+//
+//		AffineTransform trans=(AffineTransform) origTransf.clone();
 //		trans.scale(reportingImage.getWidth()/(getImage().getWidth()),
 //			reportingImage.getHeight()/(getImage().getHeight()));
 //		AffineTransform trans=g.getTransform();
@@ -372,6 +373,7 @@ public abstract class PageImage
 //				reportingImage.getHeight()/(getPreferredVerticalResolution()*PageImage.a4height));
 		double scaleX=((double)reportingImage.getWidth())/(getImage().getWidth());
 		double scaleY=((double)reportingImage.getHeight())/(getImage().getHeight());
+		AffineTransform trans = g.getTransform();
 		trans.scale(scaleX,scaleY);
 		g.setTransform(trans);
 		return g;
