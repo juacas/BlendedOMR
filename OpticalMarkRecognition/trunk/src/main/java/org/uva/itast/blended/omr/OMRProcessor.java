@@ -57,9 +57,11 @@ package org.uva.itast.blended.omr;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -580,11 +582,13 @@ public class OMRProcessor {
 						isMedianFilter(), outputdir, template);
 				
 				// se salvan los resultados en archivo
-				OMRUtils.saveOMRResults(pageImage.getName(),
+				File templateResultsFile= OMRUtils.saveOMRResults(pageImage.getName(),
 						outputdir, template, OMRUtils.TEMPLATEID_FIELDNAME , userid);
 
-				pageImage.outputMarkedPage(outputdir);
+				File markedImageFile= pageImage.outputMarkedPage(outputdir);
+// TODO: dump log file with results
 
+				logScanResults(template,pageImage,markedImageFile,templateResultsFile);
 				// if (logger.isDebugEnabled())
 				// pageImage.outputWorkingPage(outputdir);
 
@@ -603,7 +607,34 @@ public class OMRProcessor {
 		
 		return errors;
 	}
-
+//	[Job]
+//	Start=1232931221
+//	End = 1234343240
+//	SourceFile=/tmp/moodle/documents/scan1.pdf
+//	PageIndex=1
+//	OutputImagePath=/usr/share/temp/ourputs/omr_result_034235.jpg
+//	ResultCode=ok
+//	activitycode=202
+//	pagenumber=1
+//	ParsedResults=/tmp/moodle/results/omrresults[202].txt
+	/**
+	 * @throws FileNotFoundException 
+	 * 
+	 */
+	private void logScanResults(OMRTemplate template, PageImage pageImg, File markedImageFile,File templateResultsFile) throws FileNotFoundException {
+		int pagenum=template.getSelectedPage();
+		String filePageName = pageImg.getName();
+		String activityId= template.getTemplateID(); //
+		File logfile=new File(getOutputdir(),"log.txt");
+		PrintWriter out = new PrintWriter(new FileOutputStream(logfile,true));
+		out.println("[Job]");
+		out.println("SourceFile="+filePageName);
+		out.println("PageIndex="+pagenum);
+		out.println("OutputImagePath="+markedImageFile.getAbsolutePath());
+		out.println("ActivitityCode="+activityId);
+		out.println("ParsedResults="+templateResultsFile);
+		out.close();
+	}
 	/**
 	 * @param files
 	 * @return

@@ -221,13 +221,13 @@ public abstract class PageImage
 	 * @param outputdir
 	 * @throws IOException 
 	 */
-	public void outputMarkedPage(String outputdir) throws IOException
+	public File outputMarkedPage(String outputdir) throws IOException
 	{
 		File debugImagePath;
 							
 			debugImagePath = File.createTempFile("OMR_original_marked", ".jpg", new File(outputdir));
 			ImageIO.write(getReportingImage(), "JPG", debugImagePath);
-		
+		return debugImagePath;
 	}
 
 	/**

@@ -114,8 +114,7 @@ public class Field {
         coords=coord.split(",");
         double coordenadas[]=new double[4];
         for(int i=0; i<coords.length; i++) coordenadas[i]=Double.parseDouble(coords[i]);
-        Rectangle2D bbox=new Rectangle();
-        bbox.setFrame(coordenadas[0],coordenadas[1],coordenadas[2],coordenadas[3]);
+        Rectangle2D bbox=new Rectangle2D.Double(coordenadas[0],coordenadas[1],coordenadas[2],coordenadas[3]);
         setBBox(bbox);
         
         setValue("");
