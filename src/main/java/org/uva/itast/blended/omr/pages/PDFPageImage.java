@@ -183,7 +183,7 @@ public class PDFPageImage extends PageImage
 	@Override
 	public String getName()
 	{
-		return "Page "+pageNumber+" of "+filePath.getAbsolutePath();
+		return "pdf:"+filePath.getAbsolutePath()+"#"+pageNumber;
 	}
 	/**
 	 * M�todo que lee una imagen pdf y la transforma en un objeto de tipo

@@ -18,7 +18,7 @@ public class ZippedImageFilePage extends ImageFilePage
 	@Override
 	public String getName()
 	{
-		return zipFile.getName()+"->"+entry.getName();
+		return "zip:"+zipFile.getName()+"#"+entry.getName();
 	}
 
 	/**

@@ -439,13 +439,13 @@ public class OMRUtils
 	 * 
 	 * @param outputdir
 	 * @param inputpath
-	 * @param plantilla
+	 * @param template
 	 * @throws FileNotFoundException
 	 */
-	public static void saveOMRResults(String inputpath, String outputdir,
-			OMRTemplate plantilla, String templateIdName, String userIdName) throws FileNotFoundException
+	public static File saveOMRResults(String inputpath, String outputdir,
+			OMRTemplate template, String templateIdName, String userIdName) throws FileNotFoundException
 	{
-		Hashtable<String, Field> fields = plantilla.getPage(1).getFields();
+		Hashtable<String, Field> fields = template.getPage(1).getFields();
 		Field templateIdField = fields.get(templateIdName);
 		Field useridField = fields.get(userIdName);
 		try
@@ -460,24 +460,26 @@ public class OMRUtils
 			int templateIdInt = Integer.parseInt(templateIdField.getValue()); 																	
 
 			File dir = new File(outputdir); // que venga de parametro
-			File outputFile = new File(dir, "omr_result_" + useridInt + "_"
-					+ templateIdInt + ".txt");
+			File outputFile = new File(dir, "omr_result["
+					+ template.getTemplateID() + "].txt");
 
 			PrintWriter out = new PrintWriter(new FileOutputStream(outputFile,true));
-			for (int i = 0; i < plantilla.getNumPaginas(); i++)
-			{
-				fields = plantilla.getPage(i+1).getFields();
+			//TODO: solo volcar la página seleccionada en esta fase. Luego se volcarán las dos páginas en el otro proceso
+			// de volcado de resultados finales...
+			
+				PageTemplate page=template.getPage(template.getSelectedPage());
+				fields = page.getFields();
 				out.println("Filename=" + inputpath);
-				PageTemplate page=plantilla.getPage(i + 1);
+				
 				out.println("[Page" + page.getPageNumber()+ "]");
 				for (int k = 0; k < page.getMarks().size(); k++)
 				{
 					Field field = fields.get(page.getMarks().elementAt(k));
 					out.println(field.getName() + "=" + field.getValue());
 				}
-			}
-			out.close();
 			
+			out.close();
+			return outputFile;
 		}
 		catch (NumberFormatException e)
 		{
@@ -485,7 +487,7 @@ public class OMRUtils
 			logger.error("saveOMRResults: Report can't be written. Both ids are not available: "+templateIdName+"="+templateIdField+" and "+userIdName+"="+useridField+".",e); //$NON-NLS-1$
 			
 		}
-		return;
+		return null;
 	}
 
 	/**
