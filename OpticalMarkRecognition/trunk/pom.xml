@@ -51,6 +51,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.9</version>
 				<configuration>
 					<!-- forkMode>pertest</forkMode -->
 					<argLine>-Xmx128m</argLine>
@@ -73,7 +74,7 @@
 							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${install-dir}/${artifactId}/lib</outputDirectory>
+							<outputDirectory>${install-dir}/${project.artifactId}/lib</outputDirectory>
 							<overWriteReleases>false</overWriteReleases>
 							<overWriteSnapshots>false</overWriteSnapshots>
 							<overWriteIfNewer>true</overWriteIfNewer>
@@ -105,12 +106,12 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${install-dir}/${artifactId}</outputDirectory>
+							<outputDirectory>${install-dir}/${project.artifactId}</outputDirectory>
 							<resources>
 								<resource>
-									<directory>${build.directory}</directory>
+									<directory>${project.build.directory}</directory>
 									<includes>
-										<include>${build.finalName}.jar</include>
+										<include>${project.build.finalName}.jar</include>
 									</includes>
 								</resource>
 								<resource>
@@ -138,9 +139,9 @@
 	</build>
 	<repositories>
 		<repository>
-			<id>ITAST</id>
-			<name>ITASTMain Maven</name>
-			<url>http://itastmain.tel.uva.es/nexus/content/groups/public/</url>
+			<id>ITAST_Maven</id>
+			<name>ITAST Maven</name>
+			<url>http://rep.idelab.uva.es/content/groups/public/</url>
 		</repository>
 	</repositories>
 	<dependencies>
