@@ -631,7 +631,7 @@ public class OMRProcessor {
 		out.println("SourceFile="+filePageName);
 		out.println("PageIndex="+pagenum);
 		out.println("OutputImagePath="+markedImageFile.getAbsolutePath());
-		out.println("ActivitityCode="+activityId);
+		out.println("ActivityCode="+activityId);
 		out.println("ParsedResults="+templateResultsFile);
 		out.close();
 	}
