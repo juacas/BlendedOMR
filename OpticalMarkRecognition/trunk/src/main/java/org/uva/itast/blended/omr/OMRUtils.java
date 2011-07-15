@@ -109,6 +109,7 @@ public class OMRUtils
 			String imageFormat) throws IOException
 	{
 		File rasterImageFile = new File(filename);
+		rasterImageFile.mkdirs();
 		ImageIO.write((RenderedImage) imagen, imageFormat, rasterImageFile);
 	}
 
