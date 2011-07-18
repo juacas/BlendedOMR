@@ -179,7 +179,6 @@ public class SolidCircleMarkScanner extends MarkScanner{
 	 */
 	private void markPointInImage(int x, int y) {
 		Graphics2D g = pageImage.getReportingGraphics();
-		AffineTransform t=g.getTransform();
 		//undo the transformation to pixeles
 		
 		
@@ -221,11 +220,11 @@ public class SolidCircleMarkScanner extends MarkScanner{
 				- markHeight / 2 - (int)(20/t.getScaleY()));
 		Polygon arrowHead = new Polygon();
 		arrowHead.addPoint(maxsimX, (int) (maxsimY - markHeight / 2 - 1/t.getScaleY()));
-		arrowHead.addPoint((int)(maxsimX - 6/t.getScaleX()),(int)( maxsimY - markHeight / 2 - 10/t.getScaleY()));
-		arrowHead.addPoint((int)(maxsimX + 6/t.getScaleX()), (int)(maxsimY - markHeight / 2 - 10/t.getScaleY()));
+		arrowHead.addPoint((int)(maxsimX - 6/t.getScaleX()),(int)( maxsimY - markHeight / 2 - 6/t.getScaleY()));
+		arrowHead.addPoint((int)(maxsimX + 6/t.getScaleX()), (int)(maxsimY - markHeight / 2 - 6/t.getScaleY()));
 		g.fillPolygon(arrowHead);
 		
-		g.setStroke(new BasicStroke(2,BasicStroke.CAP_SQUARE,BasicStroke.JOIN_ROUND,1,new float[]{(float) (3/t.getScaleX()),(float) (4/t.getScaleY())},0));
+		g.setStroke(new BasicStroke(2,BasicStroke.CAP_SQUARE,BasicStroke.JOIN_ROUND,1,new float[]{(float) (3/t.getScaleX()),(float) (3/t.getScaleY())},0));
 		g.drawOval(
 				maxsimX - markWidth / 2 - 1,
 				maxsimY - markHeight / 2 - 1,
@@ -273,6 +272,16 @@ public class SolidCircleMarkScanner extends MarkScanner{
 				 OMRUtils.logSubImage(omr,"debug_median",img);
 		 }
 		
+		float medLum[]=BufferedImageUtil.statsLuminance(subImage, 1);
+		float maxLumin=medLum[2];
+		float minLumin=medLum[1];
+		float medLumin=medLum[0];
+		BufferedImageUtil.threshold(subImage, minLumin+(maxLumin-minLumin)/2);
+		
+		if (logger.isDebugEnabled())
+		{
+			OMRUtils.logSubImage(omr, subImage);
+		}
 		// Start processing in pixels
 		Point2D markCenter=new Point();
 		markCenter.setLocation(markArea.getCenterX(),markArea.getCenterY());
@@ -294,15 +303,13 @@ public class SolidCircleMarkScanner extends MarkScanner{
 		
 		boolean markpoint = true;// for debugging the position of the templates.
 		start=System.currentTimeMillis();
+		
 		for (int xTemplate = markCenterPx.x; xTemplate <= markCenterPx.x + maxDeltaXpx; xTemplate += deltaXYpx)
 		{
 
 			for (int yTemplate = markCenterPx.y; yTemplate <= markCenterPx.y + maxDeltaYpx; yTemplate += deltaXYpx)
 			{
-			if (logger.isDebugEnabled())
-			{
-				OMRUtils.logSubImage(omr, subImage);
-			}
+			
 			double similarity = 1.0 - 
 				BufferedImageUtil.templateXOR(
 						img, 
