@@ -13,9 +13,11 @@ import java.io.IOException;
 import java.util.Hashtable;
 
 import javax.imageio.ImageIO;
+import javax.management.RuntimeErrorException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.runner.notification.StoppedByUserException;
 import org.uva.itast.blended.omr.Field;
 import org.uva.itast.blended.omr.OMRProcessor;
 import org.uva.itast.blended.omr.OMRTemplate;
@@ -152,11 +154,19 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 					Point2D dtopright=marcasalign[1];
 					Point2D dbottomleft=marcasalign[2];
 					Point2D dbottomright=marcasalign[3];
+					logger.debug("Align mark Upper-Left at:"+dtopleft);
+					logger.debug("Align mark bottom-right at:"+dbottomright);
 					
-					Graphics g=pageImage.getReportingImage().getGraphics();
-					g.setColor(Color.GREEN);
-					g.drawRect((int)dtopleft.getX(), (int)dtopleft.getY(), (int)(dbottomright.getX()-dtopleft.getX()),(int) (dbottomright.getY()-dtopleft.getY()));
+					/**
+					 * Log detected frame
+					 */
 					
+					
+					debugAlignMarkFrame(pageImage, dtopleft, dtopright,	dbottomleft, dbottomright,Color.GREEN);
+					debugAlignMarkFrame(pageImage, etopleft,etopright,ebottomleft, ebottomright, Color.BLUE);
+					/**
+					 * End Log
+					 */
 					double pend_align_1=(dtopright != null && dtopleft != null) ? (dtopright.getY() - dtopleft.getY())
 						/ (dtopright.getX() - dtopleft.getX()) : Double.NaN;
 					double pend_align_2=(dbottomleft != null && dbottomright != null) ? (dbottomright.getY() - dbottomleft.getY())
@@ -184,9 +194,15 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 							+ ((dtopright.getY() - dtopleft.getY()) * (dtopright.getY() - dtopleft.getY())));
 					}
 					else
+					if (dbottomright!=null && dbottomleft!=null)
 					{
 						dist_imagen_x=Math.sqrt(((dbottomright.getX() - dbottomleft.getX()) * (dbottomright.getX() - dbottomleft.getX()))
 							+ ((dbottomright.getY() - dbottomleft.getY()) * (dbottomright.getY() - dbottomleft.getY())));
+					}
+					else
+					{
+						logger.debug("Can't calculate new horizontal scale: TL="+dtopleft+", TR="+ dtopright+" , BL="+dbottomleft+" , BR="+dbottomright);
+						dist_imagen_x=dist_original_x; // patch TODO
 					}
 
 					dist_original_y=Math.sqrt(((etopleft.getX() - ebottomleft.getX()) * (etopleft.getX() - ebottomleft.getX()))
@@ -198,9 +214,15 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 							+ ((dbottomleft.getY() - dtopleft.getY()) * (dbottomleft.getY() - dtopleft.getY())));
 					}
 					else
+					if (dbottomright!=null && dtopright!=null)
 					{
 						dist_imagen_y=Math.sqrt(((dbottomright.getX() - dtopright.getX()) * (dbottomright.getX() - dtopright.getX()))
 							+ ((dbottomright.getY() - dtopright.getY()) * (dbottomright.getY() - dtopright.getY())));
+					}
+					else
+					{
+						logger.debug("Can't calculate new vertical scale: TL="+dtopleft+", TR="+ dtopright+" , BL="+dbottomleft+" , BR="+dbottomright);
+						dist_imagen_y=dist_original_y; // patch TODO
 					}
 
 					escala_x=dist_original_x / dist_imagen_x;
@@ -216,8 +238,42 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 
 					// obtencion del centro de rotacion, se supone el centro del
 					// marco de alineacion
-					center_x=(marcasalign[0].getX() + marcasalign[3].getX()) / 2 * pageImage.getPreferredHorizontalResolution();
-					center_y=(marcasalign[0].getY() + marcasalign[3].getY()) / 2 * pageImage.getPreferredVerticalResolution();
+					double center_xmm;
+					if (dtopleft!=null && dbottomright!=null)
+						center_xmm = (dtopleft.getX() + dbottomright.getX())/2;
+					else
+					if (dbottomleft!=null && dbottomright!=null)
+						center_xmm = (dbottomleft.getX() + dbottomright.getX())/2;
+					else
+					if (dtopleft!=null && dtopright!=null)
+							center_xmm = (dtopleft.getX() + dtopright.getX())/2;
+					else
+					if (dbottomleft!=null && dtopright!=null)
+							center_xmm = (dbottomleft.getX() + dtopright.getX())/2;
+					else
+					{
+						throw new RuntimeException("FATAL: Not enough information available to calculate the center's X coordinate.");
+					}
+					
+					center_x=center_xmm * pageImage.getPreferredHorizontalResolution();
+					
+					double center_ymm;
+					if (dtopleft!=null && dbottomright!=null)
+						center_ymm = (dtopleft.getY() + dbottomright.getY())/2;
+					else
+					if (dbottomleft!=null && dbottomright!=null)
+						center_ymm = (dbottomleft.getY() + dbottomright.getY())/2;
+					else
+					if (dtopleft!=null && dtopright!=null)
+							center_ymm = (dtopleft.getY() + dtopright.getY())/2;
+					else
+					if (dbottomleft!=null && dtopright!=null)
+							center_ymm = (dbottomleft.getY() + dtopright.getY())/2;
+					else
+					{
+						throw new RuntimeException("FATAL: Not enough information available to calculate the center's Y coordinate");
+					}
+					center_y=center_ymm * pageImage.getPreferredVerticalResolution();
 					angulo_rotacion=Math.atan(getAlignmentSlope());
 
 				}
@@ -260,6 +316,24 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 		return marcasalign;
 	}
 
+	protected void debugAlignMarkFrame(PageImage pageImage, Point2D topleft,
+			Point2D topright, Point2D bottomleft, Point2D bottomright, Color color) {
+if (topleft==null || topright==null || bottomleft==null || bottomright==null)
+	return;
+		Graphics g=pageImage.getReportingGraphics();
+		g.setColor(color);
+
+		Point framePxUL=pageImage.toPixels(topleft.getX(),topleft.getY());
+		Point framePxUR=pageImage.toPixels(topright.getX(),topright.getY());
+		Point framePxBL=pageImage.toPixels(bottomleft.getX(),bottomleft.getY());
+		Point framePxBR=pageImage.toPixels(bottomright.getX(),bottomright.getY());
+
+		g.drawLine(framePxUL.x, framePxUL.y,framePxUR.x, framePxUR.y );
+		g.drawLine(framePxUL.x, framePxUL.y,framePxBL.x, framePxBL.y );
+		g.drawLine(framePxUR.x, framePxUR.y,framePxBR.x, framePxBR.y );
+		g.drawLine(framePxBL.x, framePxBL.y,framePxBR.x, framePxBR.y );
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -285,8 +359,12 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 
 		Point2D dtopleft=pointPosition(pageImage, etopleft); // detected top
 																// left point
+		logger.debug("Point Top-Left supposed to be at: "+ etopleft+ " found at: "+dtopleft);
+		
 		Point2D dtopright=pointPosition(pageImage, etopright); // detected top
 																// right point
+		logger.debug("Point Top-Right supposed to be at: "+ etopright+ " found at: "+dtopright);
+		
 		Point2D dbottomleft=pointPosition(pageImage, ebottomleft); // detected
 																	// bottom
 																	// left
@@ -300,6 +378,12 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 		return realpoint;
 	}
 
+	/**
+	 * 
+	 * @param pageImage
+	 * @param expectedPoint aproximate position in milimeters (assumes that the scale is correct)
+	 * @return
+	 */
 	public abstract Point2D pointPosition(PageImage pageImage, Point2D expectedPoint);
 
 	/**
@@ -327,7 +411,7 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 		{
 			try
 			{
-				File rasterImageFile=omrProcessor != null ? File.createTempFile("debugCorners", ".png", new File(omrProcessor.getOutputdir())) : File
+				File rasterImageFile=omrProcessor != null ? File.createTempFile("debugCorners", ".png", new File(omrProcessor.getOutputdir()+"/output")) : File
 					.createTempFile("debugCorners", ".png");
 				// rasterImageFile.deleteOnExit();
 				logger.debug("Debug output to " + rasterImageFile); //$NON-NLS-1$

@@ -1,11 +1,17 @@
 package org.uva.itast.blended.omr.scanners;
 
+import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.PixelGrabber;
 
+import javax.swing.text.html.InlineView;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.uva.itast.blended.omr.BufferedImageUtil;
 import org.uva.itast.blended.omr.OMRProcessor;
 import org.uva.itast.blended.omr.OMRTemplate;
@@ -17,7 +23,9 @@ public class AlignMarkHoughDetector extends AbstractAlignMarkDetector
 {
 
 	
-
+	private static Log logger = LogFactory.getLog(AlignMarkHoughDetector.class);
+	
+	
 	public AlignMarkHoughDetector(OMRTemplate template, OMRProcessor processor)
 	{
 		super(template,processor);
@@ -30,23 +38,53 @@ public class AlignMarkHoughDetector extends AbstractAlignMarkDetector
 		//Try different buffers
 		setBufferWidth(5);
 		Point2D observedPoint=pointPositionInternal(pageImage, expectedPoint);
+		debugAlignDetectionArea(pageImage,expectedPoint);
+
 		if (observedPoint==null)
 		{
 			setBufferWidth(10);
 			observedPoint=pointPositionInternal(pageImage, expectedPoint);
+			debugAlignDetectionArea(pageImage,expectedPoint);
+
 		}
 		if (observedPoint==null)
 		{
 			setBufferWidth(15);
 			observedPoint=pointPositionInternal(pageImage, expectedPoint);
+			debugAlignDetectionArea(pageImage,expectedPoint);
+
+		}
+		if (observedPoint==null)
+		{
+			setBufferWidth(20);
+			observedPoint=pointPositionInternal(pageImage, expectedPoint);
+			debugAlignDetectionArea(pageImage,expectedPoint);
 		}
 		return observedPoint;
 		
 	}
 
+	private void debugAlignDetectionArea(PageImage pageImage,
+			Point2D expectedPoint) {
+		if (logger.isDebugEnabled())
+		{
+		Point2D topleft= new Point();
+		topleft.setLocation(expectedPoint.getX()-getBufferWidth(), expectedPoint.getY()-getBufferWidth());
+		Point2D topright= new Point();
+		topright.setLocation(expectedPoint.getX()+getBufferWidth(), expectedPoint.getY()-getBufferWidth());
+		Point2D bottomleft= new Point();
+		bottomleft.setLocation(expectedPoint.getX()-getBufferWidth(), expectedPoint.getY()+getBufferWidth());
+		Point2D bottomright= new Point();
+		bottomright.setLocation(expectedPoint.getX()+getBufferWidth(), expectedPoint.getY()+getBufferWidth());
+		
+		debugAlignMarkFrame(pageImage, topleft, topright,bottomleft,bottomright,Color.BLUE);
+		}
+		return;
+	}
+
 	/**
 	 * @param pageImage
-	 * @param expectedPoint
+	 * @param expectedPoint in milimeters
 	 * @return
 	 */
 	private Point2D pointPositionInternal(PageImage pageImage, Point2D expectedPoint)
@@ -54,24 +92,28 @@ public class AlignMarkHoughDetector extends AbstractAlignMarkDetector
 		Rectangle2D expectedRect=getExpectedRect(expectedPoint);
 		SubImage subimage=extractSubimage(pageImage, expectedRect);
 		Point reference=subimage.getReference();
-		BufferedImage report=pageImage.getReportingImage();
-//		Graphics g= report.getGraphics();
+		
+		
+//		Graphics g= pageImage.getReportingGraphics();
 //		g.setColor(Color.BLUE);
-//		g.drawRect(expectedRect.getMinX(), expectedRect.getMinY(), expectedRect.getWidth(), expectedRect.getWidth());
+//		g.drawRect((int)expectedRect.getMinX(), (int)expectedRect.getMinY(), (int)expectedRect.getWidth(), (int)expectedRect.getWidth());
 		
 		logImage(subimage);
 		int width=subimage.getWidth();
 		int height=subimage.getHeight();
 		int[] orig=new int[width*height];
 		float medLum[]=BufferedImageUtil.statsLuminance(subimage, 2);
-//		BufferedImageUtil.scale(subimage, 1/medLum[1]);
-//		BufferedImageUtil.invert(subimage);
-//		BufferedImageUtil.thresholdAndInvert(subimage, medLum[0]);
 		float maxLumin=medLum[2];
 		float minLumin=medLum[1];
 		float medLumin=medLum[0];
-		BufferedImageUtil.thresholdAndInvert(subimage, minLumin+(maxLumin-minLumin)/2);// TODO discard single pixel minimuns
+		BufferedImageUtil.thresholdAndInvert(subimage, minLumin+(maxLumin-minLumin)/2);
 		
+		// TODO discard single pixel minimuns
+		if (maxLumin-minLumin < 0.10) // ignores areas with a very low contrast (probably empty area)
+		{
+			logger.debug("Ignoring area with luminance stats max:"+maxLumin+" min:"+minLumin+" med:"+medLumin);
+			return null;
+		}
 		logImage(subimage);
 		PixelGrabber grabber = new PixelGrabber(subimage, 0, 0, width, height, orig, 0, width);
 		try
@@ -116,7 +158,7 @@ public class AlignMarkHoughDetector extends AbstractAlignMarkDetector
 			}
 			else
 			{
-				System.out.println("descarted deegree:" + houghResult.degrees);
+				logger.debug("descarted deegree:" + houghResult.degrees);
 			}
 			
 		}

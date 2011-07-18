@@ -175,7 +175,8 @@ public abstract class PageImage
 		if (this.reportImage==null)
 		{
 			// Create a fixed (smaller) resolution image
-			int w=Math.min(REPORTING_WIDTH,getImage().getWidth());
+			//int w=Math.min(REPORTING_WIDTH,getImage().getWidth());
+			int w=getImage().getWidth(); // scale 1
 			int h=getImage().getHeight()*w/getImage().getWidth();
 			
 			this.reportImage=new BufferedImage(w, h,BufferedImage.TYPE_INT_RGB);

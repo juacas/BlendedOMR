@@ -345,7 +345,7 @@ public class OMRProcessor {
 		}
 		else
 		{
-			logger.debug("leerLineaComandos(String[]) Command-Line OK- arg=" + arg); //$NON-NLS-1$
+			logger.debug("leerLineaComandos(String[]) Command-Line OK- args=" + args); //$NON-NLS-1$
 		}
 	}
 

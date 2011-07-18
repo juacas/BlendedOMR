@@ -252,7 +252,24 @@ public class BufferedImageUtil
 		}
 
 	}
+	public static void threshold(SubImage img, float f)
+	{
+		Rectangle captured=img.getCapturedBoundingBox();
+		Point reference=img.getReference();
+		int xstart=Math.max(captured.x - reference.x, 0);
+		int ystart=Math.max(captured.y - reference.y, 0);
 
+		float luminance;
+		for (int y=ystart; y < ystart + captured.height; y++)
+			for (int x=xstart; x < xstart + captured.width; x++)
+			{
+				luminance=getLuminance(img, y, x);
+				if (luminance > f)
+					img.setRGB(x, y, 0xffffff);
+				else
+					img.setRGB(x, y, 0x000000);
+			}
+	}
 	public static void thresholdAndInvert(SubImage img, float f)
 	{
 		Rectangle captured=img.getCapturedBoundingBox();
