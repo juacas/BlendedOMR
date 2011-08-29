@@ -1,5 +1,8 @@
 package org.uva.itast;
 
+import java.awt.Point;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -15,8 +18,11 @@ import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 import org.uva.itast.blended.omr.OMRProcessor;
 import org.uva.itast.blended.omr.pages.AlignMarkDetector;
+import org.uva.itast.blended.omr.pages.AlignmentResult;
+import org.uva.itast.blended.omr.pages.AlignmentResult.AlignmentPosition;
 import org.uva.itast.blended.omr.pages.ImageFilePage;
 import org.uva.itast.blended.omr.pages.PageImage;
+import org.uva.itast.blended.omr.pages.PagePoint;
 import org.uva.itast.blended.omr.scanners.AlignMarkHoughDetector;
 @RunWith(Theories.class)
 public class TestHoughAlignment
@@ -50,8 +56,33 @@ public void testFrameMarksDetection(double value) throws IOException
 	
 	PageImage pageImage=new ImageFilePage(imageUrl);
 
-	detector.align(pageImage);
-	Assert.assertTrue(Math.abs(Math.abs(detector.getAlignmentSlope()*180/Math.PI)-value)<0.01);
+	AlignmentResult detectedAlignmentInfo=detector.align(pageImage);
+	pageImage.outputMarkedPage(dir.getAbsolutePath());
+	Assert.assertEquals(value,detectedAlignmentInfo.getAlignmentSlope()*180/Math.PI,0.5);
+	
+	AffineTransform transform=detectedAlignmentInfo.getAlignmentTransform();
+	
+	// check the correct translation of the center
+	PagePoint dcenter=detectedAlignmentInfo.getDetectedCenter();
+	PagePoint e_center=detectedAlignmentInfo.getExpectedCenter();
+	Point2D trans=new Point();
+//	transform it to px
+	transform.transform(e_center, trans);
+	Assert.assertEquals(trans.getX(), dcenter.getXpx(), 5);
+	Assert.assertEquals(trans.getY(), dcenter.getYpx(), 5);	
+	// check correspondences
+	// Compare TOPLEFT detected to synthetic generated point
+	
+	PagePoint ptDetected=detectedAlignmentInfo.getDetected().get(AlignmentPosition.TOPLEFT);
+	PagePoint ptExpected=detectedAlignmentInfo.getExpected().get(AlignmentPosition.TOPLEFT);
+	
+	// expected mm coords should be traslated to detected px coords
+	
+	Point2D ptDst = new Point();
+	transform.transform(ptExpected, ptDst);
+	Assert.assertEquals(ptDst.getX(), ptDetected.getXpx(), 5);
+	Assert.assertEquals(ptDst.getY(), ptDetected.getYpx(), 5);
+
 }
 public static @DataPoints double[] values={0,1.0,1.1,1.2,1.3,1.5,2.0,3.0};
 

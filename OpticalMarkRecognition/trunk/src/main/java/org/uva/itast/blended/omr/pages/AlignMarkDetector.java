@@ -1,6 +1,5 @@
 package org.uva.itast.blended.omr.pages;
 
-import java.awt.geom.Point2D;
 import java.io.IOException;
 
 import org.uva.itast.blended.omr.Field;
@@ -29,14 +28,14 @@ public interface AlignMarkDetector
 	 * @return marcasalign (array de 4 Point2D con la posiciï¿½n de las cuatro marcas de alineaciï¿½n)
 	 * @throws IOException 
 	 */
-	public abstract Point2D[] align(PageImage pageImage);
+	public abstract AlignmentResult align(PageImage pageImage);
 
 	/**
 	 * Calculates the detected position of the four corners of the alignment frame.
 	 * @param campo
 	 * @param pageImage
-	 * @return array with 4 Points TopLEft, TopRight, BottomLeft, BottomRight
+	 * @return bean with results of the alignment process {@link AlignmentResult}
 	 */
-	public abstract Point2D[] searchAlignMarks(Field campo, PageImage pageImage);
+	public abstract AlignmentResult searchAlignMarks(Field campo, PageImage pageImage);
 
 }

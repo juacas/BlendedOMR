@@ -43,6 +43,36 @@
 				</includes>
 			</testResource>
 		</testResources>
+<!-- 		Eclipse plugin m2e do not support this goal -->
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-dependency-plugin</artifactId>
+										<versionRange>[1.0.0,)</versionRange>
+										<goals>
+											<goal>copy-dependencies</goal>
+											<goal>unpack</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -62,7 +92,7 @@
 					<argLine>-Xmx128m</argLine>
 					<testFailureIgnore>false</testFailureIgnore>
 					<excludes>
-					<!-- This functionality is not ready even for testing -->
+						<!-- This functionality is not ready even for testing -->
 						<exclude>**/Test*Alignment.java</exclude>
 					</excludes>
 				</configuration>
@@ -194,7 +224,7 @@
 	</distributionManagement>
 	<properties>
 		<install-dir>
-	target/install</install-dir>
+			target/install</install-dir>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
