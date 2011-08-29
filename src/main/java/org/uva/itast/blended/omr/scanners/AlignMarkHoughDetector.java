@@ -1,14 +1,9 @@
 package org.uva.itast.blended.omr.scanners;
 
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.awt.image.PixelGrabber;
-
-import javax.swing.text.html.InlineView;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,7 +11,7 @@ import org.uva.itast.blended.omr.BufferedImageUtil;
 import org.uva.itast.blended.omr.OMRProcessor;
 import org.uva.itast.blended.omr.OMRTemplate;
 import org.uva.itast.blended.omr.pages.AbstractAlignMarkDetector;
-import org.uva.itast.blended.omr.pages.PageImage;
+import org.uva.itast.blended.omr.pages.PagePoint;
 import org.uva.itast.blended.omr.pages.SubImage;
 
 public class AlignMarkHoughDetector extends AbstractAlignMarkDetector
@@ -33,51 +28,48 @@ public class AlignMarkHoughDetector extends AbstractAlignMarkDetector
 	}
 
 	@Override
-	public Point2D pointPosition(PageImage pageImage, Point2D expectedPoint)
+	public PagePoint pointPosition(PagePoint expectedPoint)
 	{
 		//Try different buffers
+		// TODO try different offsets scanning from the corners to the expected point
 		setBufferWidth(5);
-		Point2D observedPoint=pointPositionInternal(pageImage, expectedPoint);
-		debugAlignDetectionArea(pageImage,expectedPoint);
+		PagePoint observedPoint=pointPositionInternal(expectedPoint);
+		debugAlignDetectionArea(expectedPoint);
 
 		if (observedPoint==null)
 		{
 			setBufferWidth(10);
-			observedPoint=pointPositionInternal(pageImage, expectedPoint);
-			debugAlignDetectionArea(pageImage,expectedPoint);
+			observedPoint=pointPositionInternal(expectedPoint);
+			debugAlignDetectionArea(expectedPoint);
 
 		}
 		if (observedPoint==null)
 		{
 			setBufferWidth(15);
-			observedPoint=pointPositionInternal(pageImage, expectedPoint);
-			debugAlignDetectionArea(pageImage,expectedPoint);
+			observedPoint=pointPositionInternal(expectedPoint);
+			debugAlignDetectionArea(expectedPoint);
 
 		}
 		if (observedPoint==null)
 		{
 			setBufferWidth(20);
-			observedPoint=pointPositionInternal(pageImage, expectedPoint);
-			debugAlignDetectionArea(pageImage,expectedPoint);
+			observedPoint=pointPositionInternal( expectedPoint);
+			debugAlignDetectionArea(expectedPoint);
 		}
 		return observedPoint;
 		
 	}
 
-	private void debugAlignDetectionArea(PageImage pageImage,
-			Point2D expectedPoint) {
+	private void debugAlignDetectionArea(PagePoint expectedPoint)
+	{
 		if (logger.isDebugEnabled())
 		{
-		Point2D topleft= new Point();
-		topleft.setLocation(expectedPoint.getX()-getBufferWidth(), expectedPoint.getY()-getBufferWidth());
-		Point2D topright= new Point();
-		topright.setLocation(expectedPoint.getX()+getBufferWidth(), expectedPoint.getY()-getBufferWidth());
-		Point2D bottomleft= new Point();
-		bottomleft.setLocation(expectedPoint.getX()-getBufferWidth(), expectedPoint.getY()+getBufferWidth());
-		Point2D bottomright= new Point();
-		bottomright.setLocation(expectedPoint.getX()+getBufferWidth(), expectedPoint.getY()+getBufferWidth());
+		PagePoint topleft= new PagePoint(expectedPoint.getPageImage(), expectedPoint.getX()-getBufferWidth(), expectedPoint.getY()-getBufferWidth());
+		PagePoint topright= new PagePoint(expectedPoint.getPageImage(),expectedPoint.getX()+getBufferWidth(), expectedPoint.getY()-getBufferWidth());
+		PagePoint bottomleft= new PagePoint(expectedPoint.getPageImage(),expectedPoint.getX()-getBufferWidth(), expectedPoint.getY()+getBufferWidth());
+		PagePoint bottomright= new PagePoint(expectedPoint.getPageImage(),expectedPoint.getX()+getBufferWidth(), expectedPoint.getY()+getBufferWidth());
 		
-		debugAlignMarkFrame(pageImage, topleft, topright,bottomleft,bottomright,Color.BLUE);
+		debugAlignMarkFrame(expectedPoint.getPageImage(), topleft, topright,bottomleft,bottomright,Color.BLUE);
 		}
 		return;
 	}
@@ -87,10 +79,10 @@ public class AlignMarkHoughDetector extends AbstractAlignMarkDetector
 	 * @param expectedPoint in milimeters
 	 * @return
 	 */
-	private Point2D pointPositionInternal(PageImage pageImage, Point2D expectedPoint)
+	private PagePoint pointPositionInternal(PagePoint expectedPoint)
 	{
 		Rectangle2D expectedRect=getExpectedRect(expectedPoint);
-		SubImage subimage=extractSubimage(pageImage, expectedRect);
+		SubImage subimage=extractSubimage(expectedPoint.getPageImage(), expectedRect);
 		Point reference=subimage.getReference();
 		
 		
@@ -171,7 +163,7 @@ public class AlignMarkHoughDetector extends AbstractAlignMarkDetector
 		horizRho=horizRho/horizCount;
 		vertRho=vertRho/vertCount;
 		
-		Point2D observedPoint=pageImage.toMilimeters(reference.x+horizRho,reference.y+vertRho);
+		PagePoint observedPoint=new PagePoint(expectedPoint.getPageImage(),reference.x+horizRho,reference.y+vertRho);
 		return observedPoint;
 	}
 

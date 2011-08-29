@@ -68,8 +68,19 @@ public abstract class PageImage
 	public static double		a4height	= 297;										// mm
 	private BufferedImage	image;
 	private BufferedImage	reportImage;
+	/**
+	 * Sets the transformation data needed for aligning the Page
+	 * contains information about the traslation and rotation of the page in pixels units.
+	 * Need to consider image scale to convert from milimeters
+	 *
+	 **/
 	private AffineTransform	alignmentTransform;
 	
+	/**
+	 * Calculated resolution
+	 */
+	double vertResolution=Double.NaN;
+	double horizResolution=Double.NaN;
 	/**
 	 * @return the imagen
 	 */
@@ -246,17 +257,49 @@ public abstract class PageImage
 
 	/**
 	 * Returns the ratio between pixels and milimeters
-	 * default implementation getImagen().getWidth()/PageImage.a4width
+	 * default implementation getImagen().getWidth()/PageImage.a4width 
+	 * @see #getPreferredHorizontalResolution()
 	 * @return resolution in pixels/mm
 	 */
-	public abstract double getPreferredHorizontalResolution();
+	public double getHorizontalResolution()
+	{
+		if (!Double.isNaN(horizResolution))
+			return horizResolution;
+		else
+			return getPreferredHorizontalResolution();
+	}
+	protected abstract double getPreferredHorizontalResolution();
 	/**
 	 * Returns the ratio between pixels and milimeters
 	 * default implementation getImagen().getHeight()/PageImage.a4height
+	 * @see #getPreferredVerticalResolution()
 	 * @return resolution in pixels/mm
 	 */
-	public abstract double getPreferredVerticalResolution();
-
+	public double getVerticalResolution()
+	{
+		if (!Double.isNaN(vertResolution))
+			return vertResolution;
+		else
+			return getPreferredVerticalResolution();
+	}
+	
+	protected abstract double getPreferredVerticalResolution();
+	/**
+	 * Sets a new vertical resolution if calculated
+	 * @param res resolution in pixels/mm
+	 */
+	public void setVerticalResolution(double res)
+	{
+		this.vertResolution=res;
+	};
+	/**
+	 * Sets a new vertical resolution if calculated
+	 * @param res resolution in pixels/mm
+	 */
+	public void setHorizontalResolution(double res)
+	{
+		this.horizResolution=res;
+	};
 	/**
 	 * Use alignment information to transform from milimeters to pixel coordinates at the preferred resolution for this page
 	 * @param x

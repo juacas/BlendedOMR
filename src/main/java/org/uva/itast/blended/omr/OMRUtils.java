@@ -207,6 +207,15 @@ public class OMRUtils
 			//pageImage.align(); //encapsula procesamiento y representaciÃ¯Â¿Â½n
 			AlignMarkDetector borderDetect=omr.getAlignMarkDetector();
 			borderDetect.align(pageImage);
+//			try
+//			{
+//				pageImage.outputMarkedPage(outputdir);
+//			}
+//			catch (IOException e)
+//			{
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 			}
 		
 		long taskStart = System.currentTimeMillis();
@@ -243,6 +252,8 @@ public class OMRUtils
 		for (OMRTemplate aTemplate : templates.values())
 		{
 			PageTemplate firstPage=aTemplate.getPage(1);
+			aTemplate.setSelectedPage(1);
+			
 			Field field=firstPage.getFields().get(TEMPLATEID_FIELDNAME);
 			if (field!=null)
 				{
@@ -267,14 +278,13 @@ public class OMRUtils
 					logger.info("Loading Template =" + templateId);
 
 					OMRTemplate plantilla = templates.get(templateId);
-					plantilla.setSelectedPage(pageNumber);
+
 					if (plantilla != null) {
+						plantilla.setSelectedPage(pageNumber);
 						return plantilla;
 					} else // return current template instead
 					{
-						logger
-								.warn(
-										"findBestSuitedTemplate: Using a default template for id =" + templateId + "! May render unexpected results if documents have different structure!!", null); //$NON-NLS-1$
+						logger.warn("findBestSuitedTemplate: Using a default template for id =" + templateId + "! May render unexpected results if documents have different structure!!", null); //$NON-NLS-1$
 						return aTemplate;
 					}
 

@@ -109,8 +109,8 @@ public class SolidCircleMarkScanner extends MarkScanner{
 		super(omr,pageimage,medianfilter);
 
 		
-		this.approxXscale = pageimage.getPreferredHorizontalResolution();
-		this.approxYscale = pageimage.getPreferredVerticalResolution();
+		this.approxXscale = pageimage.getHorizontalResolution();
+		this.approxYscale = pageimage.getVerticalResolution();
 		
 		Point dims= pageimage.toPixels(markWidth, markHeight);
 		

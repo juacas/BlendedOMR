@@ -14,7 +14,7 @@ import org.uva.itast.blended.omr.BufferedImageUtil;
 import org.uva.itast.blended.omr.OMRProcessor;
 import org.uva.itast.blended.omr.OMRTemplate;
 import org.uva.itast.blended.omr.pages.AbstractAlignMarkDetector;
-import org.uva.itast.blended.omr.pages.PageImage;
+import org.uva.itast.blended.omr.pages.PagePoint;
 import org.uva.itast.blended.omr.pages.SubImage;
 
 public class AlignMarkRodilanaDetector extends AbstractAlignMarkDetector
@@ -39,12 +39,12 @@ public class AlignMarkRodilanaDetector extends AbstractAlignMarkDetector
 	 *         alineaciï¿½n)
 	 * @throws IOException
 	 */
-	public Point2D pointPosition(PageImage pageImage, Point2D expectedPoint)
+	public PagePoint pointPosition(PagePoint expectedPoint)
 	{
 
 		Rectangle2D expectedRect=getExpectedRect(expectedPoint);
 
-		SubImage subimage=extractSubimage(pageImage, expectedRect);
+		SubImage subimage=extractSubimage(expectedPoint.getPageImage(), expectedRect);
 		logImage(subimage);
 		Vector<Point2D> pointshor=new Vector<Point2D>(); // aquï¿½ almacenaremos
 															// los puntos de la
@@ -166,12 +166,12 @@ public class AlignMarkRodilanaDetector extends AbstractAlignMarkDetector
 		// siguiente
 		double x=((a_hor - a_ver) / (b_ver - b_hor));
 		double y=(a_ver + (b_ver * x));
-
+	// sumamos la posiciï¿½n del cuadro
+		x=x+ expectedRect.getX();
+		y=y+ expectedRect.getY();
 		// pasamos a mm
-		Point2D realpoint=pageImage.toMilimeters((int) x, (int) y);
-		// sumamos la posiciï¿½n del cuadro
-		realpoint.setLocation(realpoint.getX() + expectedRect.getX(), realpoint.getY() + expectedRect.getY());
-
+		PagePoint realpoint=new PagePoint(expectedPoint.getPageImage(), x, y);
+	
 		if (logger.isDebugEnabled())
 		{
 			logger.debug("pointPosition(Point2D) - posicion del punto: " + realpoint); //$NON-NLS-1$
