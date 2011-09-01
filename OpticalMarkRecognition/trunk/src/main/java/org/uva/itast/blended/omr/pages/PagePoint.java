@@ -43,7 +43,7 @@ public class PagePoint extends Point2D.Double
 @Override
 public String toString()
 {
-	return super.toString()+ " (mm) "+ String.valueOf(this.pixelsPoint.toString()+" (px)");
+	return "("+this.x+","+this.y+ ") (mm) ("+ this.pixelsPoint.x+","+this.pixelsPoint.y+") (px)";
 }
 	/**
 	 * initializes the point from observed pixels

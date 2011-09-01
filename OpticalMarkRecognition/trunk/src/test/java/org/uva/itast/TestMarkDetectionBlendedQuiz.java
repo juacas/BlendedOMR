@@ -104,7 +104,21 @@ public class TestMarkDetectionBlendedQuiz
 		}
 	}
 
-
+	@Test
+	public void testBlendedMarkedScanned()
+	{
+		try
+		{
+		URL url=getClass().getClassLoader().getResource("Escaneo1_Cuestionario_Previo_a_Practica_1_de_Telematica-2011-06-28-12-49-44-6-PDF-Ab_Pagina1.jpg");
+		testFile(url);
+		
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			fail("Can't configure test case."+e);
+		}
+	}
 	/**
 	 * @param url
 	 * @throws URISyntaxException
@@ -151,7 +165,7 @@ public class TestMarkDetectionBlendedQuiz
 		args[3]=outputDir.getAbsolutePath();
 		args[9]=new  File (testPath.getParentFile(),"fieldset_OMR[1].fields").getAbsolutePath();
 		processor.readCommandLine(args);        						//se lee la línea de comandos
-        processor.loadTemplate(processor.getDefinitionfile());	//se lee el fichero con la descripción de las marcas
+        processor.loadTemplateCollection(testPath.getParentFile().getAbsolutePath());	//se lee los ficheros con las descripciones de las marcas
 		return args;
 	}
 }

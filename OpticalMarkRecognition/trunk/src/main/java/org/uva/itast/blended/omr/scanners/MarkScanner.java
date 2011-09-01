@@ -107,7 +107,6 @@ public abstract class MarkScanner
 			 
 			  //se leen y almacenan las coordenadas
 			Rectangle2D coords = campo.getBBox();
-			Rectangle2D expandedBbox = getExpandedArea(coords);
 			
 		    ScanResult result;
 			try
@@ -116,8 +115,9 @@ public abstract class MarkScanner
 			}
 			catch (MarkScannerException e)
 			{
+				Rectangle2D expandedBbox = getExpandedArea(coords);
 				//Try with a wider area
-			
+				logger.error("Last attempt to read mark was in error: RETRY",e);
 				result =  scanAreaForFieldData(expandedBbox);
 				
 			}
@@ -187,6 +187,12 @@ public abstract class MarkScanner
 	 * @return milimeteres
 	 */
 	abstract protected Rectangle2D getExpandedArea(Rectangle2D rect);
+
+	/**
+	 * Create an emphasized indication in the {@link PageImage} reporting image
+	 * @param pageImage2
+	 */
+	abstract public void putEmphasisMarkOnImage(PageImage pageImage2);
 	
 
 }

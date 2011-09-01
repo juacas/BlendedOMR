@@ -41,11 +41,29 @@
  
 package org.uva.itast.blended.omr.scanners;
 
+import java.awt.geom.Rectangle2D;
+
 public class ScanResult
 {
 
 	private String	scanner;
 	private Object	result;
+	private Rectangle2D location=null;
+	/**
+	 * @return the location
+	 */
+	public Rectangle2D getLocation()
+	{
+		return location;
+	}
+
+	/**
+	 * @param location the location to set
+	 */
+	public void setLocation(Rectangle2D location)
+	{
+		this.location=location;
+	}
 
 	/**
 	 * @param string

@@ -12,12 +12,11 @@ public class AlignmentResult
 	protected Map<PagePoint,PagePoint> pointsMap=new HashMap<PagePoint, PagePoint>();
 	private double	slope;
 	private PagePoint	detectedCenter;
-	private double	deltaXmm;
-	private double	deltaYmm;
 	private AffineTransform	transform;
 	private PagePoint	expectedCenter;
 	private double	horizRes;
 	private double	vertRes;
+	private PagePoint	delta;
 	
 	public void addResult(AlignmentPosition type, PagePoint etopleft, PagePoint dtopleft)
 	{
@@ -74,10 +73,9 @@ public class AlignmentResult
 	 * @param transX
 	 * @param transY
 	 */
-	public void setDisplacementDeltas(double transX, double transY)
+	public void setDisplacementDelta(PagePoint delta)
 	{
-		this.deltaXmm=transX;
-		this.deltaYmm=transY;
+		this.delta=delta;
 	}
 
 	/**
@@ -96,21 +94,6 @@ public class AlignmentResult
 		return detectedCenter;
 	}
 
-	/**
-	 * @return the deltaXmm
-	 */
-	public double getDeltaXmm()
-	{
-		return deltaXmm;
-	}
-
-	/**
-	 * @return the deltaYmm
-	 */
-	public double getDeltaYmm()
-	{
-		return deltaYmm;
-	}
 
 	void setAlignmentTransform(AffineTransform transform)
 	{

@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.uva.itast.blended.omr.BufferedImageUtil;
 import org.uva.itast.blended.omr.OMRProcessor;
 import org.uva.itast.blended.omr.OMRTemplate;
+import org.uva.itast.blended.omr.OMRUtils;
 import org.uva.itast.blended.omr.pages.AbstractAlignMarkDetector;
 import org.uva.itast.blended.omr.pages.PagePoint;
 import org.uva.itast.blended.omr.pages.SubImage;
@@ -69,7 +70,7 @@ public class AlignMarkHoughDetector extends AbstractAlignMarkDetector
 		PagePoint bottomleft= new PagePoint(expectedPoint.getPageImage(),expectedPoint.getX()-getBufferWidth(), expectedPoint.getY()+getBufferWidth());
 		PagePoint bottomright= new PagePoint(expectedPoint.getPageImage(),expectedPoint.getX()+getBufferWidth(), expectedPoint.getY()+getBufferWidth());
 		
-		debugAlignMarkFrame(expectedPoint.getPageImage(), topleft, topright,bottomleft,bottomright,Color.BLUE);
+		OMRUtils.debugFrame(expectedPoint.getPageImage(), topleft, topright,bottomleft,bottomright,Color.BLUE,null);
 		}
 		return;
 	}
@@ -103,7 +104,7 @@ public class AlignMarkHoughDetector extends AbstractAlignMarkDetector
 		// TODO discard single pixel minimuns
 		if (maxLumin-minLumin < 0.10) // ignores areas with a very low contrast (probably empty area)
 		{
-			logger.debug("Ignoring area with luminance stats max:"+maxLumin+" min:"+minLumin+" med:"+medLumin);
+			logger.debug("Ignoring probably empty area with luminance stats max:"+maxLumin+" min:"+minLumin+" med:"+medLumin);
 			return null;
 		}
 		logImage(subimage);
@@ -141,7 +142,7 @@ public class AlignMarkHoughDetector extends AbstractAlignMarkDetector
 				horizRho+=houghResult.rho;
 				horizCount++;
 			}
-			else if (houghResult.degrees > 45 && houghResult.degrees < (180 - 45)) // vert
+			else if (houghResult.degrees > 45 && houghResult.degrees < 135) // vert
 			{
 				
 				vertDegrees+=houghResult.degrees;

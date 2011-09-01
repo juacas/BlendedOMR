@@ -39,11 +39,13 @@
 package org.uva.itast.blended.omr.pages;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Dimension2D;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -56,6 +58,7 @@ import javax.imageio.ImageIO;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.uva.itast.blended.omr.scanners.Size;
 
 public abstract class PageImage
 {
@@ -82,7 +85,7 @@ public abstract class PageImage
 	double vertResolution=Double.NaN;
 	double horizResolution=Double.NaN;
 	/**
-	 * @return the imagen
+	 * @return the scanned image
 	 */
 	public BufferedImage getImage()
 	{
@@ -116,8 +119,8 @@ public abstract class PageImage
 	{
 		AffineTransform tr=new AffineTransform();
 		
-		double horizRatio = getPreferredHorizontalResolution();
-		double vertRatio = getPreferredVerticalResolution();
+		double horizRatio = getHorizontalResolution();
+		double vertRatio = getVerticalResolution();
 		
 		// Do not assume square pixels
 		tr.setToScale(horizRatio,vertRatio);
@@ -291,6 +294,7 @@ public abstract class PageImage
 	public void setVerticalResolution(double res)
 	{
 		this.vertResolution=res;
+		resetAlignmentInfo();
 	};
 	/**
 	 * Sets a new vertical resolution if calculated
@@ -299,6 +303,7 @@ public abstract class PageImage
 	public void setHorizontalResolution(double res)
 	{
 		this.horizResolution=res;
+		resetAlignmentInfo();
 	};
 	/**
 	 * Use alignment information to transform from milimeters to pixel coordinates at the preferred resolution for this page
@@ -308,8 +313,7 @@ public abstract class PageImage
 	public Point toPixels(double x,double y)
 	{
 		AffineTransform alignment=getAllignmentInfo();
-		Point2D coord=new Point();
-		coord.setLocation(x, y);
+		Point2D coord=new Point2D.Double(x, y);
 		Point coordTransformed=new Point();
 		alignment.transform(coord, coordTransformed);
 		
@@ -321,8 +325,7 @@ public abstract class PageImage
 		AffineTransform alignment=getAllignmentInfo();
 		alignment.setToScale(getPreferredHorizontalResolution(), getPreferredVerticalResolution());
 		
-		Point2D coord=new Point();
-		coord.setLocation(x, y);
+		Point2D coord=new Point2D.Double(x, y);
 		Point coordTransformed=new Point();
 		alignment.transform(coord, coordTransformed);
 		
@@ -345,7 +348,7 @@ public abstract class PageImage
 	 */
 	public SubImage getSubimage(double x, double y, double w, double h, int imageType)
 	{
-	Rectangle2D rectMM=new Rectangle();
+	Rectangle2D rectMM=new Rectangle2D.Double();
 	rectMM.setFrame(x,y,w,h);
 	return getSubimage(rectMM, imageType);
 	}
@@ -368,7 +371,7 @@ public abstract class PageImage
 			AffineTransform inv;
 			inv = tr.createInverse();
 			Point2D pixeles = new Point(i, j);
-			Point2D dest=null;
+			Point2D dest=new Point2D.Double();
 			return inv.transform(pixeles, dest);
 		}
 		catch (NoninvertibleTransformException e)
@@ -432,10 +435,10 @@ public abstract class PageImage
 	{
 		
 		Rectangle rect=this.toPixels(rectMM);
-		Point upperLeft=this.toPixels(rectMM.getX(), rectMM.getY());
+		PagePoint upperLeft=new PagePoint(this, rectMM.getX(), rectMM.getY());
 		
-		//TODO: incluir la resoluciï¿½n preferida ahora asume la nativa de la imagen
-		Point reference=upperLeft;
+		Point reference=upperLeft.getPixelsPoint();
+		
 		BufferedImage originalImage=getImage();
 		Rectangle originalRect= new Rectangle(originalImage.getWidth(), originalImage.getHeight());
 		// copy what is available from image
@@ -462,7 +465,6 @@ public abstract class PageImage
 	 */
 	public Point toPixels(Point2D pointMM)
 	{
-		
 		return toPixels(pointMM.getX(), pointMM.getY());
 	}
 
@@ -478,6 +480,20 @@ public abstract class PageImage
 		bbox.setFrameFromDiagonal(p1, p2);
 		
 		return bbox;
+	}
+
+	public Dimension2D sizeInPixels(Size size)
+	{ 
+		Dimension2D dim= new Dimension();
+		dim.setSize(getAllignmentInfo().getScaleX()*size.getWidth(),getAllignmentInfo().getScaleY()*size.getHeight());
+		return dim;
+	}
+
+	public Dimension2D sizeToMilimeters(Size size)
+	{
+		Dimension2D dim= new Dimension();
+		dim.setSize(size.getWidth()/getAllignmentInfo().getScaleX(),size.getHeight()/getAllignmentInfo().getScaleY());
+		return dim;
 	}
 
 }

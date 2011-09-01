@@ -40,9 +40,10 @@ package org.uva.itast.blended.omr;
  ***********************************************************************/
 
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Point;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
@@ -64,11 +65,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.uva.itast.blended.omr.pages.AlignMarkDetector;
 import org.uva.itast.blended.omr.pages.PageImage;
+import org.uva.itast.blended.omr.pages.PagePoint;
 import org.uva.itast.blended.omr.pages.SubImage;
 import org.uva.itast.blended.omr.scanners.BarcodeScanner;
+import org.uva.itast.blended.omr.scanners.MarkScanner;
 import org.uva.itast.blended.omr.scanners.MarkScannerException;
 import org.uva.itast.blended.omr.scanners.ScanResult;
 import org.uva.itast.blended.omr.scanners.SolidCircleMarkScanner;
+import org.uva.itast.blended.omr.scanners.SolidSquareMarkScanner;
 
 import com.sun.pdfview.PDFFile;
 
@@ -105,7 +109,7 @@ public class OMRUtils
 	 * @param imageFormat
 	 * @throws IOException
 	 */
-	public static void salvarImagen(Image imagen, String filename,
+	public static void saveImageToFile(Image imagen, String filename,
 			String imageFormat) throws IOException
 	{
 		File rasterImageFile = new File(filename);
@@ -207,15 +211,7 @@ public class OMRUtils
 			//pageImage.align(); //encapsula procesamiento y representaciÃ¯Â¿Â½n
 			AlignMarkDetector borderDetect=omr.getAlignMarkDetector();
 			borderDetect.align(pageImage);
-//			try
-//			{
-//				pageImage.outputMarkedPage(outputdir);
-//			}
-//			catch (IOException e)
-//			{
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
+
 			}
 		
 		long taskStart = System.currentTimeMillis();
@@ -353,13 +349,35 @@ public class OMRUtils
 									// entre si es un barcode o un
 									// circle
 		if (tipo == Field.CIRCLE)
-			buscarMarcaCircle(omr,pageImage , campo, medianfilter);
+			{
+			searchMarkCircle(omr,pageImage , campo, medianfilter);
+			}
+		else if (tipo == Field.SQUARE)
+			{
+			searchMarkSquare(omr,pageImage,campo, medianfilter);
+			}
 		else if (tipo == Field.CODEBAR)
 			{
 			searchBarcodeMark(omr,pageImage, campo, medianfilter);
 			}
 	}
 
+
+	private static void searchMarkSquare(OMRProcessor omr, PageImage pageImage, Field field, boolean medianfilter)
+	{
+		Rectangle2D bbox=field.getBBox();//milimeters
+		
+		// leemos la anchura de las marcas en milÃ¯Â¿Â½metros
+		double markWidth = Math.max(1, bbox.getWidth());
+		double markHeight = Math.max(1,bbox.getHeight());
+		SolidSquareMarkScanner markScanner = new SolidSquareMarkScanner(omr,pageImage,markWidth,markHeight,medianfilter);
+
+		if (logger.isDebugEnabled())
+		{
+			logger.debug("searchMarkCircle - field name=" + field.getName()+" at position:"+field.getBBox()); //$NON-NLS-1$
+		}
+		searchMark(pageImage, field, markScanner);
+	}
 
 	/**
 	 * MÃ¯Â¿Â½todo que busca marcas de tipo codebar en un objeto tipo BufferedImage
@@ -380,6 +398,7 @@ public class OMRUtils
 		}
 		catch (MarkScannerException e)
 		{
+			logger.warn("Field "+ field+" can't be readed from image.");
 			field.setValue(null);
 			field.setValid(false);
 			if (logger.isDebugEnabled())
@@ -401,15 +420,10 @@ public class OMRUtils
 	 * @param field
 	 * @param medianfilter
 	 */
-	private static void buscarMarcaCircle(OMRProcessor omr,PageImage pageImage, Field field, boolean medianfilter)
+	private static void searchMarkCircle(OMRProcessor omr,PageImage pageImage, Field field, boolean medianfilter)
 	{
 		Rectangle2D bbox=field.getBBox();//milimeters
-//		Rectangle bboxPx = pageImage.toPixels(bbox);//pÃ¯Â¿Â½xeles
-		// center of the mark
-		Point2D center=new Point();
-		center.setLocation(bbox.getCenterX(),bbox.getCenterY()); //nos da el centro geomÃ¯Â¿Â½trico del rectÃ¯Â¿Â½ngulo
-		
-		
+
 		// leemos la anchura de las marcas en milÃ¯Â¿Â½metros
 		double markWidth = Math.max(1, bbox.getWidth());
 		double markHeight = Math.max(1,bbox.getHeight());
@@ -417,8 +431,18 @@ public class OMRUtils
 
 		if (logger.isDebugEnabled())
 		{
-			logger.debug("buscarMarcaCircle - campo=" + field.getName()); //$NON-NLS-1$
+			logger.debug("searchMarkCircle - field name=" + field.getName()+" at position:"+field.getBBox()); //$NON-NLS-1$
 		}
+		searchMark(pageImage, field, markScanner);
+	}
+
+	/**
+	 * @param pageImage
+	 * @param field
+	 * @param markScanner
+	 */
+	private static void searchMark(PageImage pageImage, Field field, MarkScanner markScanner)
+	{
 		try
 		{
 			ScanResult res=markScanner.scanField(field);
@@ -427,11 +451,11 @@ public class OMRUtils
 			{
 				if (logger.isDebugEnabled())
 				{
-					logger.debug("buscarMarcaCircle - "+field.getName()+" >>>>>>>Found mark at " + bbox + " (mm) :" + field); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+					logger.debug("searchMarkCircle - "+field.getName()+" >>>>>>>Found mark at " + field.getBBox() + " (mm) :" + field); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 				}
 				field.setValue("true");
 													// si se ha encontrado la marca
-				markScanner.putCircleMarkOnImage(pageImage);
+				markScanner.putEmphasisMarkOnImage(pageImage);
 			} else
 			{
 				field.setValue("false");
@@ -454,7 +478,7 @@ public class OMRUtils
 	 * @throws FileNotFoundException
 	 */
 	public static File saveOMRResults(String inputpath, String outputdir,
-			OMRTemplate template, String templateIdName, String userIdName) throws FileNotFoundException
+			OMRTemplate template, String templateIdName, String userIdName) throws FileNotFoundException, NumberFormatException
 	{
 		Hashtable<String, Field> fields = template.getPage(1).getFields();
 		Field templateIdField = fields.get(templateIdName);
@@ -494,7 +518,6 @@ public class OMRUtils
 		}
 		catch (NumberFormatException e)
 		{
-			// TODO Auto-generated catch block
 			logger.error("saveOMRResults: Report can't be written. Both ids are not available: "+templateIdName+"="+templateIdField+" and "+userIdName+"="+useridField+".",e); //$NON-NLS-1$
 			
 		}
@@ -507,10 +530,7 @@ public class OMRUtils
 	public static void logSubImage(OMRProcessor omr, String textId, BufferedImage subImage)
 	{
 		
-			long start=System.currentTimeMillis();
-			
-			
-			
+			long start=System.currentTimeMillis();	
 			try
 			{
 
@@ -518,7 +538,7 @@ public class OMRUtils
 				File testPath=new File(new File(omr.getOutputdir()),"output");
 				File imgFile=new File(testPath,"debug_"+textId+System.currentTimeMillis()+".png");
 
-				OMRUtils.salvarImagen(subImage, imgFile.getAbsolutePath(), "PNG");
+				OMRUtils.saveImageToFile(subImage, imgFile.getAbsolutePath(), "PNG");
 
 				logger.debug("Dumped "+textId+" in (ms) (path="+imgFile+"):"+(System.currentTimeMillis()-start));
 
@@ -547,5 +567,56 @@ public class OMRUtils
 		logger.debug("Dumped subimage  "+markArea);
 		logSubImage(omr, prefix,(BufferedImage)subImage);
 		
+	}
+/**
+ * draws a rectangle expressed in milimeters
+ * @param pageImage
+ * @param markArea
+ */
+	public static void logFrame(PageImage pageImage, Rectangle2D markArea, Color color, String label)
+	{
+		OMRUtils.debugFrame(pageImage,
+					new PagePoint( pageImage,markArea.getMinX(), markArea.getMinY()),
+					new PagePoint( pageImage,markArea.getMaxX(), markArea.getMinY()),
+					new PagePoint( pageImage,markArea.getMinX(), markArea.getMaxY()),
+					new PagePoint( pageImage,markArea.getMaxX(), markArea.getMaxY()),
+					color,label);		
+	}
+	public static void debugFrame(PageImage pageImage, PagePoint topleft, PagePoint topright, PagePoint bottomleft, PagePoint bottomright, Color color,String label)
+	{
+		if (topleft == null || topright == null || bottomleft == null || bottomright == null)
+			return;
+		Graphics g=pageImage.getReportingGraphics();
+		g.setColor(color);
+
+//		Point framePxUL=pageImage.toPixels(topleft.getX(), topleft.getY());
+//		Point framePxUR=pageImage.toPixels(topright.getX(), topright.getY());
+//		Point framePxBL=pageImage.toPixels(bottomleft.getX(), bottomleft.getY());
+//		Point framePxBR=pageImage.toPixels(bottomright.getX(), bottomright.getY());
+
+		g.drawLine(topleft.getXpx(), topleft.getYpx(), topright.getXpx(), topright.getYpx());
+		g.drawLine(topleft.getXpx(), topleft.getYpx(), bottomleft.getXpx(), bottomleft.getYpx());
+		g.drawLine(topright.getXpx(), topright.getYpx(), bottomright.getXpx(), bottomright.getYpx());
+		g.drawLine(bottomleft.getXpx(), bottomleft.getYpx(), bottomright.getXpx(), bottomright.getYpx());
+		if (label!=null)
+		{
+			g.drawString(label, topleft.getXpx(), topleft.getYpx());
+		}
+	}
+/**
+		 * @param x in pixels
+		 * @param y in pixels
+		 */
+	public static void markPointInImage(PageImage pageImage, int x, int y)
+	{
+		
+			Graphics2D g = pageImage.getReportingGraphics();
+			//undo the transformation to pixeles
+			g.setColor(Color.WHITE);
+			g.fillOval((int)(x - 1),(int)( y - 1), (int)(2), (int)(2));
+			// g.drawRect(i-w/2-1, j-h/2-1, w, h);
+			g.setColor(Color.BLACK);
+			g.drawOval((int)(x - 1), (int)(y - 1), (int)(2), (int)(2));
+			// g.drawRect(i-w/2, j-h/2, w, h);
 	}
 }

@@ -565,16 +565,19 @@ public class OMRProcessor {
 		int count=1;
 		for (PageImage pageImage : pages)
 		{
+			OMRTemplate template=null;
+			File templateResultsFile=null;
+			long taskStart = System.currentTimeMillis();
 			try
 			{
-				long taskStart = System.currentTimeMillis();
 
+				
 				if (logger.isInfoEnabled())
 				{
 					logger.info("Start processing pageImage "+count++ +"/"+pages.getNumPages()+"(" + pageImage.getName()+")"); //$NON-NLS-1$
 				}
 
-				OMRTemplate template=OMRUtils.findBestSuitedTemplate(this,pageImage, getTemplates(), medianfilter);
+				template=OMRUtils.findBestSuitedTemplate(this,pageImage, getTemplates(), medianfilter);
 				selectTemplate(template);
 
 				// se procesa la pï¿½gina
@@ -582,26 +585,31 @@ public class OMRProcessor {
 						isMedianFilter(), outputdir, template);
 				
 				// se salvan los resultados en archivo
-				File templateResultsFile= OMRUtils.saveOMRResults(pageImage.getName(),
+				 templateResultsFile= OMRUtils.saveOMRResults(pageImage.getName(),
 						outputdir, template, OMRUtils.TEMPLATEID_FIELDNAME , userid);
-
-				File markedImageFile= pageImage.outputMarkedPage(outputdir);
-// TODO: dump log file with results
-
-				logScanResults(template,pageImage,markedImageFile,templateResultsFile);
 				// if (logger.isDebugEnabled())
 				// pageImage.outputWorkingPage(outputdir);
-
-				pageImage.freeMemory();
-				logger.info("Page  "+pageImage+" processed in "+(System.currentTimeMillis()-taskStart)+" ms."); //$NON-NLS-1$
 			}
 			catch (Exception e)
 			{
 				// report files with errors
-
-				logger.error("processFileList(File[]) - Can't process page=" + pageImage.toString() ,e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				
+				logger.error("processFileList(File[]) - Can't process page=" + pageImage.toString() ,e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$	
 				errors.add(pageImage);
+			}
+			finally
+			{
+				try
+				{
+					File markedImageFile= pageImage.outputMarkedPage(outputdir);
+					logScanResults(template,pageImage,markedImageFile,templateResultsFile);
+					pageImage.freeMemory();
+					logger.info("Page  "+pageImage+" processed in "+(System.currentTimeMillis()-taskStart)+" ms."); //$NON-NLS-1$
+				}
+				catch (IOException e)
+				{
+					logger.error(e);
+				}
+
 			}
 		}
 		
@@ -650,8 +658,7 @@ public class OMRProcessor {
 			}
 			catch (IOException e)
 			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error(e);
 			}
 		}
 		return pages;

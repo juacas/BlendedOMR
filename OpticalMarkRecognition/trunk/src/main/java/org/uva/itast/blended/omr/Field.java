@@ -54,7 +54,6 @@
 
 package org.uva.itast.blended.omr;
 
-import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.StringTokenizer;
 
