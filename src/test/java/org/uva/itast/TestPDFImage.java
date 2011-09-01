@@ -70,14 +70,14 @@ public class TestPDFImage
 			PDFPageImage page=new PDFPageImage(testPath,null,0);
 			SubImage sub=null; 
 			sub=page.getSubimage(0, 0, 210, 100, BufferedImage.TYPE_INT_RGB);
-			OMRUtils.salvarImagen(sub, "target/test-classes/output/debug-0-0-210-100.png", "png");
+			OMRUtils.saveImageToFile(sub, "target/test-classes/output/debug-0-0-210-100.png", "png");
 			sub=page.getSubimage(31.17d,27.66d, 50.86d, 16.7d,BufferedImage.TYPE_INT_RGB);
-			OMRUtils.salvarImagen(sub, "target/test-classes/output/debug_mark.png", "png");  
+			OMRUtils.saveImageToFile(sub, "target/test-classes/output/debug_mark.png", "png");  
 			
 			
 			
 			sub=page.getSubimage(82.02d,27.606d, 50.86d, 16.7d, BufferedImage.TYPE_INT_RGB);
-			OMRUtils.salvarImagen(sub, "target/test-classes/output/debug_mark_50_50.png", "png"); 
+			OMRUtils.saveImageToFile(sub, "target/test-classes/output/debug_mark_50_50.png", "png"); 
 			
 		}
 		catch (URISyntaxException e)

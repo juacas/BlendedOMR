@@ -76,19 +76,19 @@ public class BufferedImageUtil
 	 * @param y
 	 * @param template
 	 * @param dump
-	 * @return
+	 * @return ratio of pixels differences between template and image
 	 */
 	public static double templateXOR(BufferedImage img, int x, int y, BufferedImage template, boolean dump)
 	{
 		int diff=0, total=0;
 		if (y < 0)
 		{
-			logger.error("coordinate in XOR template should not be <0");
+			logger.warn("coordinate in XOR template should not be <0: y="+y);
 			y=0;
 		}
 		if (x < 0)
 		{
-			logger.error("coordinate in XOR template should not be <0");
+			logger.warn("coordinate in XOR template should not be <0: x="+x);
 			x=0;
 		}
 		int templateHeight=template.getHeight();
@@ -118,10 +118,10 @@ public class BufferedImageUtil
 			{
 				float luminance=getLuminance(img, j, i);
 				boolean isblack=(luminance < 0.75 ? true : false);
-				boolean tempIsWhite=isWhite(template, j - y, i - x);
-				boolean tempIsBlack=isBlack(template, j - y, i - x);
+				boolean templateIsWhite=isWhite(template, j - y, i - x);
+				boolean templateIsBlack=isBlack(template, j - y, i - x);
 
-				if ((isblack & tempIsWhite) | ((!isblack) & tempIsBlack))
+				if ((isblack & templateIsWhite) | ((!isblack) & templateIsBlack))
 				{
 					diff++;
 				}
@@ -134,6 +134,75 @@ public class BufferedImageUtil
 			logger.debug("templateXOR- Diffs=" + diff + " out of " + total); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		return ((double) diff) / total;
+	}
+
+	
+	/**
+	 * 
+	 * @param img
+	 * @param x
+	 * @param y
+	 * @param template
+	 * @param dump
+	 * @return ratio of pixels differences between template and image
+	 */
+	public static double templateCoincidences(BufferedImage img, int x, int y, BufferedImage template, boolean dump)
+	{
+		int matches=0, total=0;
+		if (y < 0)
+		{
+			logger.warn("coordinate in XOR template should not be <0: y="+y);
+			y=0;
+		}
+		if (x < 0)
+		{
+			logger.warn("coordinate in XOR template should not be <0: x="+x);
+			x=0;
+		}
+		int templateHeight=template.getHeight();
+		int templateWidth=template.getWidth();
+		int imgHeight=img.getHeight();
+		int imgWidth=img.getWidth();
+		if (dump && logger.isDebugEnabled())
+		{
+			logger.debug("templateXOR - Testing XOR Width=" + templateWidth + "from upper-left x=" + x + ", y=" + y); //$NON-NLS-1$ //$NON-NLS-2$
+
+			for (int j=y; j < y + templateHeight && j < imgHeight; j++)
+			{
+				for (int i=x; i < x + templateWidth && i < imgWidth; i++)
+				{
+					float luminance=getLuminance(img, j, i);
+					boolean isblack=(luminance < 0.75 ? true : false);
+					boolean tempIsBlack=isBlack(template, j - y, i - x);
+					System.out.print(isblack ? "*" : (tempIsBlack ? "O" : "_"));
+				}
+				System.out.println("<-");
+			}
+		}// end debug
+
+		for (int j=y; j < y + templateHeight && j < imgHeight; j++)
+		{
+			for (int i=x; i < x + templateWidth && i < imgWidth; i++)
+			{
+				
+				boolean templateIsWhite=isWhite(template, j - y, i - x);
+				boolean templateIsBlack=isBlack(template, j - y, i - x);
+				float luminance=getLuminance(img, j, i);
+				boolean isblack=(luminance < 0.75 ? true : false);
+				
+				if (templateIsBlack && isblack) // find pixels matches
+				{
+					matches++;
+				}
+				total++;
+			}
+
+		}
+		if (dump && logger.isDebugEnabled())
+		{
+			logger.debug("templateXOR- Coincidences=" + matches + " out of " + total); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		return ((double) matches) / total;
 	}
 
 	/**

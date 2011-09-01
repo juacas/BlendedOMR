@@ -1,7 +1,6 @@
 package org.uva.itast.blended.omr.pages;
 
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
@@ -19,10 +18,13 @@ import org.apache.commons.logging.LogFactory;
 import org.uva.itast.blended.omr.Field;
 import org.uva.itast.blended.omr.OMRProcessor;
 import org.uva.itast.blended.omr.OMRTemplate;
+import org.uva.itast.blended.omr.OMRUtils;
 import org.uva.itast.blended.omr.pages.AlignmentResult.AlignmentPosition;
 
 public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 {
+	private static final int	DELTA_FOR_OUTSIDING	=5;
+
 	/**
 	 * Logger for this class
 	 */
@@ -100,8 +102,8 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 		// angulo de rotacion
 		double angulo_rotacion=0;
 		// centro de rotacion, por defecto el centro de la pagina
-		int d_center_xpx=(int) (pageImage.a4width * pageImage.getPreferredHorizontalResolution() / 2);
-		int d_center_ypx=(int) (pageImage.a4height * pageImage.getPreferredVerticalResolution() / 2);
+		int d_center_px_x=(int) (pageImage.a4width * pageImage.getPreferredHorizontalResolution() / 2);
+		int d_center_px_y=(int) (pageImage.a4height * pageImage.getPreferredVerticalResolution() / 2);
 
 		double d_center_ymm;
 		double d_center_xmm;
@@ -193,7 +195,7 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 				// calculate fourth using
 			}
 			
-			// Use for calculations only  detected corners thar were squared
+			// Use for calculations only  detected corners that were squared
 			PagePoint useForCalculations1, useForCalculations2; // first point upper-leftmost
 			
 			if (topLeftSquared && topRightSquared)
@@ -226,37 +228,11 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 				useForCalculations2=dtopright;
 			}
 			
-			int deltaXpx=useForCalculations1.getYpx()-useForCalculations2.getYpx();
-			int deltaYpx=useForCalculations1.getXpx()-useForCalculations2.getXpx();
-			
-			double pend_align;
-			
-			if (Math.abs(deltaYpx)>Math.abs(deltaXpx)) // vertical line
-				{
-				pend_align = ((double)deltaXpx)/deltaYpx;
-				}
-			else		// horizontal line
-				{
-				pend_align= ((double)deltaYpx)/deltaXpx;
-				}
-//			// angles
-//			double pend_align_1=(dtopright != null && dtopleft != null) ? (dtopright.getY() - dtopleft.getY()) / (dtopright.getX() - dtopleft.getX())
-//				: Double.NaN;
-//			double pend_align_2=(dbottomleft != null && dbottomright != null) ? (dbottomright.getY() - dbottomleft.getY())
-//				/ (dbottomright.getX() - dbottomleft.getX()) : Double.NaN;
-//
-//			if (pend_align_1 != Double.NaN && pend_align_2 != Double.NaN)
-//			{
-//				setAlignmentSlope((pend_align_1 + pend_align_2) / 2);
-//			}
-//			else if (pend_align_1 == Double.NaN && pend_align_2 != Double.NaN)
-//			{
-//				setAlignmentSlope(pend_align_2);
-//			}
-//			else if (pend_align_1 != Double.NaN && pend_align_2 == Double.NaN)
-//			{
-//				setAlignmentSlope(pend_align_1);
-//			}
+			/**
+			 * Calculate the slope
+			 */
+			double pend_align=calculateSlope(useForCalculations1, useForCalculations2);
+
 			
 			setAlignmentSlope(pend_align);
 			marcasalign.setAlignmentSlope(pend_align);
@@ -309,21 +285,17 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 				dist_imagen_y=dist_original_y; // patch TODO
 				dist_imagen_px_y=dist_original_px_y;
 			}
-			// TODO calcular con pixeles observados es lo más realista.
+			
+			
 			escala_x=((double)dist_original_px_x) / dist_imagen_px_x;
 			escala_y=((double)dist_original_px_y) / dist_imagen_px_y;
-
-//			// margen aceptable en el escalado
-//			if (Math.abs(1 - escala_x) < 0.02)
-//				escala_x=1;
-//			if (Math.abs(1 - escala_y) < 0.02)
-//				escala_y=1;
-
+			
 			/**
 			 * Adjust the actual resolution
+			 * NOTE that some values (i.e. detected points in milimeters are no longer valid) 
 			 */
-			double horizRes=dist_imagen_px_x / dist_imagen_x;
-			double vertRes=dist_imagen_px_y / dist_imagen_y;
+			double horizRes=dist_imagen_px_x / dist_original_x;
+			double vertRes=dist_imagen_px_y / dist_original_y;
 			marcasalign.setHorizontalResolution(horizRes);
 			marcasalign.setVerticalResolution(vertRes);
 			pageImage.setHorizontalResolution(horizRes);
@@ -335,30 +307,20 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 			// diagonal
 			if (dtopleft != null && dbottomright != null)
 				{
-				d_center_xmm=dtopleft.getX() + (dbottomright.getX() - dtopleft.getX()) / 2;
-				d_center_ymm=dtopleft.getY() + (dbottomright.getY() - dtopleft.getY()) / 2;
-				d_center_xpx=dtopleft.getXpx() + (dbottomright.getXpx() - dtopleft.getXpx()) / 2;
-				d_center_ypx=dtopleft.getYpx() + (dbottomright.getYpx() - dtopleft.getYpx()) / 2;
+//				d_center_xmm=dtopleft.getX() + (dbottomright.getX() - dtopleft.getX()) / 2;
+//				d_center_ymm=dtopleft.getY() + (dbottomright.getY() - dtopleft.getY()) / 2;
+				d_center_px_x=dtopleft.getXpx() + (dbottomright.getXpx() - dtopleft.getXpx()) / 2;
+				d_center_px_y=dtopleft.getYpx() + (dbottomright.getYpx() - dtopleft.getYpx()) / 2;
 				}
 			else
 			// other diagonal
 			if (dbottomleft != null && dtopright != null)
 				{
-				d_center_xmm=dbottomleft.getX() + (dtopright.getX() - dtopleft.getX()) / 2;
-				d_center_ymm=dbottomleft.getY() + (dtopright.getY() - dbottomleft.getY()) / 2;
-				d_center_xpx=dbottomleft.getXpx() + (dtopright.getXpx() - dtopleft.getXpx()) / 2;
-				d_center_ypx=dbottomleft.getYpx() + (dtopright.getYpx() - dbottomleft.getYpx()) / 2;
+//				d_center_xmm=dbottomleft.getX() + (dtopright.getX() - dtopleft.getX()) / 2;
+//				d_center_ymm=dbottomleft.getY() + (dtopright.getY() - dbottomleft.getY()) / 2;
+				d_center_px_x=dbottomleft.getXpx() + (dtopright.getXpx() - dtopleft.getXpx()) / 2;
+				d_center_px_y=dbottomleft.getYpx() + (dtopright.getYpx() - dbottomleft.getYpx()) / 2;
 				}
-			// else
-			// // bottom side
-			// if (dbottomleft!=null && dbottomright!=null)
-			// center_xmm = dbottomleft.getX() +
-			// (dbottomright.getX()-dbottomleft.getX())/2;
-			// else
-			// // top side
-			// if (dtopleft!=null && dtopright!=null)
-			// center_xmm = dtopleft.getX() +
-			// (dtopright.getX()-dtopleft.getX())/2;
 			else
 			{
 				throw new RuntimeException("FATAL: Not enough information available to calculate the center's X coordinate.");
@@ -366,25 +328,30 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 
 			angulo_rotacion=Math.atan(getAlignmentSlope());
 			// translation of frame center
-			double e_center_xmm=(etopright.getX() + etopleft.getX()) / 2;
-			double e_center_ymm=(etopleft.getY() + ebottomleft.getY()) / 2;
-			double e_center_xpx=e_center_xmm * pageImage.getHorizontalResolution();
-			double e_center_ypx=e_center_ymm * pageImage.getVerticalResolution();
+			double e_center_x=etopleft.getX()+ (ebottomright.getX() - etopleft.getX()) / 2;
+			double e_center_y=etopleft.getY()+ (ebottomright.getY() - etopleft.getY()) / 2;
+			
+//			double e_center_xpx=e_center_xmm * pageImage.getHorizontalResolution();
+//			double e_center_ypx=e_center_ymm * pageImage.getVerticalResolution();
 
-			double transX=e_center_xmm - d_center_xmm;
-			double transY=e_center_ymm - d_center_ymm;
-			PagePoint detectedCenter=new PagePoint(pageImage,  d_center_xpx, d_center_ypx);
-			PagePoint expectedCenter=new PagePoint(pageImage,  e_center_xmm, e_center_ymm);
+			
+			PagePoint detectedCenter=new PagePoint(pageImage,  d_center_px_x, d_center_px_y);
+			PagePoint expectedCenter=new PagePoint(pageImage,  e_center_x, e_center_y);
+			
 			marcasalign.setDetectedCenter(detectedCenter);
 			marcasalign.setExpectedCenter(expectedCenter);
-			marcasalign.setDisplacementDeltas(transX,transY);
+			int transXpx=detectedCenter.getXpx()-expectedCenter.getXpx();
+			int transYpx=detectedCenter.getYpx()-expectedCenter.getYpx();
+			
+			PagePoint delta=new PagePoint(pageImage, (int)transXpx, (int)transYpx);
+			marcasalign.setDisplacementDelta(delta);
 
 
 			/**
 			 * Log detected frame
 			 */
-			debugAlignMarkFrame(pageImage, dtopleft, dtopright, dbottomleft, dbottomright, Color.GREEN);
-			debugAlignMarkFrame(pageImage, etopleft, etopright, ebottomleft, ebottomright, Color.BLUE);
+			OMRUtils.debugFrame(pageImage, dtopleft, dtopright, dbottomleft, dbottomright, Color.GREEN, "Detected");
+			OMRUtils.debugFrame(pageImage, etopleft, etopright, ebottomleft, ebottomright, Color.BLUE, "Expected");
 			/**
 			 * End Log
 			 */
@@ -392,13 +359,20 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 			if (logger.isDebugEnabled())
 			{
 				logger.debug("align(OMRTemplate, PageImage)  - Detected rotation: " + angulo_rotacion * 180 / Math.PI + " degrees."
-					+ "\n                               - Frame center expected:"+e_center_xpx+","+e_center_ypx+" px"
-					+ "\n                               - Frame center detected:"+d_center_xpx+","+d_center_ypx+" px"
-					+ "\n                               - Frame center delta x: " + transX + " mm."
-					+ "\n                               - Frame center delta y: " + transY + " mm." 
-					+ "\n                               - Scale x: "+ escala_x + " expected/actual" 
-					+ "\n                               - Scale y: "+ escala_y + " expected/actual"
-					+ "\n                               - Resolutions: " + horizRes + ", " + vertRes + " px/mm"); //$NON-NLS-1$
+					+ "\n                               - Frame topleft expected:"+etopleft
+					+ "\n                               - Frame topleft detected:"+dtopleft
+					+ "\n                               - Frame bottomright expected:"+ebottomright
+					+ "\n                               - Frame bottomright detected:"+dbottomright
+					+ "\n                               - Frame center expected:"+expectedCenter
+					+ "\n                               - Frame center detected:"+detectedCenter
+					+ "\n                               - Frame center delta:"+delta
+					+ "\n                               - Frame center delta x: " + transXpx + "px."
+					+ "\n                               - Frame center delta y: " + transYpx + "px." 
+					+ "\n                               - Scale x: "+ escala_x + " expected/actual ("+dist_original_px_x+"/"+dist_imagen_px_x+")" 
+					+ "\n                               - Scale y: "+ escala_y + " expected/actual ("+dist_original_px_y+"/"+dist_imagen_px_y+")"
+					+ "\n                               - Resolutions Horiz: " + horizRes + "px/mm ("+ dist_imagen_px_x+"/"+ dist_original_x+")"
+					+ "\n                               - Resolutions  Vert: " + vertRes + "px/mm ("+ dist_imagen_px_y+"/"+ dist_original_y+")");
+			
 			}
 			// TODO check this way of applying the transformation. Should reuse
 			// and
@@ -412,12 +386,52 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 
 			pageImage.setAlignmentInfo(transform);
 			
+			// debug transformation
+			
+			if(logger.isDebugEnabled())
+				{
+				PagePoint topLeft=new PagePoint(pageImage, etopleft.x, etopleft.y);
+				PagePoint topRight=new PagePoint(pageImage, etopright.x, etopright.y);
+				PagePoint bottomLeft=new PagePoint(pageImage, ebottomleft.x, ebottomleft.y);
+				PagePoint bottomRight=new PagePoint(pageImage, ebottomright.x, ebottomright.y);
+				
+				PagePoint transCenter=new PagePoint(pageImage, expectedCenter.x, expectedCenter.y);
+				OMRUtils.debugFrame(pageImage, topLeft, topRight, bottomLeft, bottomRight, Color.RED,"Transformed Frame");
+				logger.debug("Detected topLeft:"+dtopleft);
+				logger.debug("Transformed topLeft:"+topLeft);
+				logger.debug("Detected center:"+detectedCenter);
+				logger.debug("Transformed center:"+transCenter);
+				logger.debug("\tImage alligned in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
+				}
 
-			logger.debug("\tImage alligned in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
+			
 			return marcasalign;
 		}
 		else
 			return null;
+	}
+
+	/**
+	 * @param useForCalculations1
+	 * @param useForCalculations2
+	 * @return ratio between increments in x coords and y coords, reduced to first quadrant
+	 */
+	private double calculateSlope(PagePoint useForCalculations1, PagePoint useForCalculations2)
+	{
+		int deltaXpx=useForCalculations1.getYpx()-useForCalculations2.getYpx();
+		int deltaYpx=useForCalculations1.getXpx()-useForCalculations2.getXpx();
+		
+		double pend_align;
+		
+		if (Math.abs(deltaYpx)>Math.abs(deltaXpx)) // vertical line
+			{
+			pend_align = ((double)deltaXpx)/deltaYpx;
+			}
+		else		// horizontal line
+			{
+			pend_align= ((double)deltaYpx)/deltaXpx;
+			}
+		return pend_align;
 	}
 
 	private AffineTransform createTransform( AlignmentResult marcasalign)
@@ -427,22 +441,34 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 		PagePoint expectedCenter=marcasalign.getExpectedCenter();
 		AffineTransform transform=new AffineTransform();
 		
-
-
+		transform.translate(detectedCenter.getXpx(), detectedCenter.getYpx());
 		transform.scale(marcasalign.getHorizontalResolution(), marcasalign.getVerticalResolution()); // to convert from mm to px
-		transform.translate(detectedCenter.getX(), detectedCenter.getY());
 		transform.rotate(angulo_rotacion);
 		transform.translate(-expectedCenter.getX(), -expectedCenter.getY());
 
 //		TODO move to test code
-//		Point2D traslatedCenter=new Point.Double();
+//		Point2D traslatedCenter=new Point2D.Double();
 //		transform.transform(expectedCenter, traslatedCenter);
 //		
-//		Point2D traslated=new Point.Double();
+//		Point2D traslated=new Point2D.Double();
 //		PagePoint expectedTopLeft=marcasalign.getExpected().get(AlignmentPosition.TOPLEFT);
 //		PagePoint detectedTopLeft=marcasalign.getDetected().get(AlignmentPosition.TOPLEFT);
 //
 //		transform.transform(expectedTopLeft, traslated);
+//		
+//		PagePoint dTopLeft=marcasalign.getDetected().get(AlignmentPosition.TOPLEFT);
+//		PagePoint eTopLeft=marcasalign.getExpected().get(AlignmentPosition.TOPLEFT);
+//		
+//		// expected mm coords should be traslated to detected px coords
+//		
+//		Point2D ptDst = new Point2D.Double();
+//		transform.transform(eTopLeft, ptDst);
+//		
+//		Point2D res2=new Point2D.Double();
+//		Point2D origin = new Point2D.Double(0,0);
+//		transform.transform(origin, res2);
+		
+	
 		return transform;
 	}
 
@@ -456,7 +482,7 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 	{
 		if (point1==null || corner==null || point2==null)
 			return false;
-		double orthogonality=Math.abs(proyection(point1, corner, point2));
+		double orthogonality=Math.abs(vectorProjection(point1, corner, point2));
 		return orthogonality < 0.02;
 	}
 
@@ -468,7 +494,7 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 	 * @param point2
 	 * @return
 	 */
-	private double proyection(PagePoint point1, PagePoint corner, PagePoint point2)
+	private double vectorProjection(PagePoint point1, PagePoint corner, PagePoint point2)
 	{
 		double v1x=point1.x - corner.x;
 		double v1y=point1.y - corner.y;
@@ -477,23 +503,7 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 		return (v1x * v2x + v1y * v2y)/Math.sqrt((v1x*v1x+v1y*v1y)*(v1x*v1x+v1y*v1y));
 	}
 
-	protected void debugAlignMarkFrame(PageImage pageImage, PagePoint topleft, PagePoint topright, PagePoint bottomleft, PagePoint bottomright, Color color)
-	{
-		if (topleft == null || topright == null || bottomleft == null || bottomright == null)
-			return;
-		Graphics g=pageImage.getReportingGraphics();
-		g.setColor(color);
-
-//		Point framePxUL=pageImage.toPixels(topleft.getX(), topleft.getY());
-//		Point framePxUR=pageImage.toPixels(topright.getX(), topright.getY());
-//		Point framePxBL=pageImage.toPixels(bottomleft.getX(), bottomleft.getY());
-//		Point framePxBR=pageImage.toPixels(bottomright.getX(), bottomright.getY());
-
-		g.drawLine(topleft.getXpx(), topleft.getYpx(), topright.getXpx(), topright.getYpx());
-		g.drawLine(topleft.getXpx(), topleft.getYpx(), bottomleft.getXpx(), bottomleft.getXpx());
-		g.drawLine(topright.getXpx(), topright.getYpx(), bottomright.getXpx(), bottomright.getYpx());
-		g.drawLine(bottomleft.getXpx(), bottomleft.getYpx(), bottomright.getXpx(), bottomright.getYpx());
-	}
+	
 
 	/*
 	 * (non-Javadoc)
@@ -506,39 +516,34 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 	{
 		Rectangle2D coords=campo.getBBox();
 
-		// puntos de alineamiento esperados
-		PagePoint etopleft=new PagePoint(pageImage, coords.getX(), coords.getY()); // expected
-																					// top
-																					// left
-																					// point
-		PagePoint etopright=new PagePoint(pageImage, coords.getX() + coords.getWidth(), coords.getY()); // expected
-																										// top
-																										// right
-																										// point
-		PagePoint ebottomleft=new PagePoint(pageImage, coords.getX(), coords.getY() + coords.getHeight()); // expected
-																											// bottom
-																											// left
-																											// point
-		PagePoint ebottomright=new PagePoint(pageImage, coords.getX() + coords.getWidth(), coords.getY() + coords.getHeight()); // expected
-																																// bottom
-																																// right
-																																// point
+		// puntos de alineamiento esperados expected topleft point
+		PagePoint etopleft=new PagePoint(pageImage, coords.getX(), coords.getY());
+		PagePoint etopright=new PagePoint(pageImage, coords.getX() + coords.getWidth(), coords.getY()); // expected  top  right point
+		PagePoint ebottomleft=new PagePoint(pageImage, coords.getX(), coords.getY() + coords.getHeight()); // expected  bottom left  point
+		PagePoint ebottomright=new PagePoint(pageImage, coords.getX() + coords.getWidth(), coords.getY() + coords.getHeight()); // expected  bottom right  point
+		PagePoint dtopleft=null,dtopright=null,dbottomleft=null,dbottomright=null;
+		
+		
+		
+		// search in the corner
+		PagePoint searchIn=new PagePoint(pageImage,	etopleft.getXpx()-DELTA_FOR_OUTSIDING,	etopleft.getYpx()-DELTA_FOR_OUTSIDING);
+//		dtopleft=pointPosition(searchIn); // detected topleft point
+		if (dtopleft==null)
+			dtopleft=pointPosition(etopleft); // detected topleft point
 
-		PagePoint dtopleft=pointPosition(etopleft); // detected topleft point
-		logger.debug("Point Top-Left supposed to be at: " + etopleft + "\n                        found at: " + dtopleft);
-
-		PagePoint dtopright=pointPosition(etopright); // detected top
-														// right point
-		logger.debug("Point Top-Right supposed to be at: " + etopright + "\n                        found at: " + dtopright);
-
-		PagePoint dbottomleft=pointPosition(ebottomleft); // detected
-															// bottom
-															// left
-															// point
-		PagePoint dbottomright=pointPosition(ebottomright); // detected
-															// bottom
-															// right
-															// point
+		searchIn=new PagePoint(pageImage,etopright.getXpx()+DELTA_FOR_OUTSIDING,etopright.getYpx()-DELTA_FOR_OUTSIDING);
+//		dtopright=pointPosition(searchIn);
+		if (dtopright==null)
+		 dtopright=pointPosition(etopright); // detected top right point
+		
+		searchIn=new PagePoint(pageImage,ebottomleft.getXpx()-DELTA_FOR_OUTSIDING,ebottomleft.getYpx()-DELTA_FOR_OUTSIDING);
+//		dbottomleft=pointPosition(searchIn);
+		if (dbottomleft==null)
+		 dbottomleft=pointPosition(ebottomleft); // detected  bottom  left point
+		searchIn=new PagePoint(pageImage,ebottomright.getXpx()+DELTA_FOR_OUTSIDING,ebottomright.getYpx()+DELTA_FOR_OUTSIDING);
+//		dbottomright=pointPosition(searchIn);
+		if (dbottomright==null)
+		 dbottomright=pointPosition(ebottomright); // detected bottom  right  point
 
 		AlignmentResult result=new AlignmentResult();
 		result.addResult(AlignmentPosition.TOPLEFT, etopleft, dtopleft);
@@ -554,9 +559,9 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 	 * @param expectedPoint
 	 *            aproximate position in milimeters (assumes that the scale is
 	 *            correct)
-	 * @return detected point in pixels Use
-	 *         {@link PageImage#toMilimeters(int, int)} to obtain equivalence in
-	 *         milimeters
+	 * @return detected {@link PagePoint} initialized in pixels Use
+	 *         {@link PagePoint#getX()} to obtain equivalence in
+	 *         milimeters and {@link PagePoint#getXpx()} in pixels
 	 */
 	public abstract PagePoint pointPosition(PagePoint expectedPoint);
 

@@ -57,6 +57,7 @@ import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.RasterFormatException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -143,7 +144,16 @@ public final class BarcodeScanner extends MarkScanner
 		//[JPC] Need to be TYPE_BYTE_GRAY 
 		  // BufferedImageMonochromeBitmapSource seems to work bad with TYPE_BYTERGB
 		  
-		 SubImage subimage = pageImage.getSubimage(rect, BufferedImage.TYPE_BYTE_GRAY);		//se coge la subimagen, x,y,w,h (en p�xeles)
+		 SubImage subimage;
+		try
+		{
+			subimage=pageImage.getSubimage(rect, BufferedImage.TYPE_BYTE_GRAY);
+		}
+		catch (RasterFormatException e2)
+		{
+			logger.error(e2);
+			throw new MarkScannerException(e2);
+		}
 		
 		if (subimage == null)
 			{
@@ -206,8 +216,9 @@ public final class BarcodeScanner extends MarkScanner
 													// notify caller
 			}
 		}
-		ScanResult scanResult=new ScanResult("Barcode",result);
-		return scanResult;
+		this.lastResult=new ScanResult("Barcode",result);
+		lastResult.setLocation(rect);
+		return lastResult;
 	}
 
 	/**
@@ -237,6 +248,15 @@ public final class BarcodeScanner extends MarkScanner
 		//g.setFont(new Font("Arial",Font.PLAIN,(int) (12/t.getScaleX())));
 		if (lastResult!=null)
 			g.drawString(((Result)lastResult.getResult()).getBarcodeFormat().toString()+"="+getParsedCode(lastResult), rect.x, rect.y);
+		
+	}
+	@Override
+	public void putEmphasisMarkOnImage(PageImage pageImage2)
+	{
+		if (lastResult!=null)
+		{
+			OMRUtils.logFrame(pageImage2, lastResult.getLocation(), Color.RED, "BarCodeDetected");
+		}
 		
 	}
 }

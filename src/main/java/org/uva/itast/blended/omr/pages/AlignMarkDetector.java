@@ -16,7 +16,10 @@ public interface AlignMarkDetector
 	 * @param bufferWidth the bufferWidth to set
 	 */
 	public abstract void setBufferWidth(int bufferWidth);
-
+/**
+ * Slope detected measured as the ratio between delta x and delta y reduced to the first and fourth quadrants.
+ * @return
+ */
 	public abstract double getAlignmentSlope();
 
 	public abstract void setAlignmentSlope(double alignmentSlope);

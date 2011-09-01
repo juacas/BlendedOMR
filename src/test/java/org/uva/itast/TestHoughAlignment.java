@@ -27,6 +27,7 @@ import org.uva.itast.blended.omr.scanners.AlignMarkHoughDetector;
 @RunWith(Theories.class)
 public class TestHoughAlignment
 {
+	private static final int	TRANSFORMATION_TOLERANCE	=10;
 	/**
 	 * Logger for this class
 	 */
@@ -68,20 +69,34 @@ public void testFrameMarksDetection(double value) throws IOException
 	Point2D trans=new Point();
 //	transform it to px
 	transform.transform(e_center, trans);
-	Assert.assertEquals(trans.getX(), dcenter.getXpx(), 5);
-	Assert.assertEquals(trans.getY(), dcenter.getYpx(), 5);	
+	Assert.assertEquals(trans.getX(), dcenter.getXpx(), TRANSFORMATION_TOLERANCE/2);
+	Assert.assertEquals(trans.getY(), dcenter.getYpx(), TRANSFORMATION_TOLERANCE/2);	
 	// check correspondences
 	// Compare TOPLEFT detected to synthetic generated point
 	
-	PagePoint ptDetected=detectedAlignmentInfo.getDetected().get(AlignmentPosition.TOPLEFT);
-	PagePoint ptExpected=detectedAlignmentInfo.getExpected().get(AlignmentPosition.TOPLEFT);
+	PagePoint dTopLeft=detectedAlignmentInfo.getDetected().get(AlignmentPosition.TOPLEFT);
+	PagePoint eTopLeft=detectedAlignmentInfo.getExpected().get(AlignmentPosition.TOPLEFT);
 	
 	// expected mm coords should be traslated to detected px coords
 	
 	Point2D ptDst = new Point();
-	transform.transform(ptExpected, ptDst);
-	Assert.assertEquals(ptDst.getX(), ptDetected.getXpx(), 5);
-	Assert.assertEquals(ptDst.getY(), ptDetected.getYpx(), 5);
+	transform.transform(eTopLeft, ptDst);
+	Assert.assertEquals(ptDst.getX(), dTopLeft.getXpx(), TRANSFORMATION_TOLERANCE);
+	Assert.assertEquals(ptDst.getY(), dTopLeft.getYpx(), TRANSFORMATION_TOLERANCE);
+	// test corners
+	Point2D ptDstBottomLeft = new Point();
+	PagePoint dBottomLeft=detectedAlignmentInfo.getDetected().get(AlignmentPosition.BOTTOMLEFT);
+	PagePoint eBottomLeft=detectedAlignmentInfo.getExpected().get(AlignmentPosition.BOTTOMLEFT);
+	transform.transform(eBottomLeft, ptDstBottomLeft);
+	Assert.assertEquals(ptDstBottomLeft.getX(), dBottomLeft.getXpx(), TRANSFORMATION_TOLERANCE);
+	Assert.assertEquals(ptDstBottomLeft.getY(), dBottomLeft.getYpx(), TRANSFORMATION_TOLERANCE);
+	
+	Point2D ptDstTopRight = new Point();
+	PagePoint dTopRight=detectedAlignmentInfo.getDetected().get(AlignmentPosition.TOPRIGHT);
+	PagePoint eTopRight=detectedAlignmentInfo.getExpected().get(AlignmentPosition.TOPRIGHT);
+	transform.transform(eTopRight, ptDstTopRight);
+	Assert.assertEquals(ptDstTopRight.getX(), dTopRight.getXpx(), TRANSFORMATION_TOLERANCE);
+	Assert.assertEquals(ptDstTopRight.getY(), dTopRight.getYpx(), TRANSFORMATION_TOLERANCE);
 
 }
 public static @DataPoints double[] values={0,1.0,1.1,1.2,1.3,1.5,2.0,3.0};
