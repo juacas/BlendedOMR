@@ -221,6 +221,34 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 				useForCalculations1=dtopleft;
 				useForCalculations2=dbottomleft;
 			}
+			else // some heuristics for last chance. Maybe opposite point is displaced!
+			if (topLeftSquared)
+			{
+				useForCalculations1=dtopleft;
+				useForCalculations2=dbottomleft;
+				dbottomright= calculateThirdCorner(dbottomleft,dtopleft,dtopright);
+			}
+			else
+			if (bottomLeftSquared)
+			{
+				useForCalculations1=dbottomleft;
+				useForCalculations2=dbottomright;
+				dtopright=calculateThirdCorner(dbottomright, dbottomleft, dtopleft);
+			}
+			else
+			if (bottomRightSquared)
+			{
+				useForCalculations1=dbottomleft;
+				useForCalculations2=dbottomright;
+				dtopleft=calculateThirdCorner(dtopright, dbottomright, dbottomright);
+			}
+			else
+			if (topRightSquared)
+			{
+				useForCalculations1=dtopleft;
+				useForCalculations2=dtopright;
+				dbottomleft=calculateThirdCorner(dtopleft, dtopright, dbottomright);
+			}
 			else
 			{
 				logger.warn("Not squared frame detected. Alignment may be wrong!");
@@ -356,9 +384,9 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 			 * End Log
 			 */
 			// Rotaciï¿½n
-			if (logger.isDebugEnabled())
+			if (logger.isInfoEnabled())
 			{
-				logger.debug("align(OMRTemplate, PageImage)  - Detected rotation: " + angulo_rotacion * 180 / Math.PI + " degrees."
+				logger.info("align(OMRTemplate, PageImage)  - Detected rotation: " + angulo_rotacion * 180 / Math.PI + " degrees."
 					+ "\n                               - Frame topleft expected:"+etopleft
 					+ "\n                               - Frame topleft detected:"+dtopleft
 					+ "\n                               - Frame bottomright expected:"+ebottomright
@@ -409,6 +437,21 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 		}
 		else
 			return null;
+	}
+/**
+ * calculates the third corner of the rectangle in pixels
+ * @param dbottomleft
+ * @param dtopleft
+ * @param dtopright
+ * @return
+ */
+	private PagePoint calculateThirdCorner(PagePoint dbottomleft, PagePoint dtopleft, PagePoint dtopright)
+	{
+		int x;
+		int y;
+		x= dbottomleft.getXpx() + dtopright.getXpx()-dtopleft.getXpx();
+		y= dbottomleft.getYpx() + dtopright.getYpx()-dtopleft.getYpx();
+		return new PagePoint(dtopleft.getPageImage(),(int)x,(int)y);
 	}
 
 	/**

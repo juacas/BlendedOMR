@@ -630,9 +630,10 @@ public class OMRProcessor {
 	 * 
 	 */
 	private void logScanResults(OMRTemplate template, PageImage pageImg, File markedImageFile,File templateResultsFile) throws FileNotFoundException {
-		int pagenum=template.getSelectedPage();
+		
 		String filePageName = pageImg.getName();
-		String activityId= template.getTemplateID(); //
+		String activityId= template==null?"Undetected":template.getTemplateID(); //
+		int pagenum=template==null?-1:template.getSelectedPage();
 		File logfile=new File(getOutputdir(),"log.txt");
 		PrintWriter out = new PrintWriter(new FileOutputStream(logfile,true));
 		out.println("[Job]");

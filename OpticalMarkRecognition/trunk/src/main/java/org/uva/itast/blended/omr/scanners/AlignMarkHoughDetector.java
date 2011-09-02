@@ -131,11 +131,18 @@ public class AlignMarkHoughDetector extends AbstractAlignMarkDetector
 		double horizDegrees=0;
 		double vertDegrees=0;
 		int horizRho=0;
+		int horizRhoMax=0;
 		int vertRho=0;
+		int vertRhoMax=0;
 		int horizCount=0;
 		int vertCount=0;
+		int valueMax=res[0].value;
+		int threshold= (int) (valueMax*0.9);
+		// TODO do not average all values. Take the highest values <10%.
 		for (HoughResult houghResult : res)
 		{
+			if (houghResult.value<threshold)
+				continue;
 			if (houghResult.degrees < 45 && houghResult.degrees > -45) // horiz
 			{
 				horizDegrees+=houghResult.degrees;
