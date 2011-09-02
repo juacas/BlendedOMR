@@ -83,12 +83,12 @@ public class BufferedImageUtil
 		int diff=0, total=0;
 		if (y < 0)
 		{
-			logger.warn("coordinate in XOR template should not be <0: y="+y);
+			logger.debug("coordinate in XOR template should not be <0: y="+y);
 			y=0;
 		}
 		if (x < 0)
 		{
-			logger.warn("coordinate in XOR template should not be <0: x="+x);
+			logger.debug("coordinate in XOR template should not be <0: x="+x);
 			x=0;
 		}
 		int templateHeight=template.getHeight();
