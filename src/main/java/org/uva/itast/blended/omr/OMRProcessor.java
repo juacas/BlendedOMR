@@ -82,7 +82,7 @@ import org.uva.itast.blended.omr.pages.ZippedImageFilePage;
 import org.uva.itast.blended.omr.scanners.AlignMarkHoughDetector;
 
 public class OMRProcessor {
-	public static final String	IMAGE_TYPES_REG_EXPR	=".*\\.(jpg|png|pdf)";
+	public static final String	IMAGE_TYPES_REG_EXPR	=".*\\.(jpg|jpeg|gif|png|pdf)";
 
 	/**
 	 * Logger for this class
