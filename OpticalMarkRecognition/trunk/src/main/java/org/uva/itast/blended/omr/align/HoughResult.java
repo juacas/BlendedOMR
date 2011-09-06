@@ -1,4 +1,4 @@
-package org.uva.itast.blended.omr.scanners;
+package org.uva.itast.blended.omr.align;
 
 public class HoughResult
 {

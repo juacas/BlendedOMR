@@ -1,1 +1,1 @@
-java -cp ./lib\ -jar ./${project.build.finalName}.jar $*
+java -cp %~dp0/lib\ -jar %~dp0/${project.build.finalName}.jar $*

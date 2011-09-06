@@ -95,7 +95,7 @@ public class AlignmentResult
 	}
 
 
-	void setAlignmentTransform(AffineTransform transform)
+	public void setAlignmentTransform(AffineTransform transform)
 	{
 		this.transform=transform;
 	}

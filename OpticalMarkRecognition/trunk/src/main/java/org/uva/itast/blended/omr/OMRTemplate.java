@@ -122,7 +122,10 @@ public class OMRTemplate {
 	public PageTemplate getPage(int pagina) {
 		return paginas.elementAt(pagina-1);
 	}
-	
+	PageTemplate getSelectedPage()
+	{
+		return getPage(getSelectedPageNumber());
+	}
 	/**
 	 * Devuelve el vector paginas donde est�n almacenadas todas las p�ginas de una plantilla
 	 * @return paginas
@@ -149,7 +152,7 @@ public class OMRTemplate {
 	{
 	this.selectedPageNumber=pageNumber;
 	}
-	public int getSelectedPage()
+	public int getSelectedPageNumber()
 	{
 		return selectedPageNumber;
 	}

@@ -1,4 +1,4 @@
-package org.uva.itast.blended.omr.scanners;
+package org.uva.itast.blended.omr.align;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
@@ -68,6 +68,11 @@ public class LineHoughAlgorithm
 
 					for (int theta=0; theta < 180; theta++)
 					{
+						if (theta==6) // skip angles greater than 5 degrees
+							theta=85;
+						if  (theta==96)
+							theta=175;
+						
 						r=(int) (x * Math.cos(((theta) * Math.PI) / 180) + y * Math.sin(((theta) * Math.PI) / 180));
 						if ((r > 0) && (r <= rmax))
 							acc[r * 180 + theta]=acc[r * 180 + theta] + 1;

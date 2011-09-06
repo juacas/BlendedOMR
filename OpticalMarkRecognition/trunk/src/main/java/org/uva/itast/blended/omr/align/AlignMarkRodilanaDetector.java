@@ -1,4 +1,4 @@
-package org.uva.itast.blended.omr.scanners;
+package org.uva.itast.blended.omr.align;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -13,7 +13,6 @@ import org.apache.commons.logging.LogFactory;
 import org.uva.itast.blended.omr.BufferedImageUtil;
 import org.uva.itast.blended.omr.OMRProcessor;
 import org.uva.itast.blended.omr.OMRTemplate;
-import org.uva.itast.blended.omr.pages.AbstractAlignMarkDetector;
 import org.uva.itast.blended.omr.pages.PagePoint;
 import org.uva.itast.blended.omr.pages.SubImage;
 
