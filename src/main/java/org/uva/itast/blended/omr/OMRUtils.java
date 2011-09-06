@@ -220,7 +220,7 @@ public class OMRUtils
 																				// buscan
 																				// las
 																				// marcas
-		logger.debug("\tMarks scanned in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
+		logger.info("\tMarks scanned in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
 		
 	}
 	public static void processPage(OMRProcessor omr,PageImage pageImage, boolean align,
@@ -319,7 +319,7 @@ public class OMRUtils
 		
 		
 			// se recorren todas las marcas de una pÃ¯Â¿Â½gina determinada
-			Hashtable<String, Field> campos = plantilla.getPage(plantilla.getSelectedPage()).getFields(); // Hastable para almacenar los campos que
+			Hashtable<String, Field> campos = plantilla.getPage(plantilla.getSelectedPageNumber()).getFields(); // Hastable para almacenar los campos que
 									// leemos del fichero de definiciÃ¯Â¿Â½n de
 									// marcas
 			Collection<Field> campos_val = campos.values();
@@ -480,7 +480,7 @@ public class OMRUtils
 	public static File saveOMRResults(String inputpath, String outputdir,
 			OMRTemplate template, String templateIdName, String userIdName) throws FileNotFoundException, NumberFormatException
 	{
-		Hashtable<String, Field> fields = template.getPage(1).getFields();
+		Hashtable<String, Field> fields = template.getSelectedPage().getFields();
 		Field templateIdField = fields.get(templateIdName);
 		Field useridField = fields.get(userIdName);
 		try
@@ -502,7 +502,7 @@ public class OMRUtils
 			//TODO: solo volcar la página seleccionada en esta fase. Luego se volcarán las dos páginas en el otro proceso
 			// de volcado de resultados finales...
 			
-				PageTemplate page=template.getPage(template.getSelectedPage());
+				PageTemplate page=template.getSelectedPage();
 				fields = page.getFields();
 				out.println("Filename=" + inputpath);
 				

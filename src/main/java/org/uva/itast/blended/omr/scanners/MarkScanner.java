@@ -117,7 +117,7 @@ public abstract class MarkScanner
 			{
 				Rectangle2D expandedBbox = getExpandedArea(coords);
 				//Try with a wider area
-				logger.error("Last attempt to read mark was in error: RETRY",e);
+				logger.debug("Last attempt to read mark was in error: RETRY",e);
 				result =  scanAreaForFieldData(expandedBbox);
 				
 			}

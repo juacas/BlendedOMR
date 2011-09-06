@@ -1,4 +1,4 @@
-package org.uva.itast.blended.omr.scanners;
+package org.uva.itast.blended.omr.align;
 
 import java.awt.Color;
 import java.awt.Point;
@@ -11,7 +11,6 @@ import org.uva.itast.blended.omr.BufferedImageUtil;
 import org.uva.itast.blended.omr.OMRProcessor;
 import org.uva.itast.blended.omr.OMRTemplate;
 import org.uva.itast.blended.omr.OMRUtils;
-import org.uva.itast.blended.omr.pages.AbstractAlignMarkDetector;
 import org.uva.itast.blended.omr.pages.PagePoint;
 import org.uva.itast.blended.omr.pages.SubImage;
 
@@ -131,27 +130,48 @@ public class AlignMarkHoughDetector extends AbstractAlignMarkDetector
 		double horizDegrees=0;
 		double vertDegrees=0;
 		int horizRho=0;
-		int horizRhoMax=0;
 		int vertRho=0;
-		int vertRhoMax=0;
 		int horizCount=0;
 		int vertCount=0;
-		int valueMax=res[0].value;
-		int threshold= (int) (valueMax*0.9);
+		int valueMaxHoriz=0;
+		int valueMaxVert=0;
+		for (HoughResult houghResult : res)
+		{
+			if (houghResult.degrees < 45 && houghResult.degrees > -45) // horiz
+			{
+			if (valueMaxHoriz<houghResult.value)
+				valueMaxHoriz=houghResult.value;
+			}
+			else if (houghResult.degrees > 45 && houghResult.degrees < 135) // vert
+			{
+				if (valueMaxVert<houghResult.value)
+					valueMaxVert=houghResult.value;	
+			}
+		}
+		// discard lines that are not enough clear
+		if (valueMaxHoriz< valueMaxVert*0.5 || valueMaxVert< valueMaxHoriz*0.5)
+			{
+			logger.debug("Lines are not clear. Ignoring area.");
+			return null;
+			}
+		int thresholdVert= (int) (valueMaxVert*0.9);
+		int thresholdHoriz= (int) (valueMaxHoriz*0.9);
 		// TODO do not average all values. Take the highest values <10%.
 		for (HoughResult houghResult : res)
 		{
-			if (houghResult.value<threshold)
-				continue;
+			
 			if (houghResult.degrees < 45 && houghResult.degrees > -45) // horiz
 			{
+				if (houghResult.value<thresholdHoriz)
+					continue;
 				horizDegrees+=houghResult.degrees;
 				horizRho+=houghResult.rho;
 				horizCount++;
 			}
 			else if (houghResult.degrees > 45 && houghResult.degrees < 135) // vert
 			{
-				
+				if (houghResult.value<thresholdVert)
+					continue;
 				vertDegrees+=houghResult.degrees;
 				vertRho+=houghResult.rho;
 				vertCount++;

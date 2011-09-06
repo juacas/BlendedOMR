@@ -1,4 +1,4 @@
-package org.uva.itast.blended.omr.pages;
+package org.uva.itast.blended.omr.align;
 
 import java.awt.Color;
 import java.awt.Rectangle;
@@ -19,7 +19,12 @@ import org.uva.itast.blended.omr.Field;
 import org.uva.itast.blended.omr.OMRProcessor;
 import org.uva.itast.blended.omr.OMRTemplate;
 import org.uva.itast.blended.omr.OMRUtils;
+import org.uva.itast.blended.omr.pages.AlignMarkDetector;
+import org.uva.itast.blended.omr.pages.AlignmentResult;
 import org.uva.itast.blended.omr.pages.AlignmentResult.AlignmentPosition;
+import org.uva.itast.blended.omr.pages.PageImage;
+import org.uva.itast.blended.omr.pages.PagePoint;
+import org.uva.itast.blended.omr.pages.SubImage;
 
 public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 {
@@ -102,11 +107,10 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 		// angulo de rotacion
 		double angulo_rotacion=0;
 		// centro de rotacion, por defecto el centro de la pagina
-		int d_center_px_x=(int) (pageImage.a4width * pageImage.getPreferredHorizontalResolution() / 2);
-		int d_center_px_y=(int) (pageImage.a4height * pageImage.getPreferredVerticalResolution() / 2);
+		int d_center_px_x=(int) (PageImage.a4width * pageImage.getHorizontalResolution() / 2);
+		int d_center_px_y=(int) (PageImage.a4height * pageImage.getVerticalResolution() / 2);
 
-		double d_center_ymm;
-		double d_center_xmm;
+		
 		// TODO: check what to do with multipage documents
 		// for (int i = 1; i <= template.getNumPaginas(); i++)
 		// for now, use the first page for the frame
@@ -200,6 +204,7 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 			
 			if (topLeftSquared && topRightSquared)
 			{
+				
 				useForCalculations1=dtopleft;
 				useForCalculations2=dtopright;
 			}
@@ -252,6 +257,18 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 			else
 			{
 				logger.warn("Not squared frame detected. Alignment may be wrong!");
+				// use full image as frame. Some scanners crop the images this way
+//				dtopleft=new PagePoint(pageImage, (int)5,(int)5);
+//				dtopright=new PagePoint(pageImage, (int)pageImage.getImage().getWidth()-5,(int)5);
+//				dbottomleft=new PagePoint(pageImage, (int)5,(int)pageImage.getImage().getHeight()-5);
+//				dbottomright=new PagePoint(pageImage, (int)pageImage.getImage().getWidth()-5,(int)pageImage.getImage().getHeight()-5);
+				
+				// assume image is aligned
+				dtopleft=etopleft;
+				dtopright=etopright;
+				dbottomleft=ebottomleft;
+				dbottomright=ebottomright;
+				
 				useForCalculations1=dtopleft;
 				useForCalculations2=dtopright;
 			}
@@ -378,8 +395,11 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 			/**
 			 * Log detected frame
 			 */
-			OMRUtils.debugFrame(pageImage, dtopleft, dtopright, dbottomleft, dbottomright, Color.GREEN, "Detected");
-			OMRUtils.debugFrame(pageImage, etopleft, etopright, ebottomleft, ebottomright, Color.BLUE, "Expected");
+			if (logger.isDebugEnabled())
+			{
+				OMRUtils.debugFrame(pageImage, dtopleft, dtopright, dbottomleft, dbottomright, Color.GREEN, "Detected");
+				OMRUtils.debugFrame(pageImage, etopleft, etopright, ebottomleft, ebottomright, Color.BLUE, "Expected");
+			}
 			/**
 			 * End Log
 			 */
@@ -391,6 +411,8 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 					+ "\n                               - Frame topleft detected:"+dtopleft
 					+ "\n                               - Frame bottomright expected:"+ebottomright
 					+ "\n                               - Frame bottomright detected:"+dbottomright
+					+ "\n                               - Frame bottomleft expected:"+ebottomleft
+					+ "\n                               - Frame bottomleft detected:"+dbottomleft
 					+ "\n                               - Frame center expected:"+expectedCenter
 					+ "\n                               - Frame center detected:"+detectedCenter
 					+ "\n                               - Frame center delta:"+delta
@@ -424,12 +446,15 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 				PagePoint bottomRight=new PagePoint(pageImage, ebottomright.x, ebottomright.y);
 				
 				PagePoint transCenter=new PagePoint(pageImage, expectedCenter.x, expectedCenter.y);
-				OMRUtils.debugFrame(pageImage, topLeft, topRight, bottomLeft, bottomRight, Color.RED,"Transformed Frame");
-				logger.debug("Detected topLeft:"+dtopleft);
-				logger.debug("Transformed topLeft:"+topLeft);
-				logger.debug("Detected center:"+detectedCenter);
-				logger.debug("Transformed center:"+transCenter);
-				logger.debug("\tImage alligned in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
+				if (logger.isDebugEnabled())
+					{
+					OMRUtils.debugFrame(pageImage, topLeft, topRight, bottomLeft, bottomRight, Color.RED,"Transformed Frame");
+					logger.debug("Detected topLeft:"+dtopleft);
+					logger.debug("Transformed topLeft:"+topLeft);
+					logger.debug("Detected center:"+detectedCenter);
+					logger.debug("Transformed center:"+transCenter);
+					}
+				logger.info("\tImage alligned in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
 				}
 
 			
@@ -569,21 +594,21 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 		
 		
 		// search in the corner
-		PagePoint searchIn=new PagePoint(pageImage,	etopleft.getXpx()-DELTA_FOR_OUTSIDING,	etopleft.getYpx()-DELTA_FOR_OUTSIDING);
+//		PagePoint searchIn=new PagePoint(pageImage,	etopleft.getXpx()-DELTA_FOR_OUTSIDING,	etopleft.getYpx()-DELTA_FOR_OUTSIDING);
 //		dtopleft=pointPosition(searchIn); // detected topleft point
 		if (dtopleft==null)
 			dtopleft=pointPosition(etopleft); // detected topleft point
 
-		searchIn=new PagePoint(pageImage,etopright.getXpx()+DELTA_FOR_OUTSIDING,etopright.getYpx()-DELTA_FOR_OUTSIDING);
+//		searchIn=new PagePoint(pageImage,etopright.getXpx()+DELTA_FOR_OUTSIDING,etopright.getYpx()-DELTA_FOR_OUTSIDING);
 //		dtopright=pointPosition(searchIn);
 		if (dtopright==null)
 		 dtopright=pointPosition(etopright); // detected top right point
 		
-		searchIn=new PagePoint(pageImage,ebottomleft.getXpx()-DELTA_FOR_OUTSIDING,ebottomleft.getYpx()-DELTA_FOR_OUTSIDING);
+//		searchIn=new PagePoint(pageImage,ebottomleft.getXpx()-DELTA_FOR_OUTSIDING,ebottomleft.getYpx()-DELTA_FOR_OUTSIDING);
 //		dbottomleft=pointPosition(searchIn);
 		if (dbottomleft==null)
 		 dbottomleft=pointPosition(ebottomleft); // detected  bottom  left point
-		searchIn=new PagePoint(pageImage,ebottomright.getXpx()+DELTA_FOR_OUTSIDING,ebottomright.getYpx()+DELTA_FOR_OUTSIDING);
+//		searchIn=new PagePoint(pageImage,ebottomright.getXpx()+DELTA_FOR_OUTSIDING,ebottomright.getYpx()+DELTA_FOR_OUTSIDING);
 //		dbottomright=pointPosition(searchIn);
 		if (dbottomright==null)
 		 dbottomright=pointPosition(ebottomright); // detected bottom  right  point

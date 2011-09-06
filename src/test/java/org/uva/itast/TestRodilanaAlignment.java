@@ -13,9 +13,9 @@ import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 import org.uva.itast.blended.omr.OMRProcessor;
+import org.uva.itast.blended.omr.align.AlignMarkRodilanaDetector;
 import org.uva.itast.blended.omr.pages.ImageFilePage;
 import org.uva.itast.blended.omr.pages.PageImage;
-import org.uva.itast.blended.omr.scanners.AlignMarkRodilanaDetector;
 @RunWith(Theories.class)
 public class TestRodilanaAlignment
 {

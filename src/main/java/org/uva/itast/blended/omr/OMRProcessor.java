@@ -75,11 +75,11 @@ import java.util.zip.ZipFile;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.uva.itast.blended.omr.align.AlignMarkHoughDetector;
 import org.uva.itast.blended.omr.pages.AlignMarkDetector;
 import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.PagesCollection;
 import org.uva.itast.blended.omr.pages.ZippedImageFilePage;
-import org.uva.itast.blended.omr.scanners.AlignMarkHoughDetector;
 
 public class OMRProcessor {
 	public static final String	IMAGE_TYPES_REG_EXPR	=".*\\.(jpg|jpeg|gif|png|pdf)";
@@ -633,7 +633,7 @@ public class OMRProcessor {
 		
 		String filePageName = pageImg.getName();
 		String activityId= template==null?"Undetected":template.getTemplateID(); //
-		int pagenum=template==null?-1:template.getSelectedPage();
+		int pagenum=template==null?-1:template.getSelectedPageNumber();
 		File logfile=new File(getOutputdir(),"log.txt");
 		PrintWriter out = new PrintWriter(new FileOutputStream(logfile,true));
 		out.println("[Job]");
