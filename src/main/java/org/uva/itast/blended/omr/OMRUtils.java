@@ -491,12 +491,13 @@ public class OMRUtils
 			/**
 			 * Force to cast to integer to avoid the injection of paths in the Ids.
 			 */
-			int useridInt = Integer.parseInt(useridField.getValue()); 
+			int useridInt = useridField.getValue()==null?-1:Integer.parseInt(useridField.getValue()); 
 			int templateIdInt = Integer.parseInt(templateIdField.getValue()); 																	
 
 			File dir = new File(outputdir); // que venga de parametro
-			File outputFile = new File(dir, "omr_result["
-					+ template.getTemplateID() + "].txt");
+			dir.mkdirs(); // ensure dir exists
+//			File outputFile = new File(dir, "omr_result["+ template.getTemplateID() + "].txt");
+			File outputFile = new File(dir, "omr_result["+ templateIdInt + "].txt");
 
 			PrintWriter out = new PrintWriter(new FileOutputStream(outputFile,true));
 			//TODO: solo volcar la página seleccionada en esta fase. Luego se volcarán las dos páginas en el otro proceso
@@ -519,7 +520,6 @@ public class OMRUtils
 		catch (NumberFormatException e)
 		{
 			logger.error("saveOMRResults: Report can't be written. Both ids are not available: "+templateIdName+"="+templateIdField+" and "+userIdName+"="+useridField+".",e); //$NON-NLS-1$
-			
 		}
 		return null;
 	}
