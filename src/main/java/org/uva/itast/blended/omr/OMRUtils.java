@@ -497,7 +497,7 @@ public class OMRUtils
 			File dir = new File(outputdir); // que venga de parametro
 			dir.mkdirs(); // ensure dir exists
 //			File outputFile = new File(dir, "omr_result["+ template.getTemplateID() + "].txt");
-			File outputFile = new File(dir, "omr_result["+ templateIdInt + "].txt");
+			File outputFile = new File(dir, "omr_result["+ (int)(templateIdInt/10) + "].txt");
 
 			PrintWriter out = new PrintWriter(new FileOutputStream(outputFile,true));
 			//TODO: solo volcar la página seleccionada en esta fase. Luego se volcarán las dos páginas en el otro proceso
