@@ -107,7 +107,8 @@ public class OMRProcessor {
 	// actividad o cuestionario de
 	// Moodle. El ï¿½ltimo carï¿½cter recoge el nï¿½mero de pï¿½gina en caso de haber
 	// mï¿½s de una, pï¿½gina
-	private String activitycode;
+	@Deprecated
+	private String activitycodeFieldName;
 	// fichero con la descripciï¿½n de las marcas
 	private String definitionfile;
 	// bandera para la opciï¿½n de alineado
@@ -291,10 +292,9 @@ public class OMRProcessor {
 			// opciï¿½n -id2
 			else if (arg.equals("-id2"))
 			{
-				System.err.println("warning -id2 deprecated");
-				
+				System.err.println("warning -id2 deprecated. Value ignored.");
 				if (i < args.length)
-					setActivitycode(args[i++]);
+					setActivitycodeFieldName(args[i++]);
 				else
 					System.err.println("-id2 need an TEMPLATEID");
 				if (vflag)
@@ -421,13 +421,15 @@ public class OMRProcessor {
 	}
 
 	/**
-	 * Marca el valor del ActivityCode
-	 * 
-	 * @param activitycode
+	 * Marca el identificador del campo del ActivityCode
+	 * fixed to OMRUtils.TEMPLATEID_FIELDNAME
+	 * @deprecated
+	 * @param activitycodeFieldName
 	 */
-	private void setActivitycode(String activitycode)
+	@Deprecated
+	private void setActivitycodeFieldName(String activitycodeFieldName)
 	{
-		this.activitycode = activitycode;
+		this.activitycodeFieldName = activitycodeFieldName;
 	}
 
 	/**
@@ -632,7 +634,10 @@ public class OMRProcessor {
 	private void logScanResults(OMRTemplate template, PageImage pageImg, File markedImageFile,File templateResultsFile) throws FileNotFoundException {
 		
 		String filePageName = pageImg.getName();
-		String activityId= template==null?"Undetected":template.getTemplateID(); //
+		
+		String detectedTemplateId=template.getSelectedPage().getFields().get(OMRUtils.TEMPLATEID_FIELDNAME).getValue();
+		String activityId = (template==null)?"Undetected":detectedTemplateId.substring(0, detectedTemplateId.length()-1); // crop page number
+
 		int pagenum=template==null?-1:template.getSelectedPageNumber();
 		File logfile=new File(getOutputdir(),"log.txt");
 		PrintWriter out = new PrintWriter(new FileOutputStream(logfile,true));
