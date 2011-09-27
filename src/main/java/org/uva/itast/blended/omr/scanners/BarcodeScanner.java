@@ -226,28 +226,35 @@ public final class BarcodeScanner extends MarkScanner
 	 */
 	public void markBarcode(Field campo)
 	{
-		//get bbox in pixels
-		Rectangle rect=pageImage.toPixels(campo.getBBox());
-		// expand the area for some tolerance
-		Rectangle2D expandedArea = getExpandedArea(campo.getBBox());
-		Rectangle expandedRect = pageImage.toPixels(expandedArea);
-		
-		Graphics2D g = pageImage.getReportingGraphics();
-		AffineTransform t=g.getTransform();
-		g.setStroke(new BasicStroke(1,BasicStroke.CAP_SQUARE,BasicStroke.JOIN_ROUND,1,new float[]{(float) (3/t.getScaleX()),(float) (6/t.getScaleY())},0));
-		if (lastResult!=null)
-			g.setColor(Color.BLUE);
-		else 
-			g.setColor(Color.RED);
-		
-		
-		g.drawRoundRect(rect.x, rect.y, rect.width, rect.height, 3, 3);
-		g.drawRoundRect(expandedRect.x, expandedRect.y, expandedRect.width, expandedRect.height, 3, 3);
-		
-		
-		//g.setFont(new Font("Arial",Font.PLAIN,(int) (12/t.getScaleX())));
-		if (lastResult!=null)
-			g.drawString(((Result)lastResult.getResult()).getBarcodeFormat().toString()+"="+getParsedCode(lastResult), rect.x, rect.y);
+		try
+		{
+			//get bbox in pixels
+			Rectangle rect=pageImage.toPixels(campo.getBBox());
+			// expand the area for some tolerance
+			Rectangle2D expandedArea = getExpandedArea(campo.getBBox());
+			Rectangle expandedRect = pageImage.toPixels(expandedArea);
+			
+			Graphics2D g = pageImage.getReportingGraphics();
+			AffineTransform t=g.getTransform();
+			g.setStroke(new BasicStroke(1,BasicStroke.CAP_SQUARE,BasicStroke.JOIN_ROUND,1,new float[]{(float) (3/t.getScaleX()),(float) (6/t.getScaleY())},0));
+			if (lastResult!=null)
+				g.setColor(Color.BLUE);
+			else 
+				g.setColor(Color.RED);
+			
+			
+			g.drawRoundRect(rect.x, rect.y, rect.width, rect.height, 3, 3);
+			g.drawRoundRect(expandedRect.x, expandedRect.y, expandedRect.width, expandedRect.height, 3, 3);
+			
+			
+			//g.setFont(new Font("Arial",Font.PLAIN,(int) (12/t.getScaleX())));
+			if (lastResult!=null)
+				g.drawString(((Result)lastResult.getResult()).getBarcodeFormat().toString()+"="+getParsedCode(lastResult), rect.x, rect.y);
+		}
+		catch (Exception e)
+		{
+			logger.error("Unexpected errr while logging the image:",e);
+		}
 		
 	}
 	@Override

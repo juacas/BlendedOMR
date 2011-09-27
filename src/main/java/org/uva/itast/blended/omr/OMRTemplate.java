@@ -83,6 +83,14 @@ public class OMRTemplate {
 		FileInputStream inputStream=new FileInputStream(definitionfile);
 		load(inputStream);
 	}
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		return "OMRTemplate [templateID=" + templateID + ", paginas=" + paginas + ", selectedPageNumber=" + selectedPageNumber + "]";
+	}
 	public OMRTemplate(InputStream inputStream) throws IOException
 	{	
 		load(inputStream);

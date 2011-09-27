@@ -1,8 +1,10 @@
-package org.uva.itast.blended.omr.pages;
+package org.uva.itast.blended.omr.align;
 
 import java.awt.geom.AffineTransform;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.uva.itast.blended.omr.pages.PagePoint;
 
 public class AlignmentResult
 {
