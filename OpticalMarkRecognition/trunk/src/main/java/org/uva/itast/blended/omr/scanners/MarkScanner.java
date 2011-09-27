@@ -103,7 +103,7 @@ public abstract class MarkScanner
 	 * @throws ReaderException
 	 */
 	public ScanResult scanField(Field campo) throws MarkScannerException
-	{// TODO cambiar Object por un objeto mejor dise�ado
+	{
 			 
 			  //se leen y almacenan las coordenadas
 			Rectangle2D coords = campo.getBBox();

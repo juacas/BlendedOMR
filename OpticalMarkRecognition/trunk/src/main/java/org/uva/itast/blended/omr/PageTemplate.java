@@ -62,6 +62,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class PageTemplate {
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		return "PageTemplate [numPagina=" + numPagina + ", fields=" + fields + "]";
+	}
+
 	/**
 	 * Logger for this class
 	 */

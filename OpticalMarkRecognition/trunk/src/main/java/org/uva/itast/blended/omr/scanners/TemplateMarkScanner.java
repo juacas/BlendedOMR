@@ -24,7 +24,7 @@ public abstract class TemplateMarkScanner extends MarkScanner
 	/**
 	 * 
 	 */
-	private static final double	SIMILARITY_PERCENT	=0.5d;
+	private static final double	SIMILARITY_PERCENT	=0.6d;
 	/**
 	 * 
 	 */
@@ -126,7 +126,7 @@ public abstract class TemplateMarkScanner extends MarkScanner
 			
 			//Gets a subimage from  x-maxDeltaX-template.getWidth(),y-maxDeltaY ->  x+maxDeltaY,y+maxDeltaY
 			// stores the offsetX and offsetY to use original images's coordinates
-			markArea=getExpandedArea(markArea);
+//			markArea=getExpandedArea(markArea);
 			
 			long start=System.currentTimeMillis();
 			SubImage subImage=this.pageImage.getSubimage(markArea, BufferedImage.TYPE_INT_RGB);
@@ -157,119 +157,7 @@ public abstract class TemplateMarkScanner extends MarkScanner
 				OMRUtils.logSubImage(omr, subImage);
 				OMRUtils.logFrame(pageImage,markArea, Color.MAGENTA,"CircleMark");
 			}
-			// Start processing in pixels
-			Point2D markCenter=new Point();
-			markCenter.setLocation(markArea.getCenterX(),markArea.getCenterY());
-			
-			int templateWidth=template.getWidth();
-			int templateHeight=template.getHeight();
-			Point markCenterPx=pageImage.toPixels(markCenter);
-			Rectangle markAreaPx=pageImage.toPixels(markArea);
-			int offsetX=markAreaPx.x;
-			int offsetY=markAreaPx.y;
-			
-			double maxDeltaX = markWidth * SCAN_PERCENT;
-			double maxDeltaY = markHeight * SCAN_PERCENT;
-			
-			int maxDeltaXpx = (int) (maxDeltaX*pageImage.getAllignmentInfo().getScaleX());
-			int maxDeltaYpx = (int) (maxDeltaY*pageImage.getAllignmentInfo().getScaleY());
-			
-			int deltaXYpx = (int) (Math.max(1, markWidth / SCAN_DELTA_DIVISOR)*pageImage.getAllignmentInfo().getScaleX());
-			
-			boolean markpoint = true;// for debugging the position of the templates.
-			start=System.currentTimeMillis();
-			
-			for (int xTemplate = markCenterPx.x; xTemplate <= markCenterPx.x + maxDeltaXpx; xTemplate += deltaXYpx)
-			{
-	
-				for (int yTemplate = markCenterPx.y; yTemplate <= markCenterPx.y + maxDeltaYpx; yTemplate += deltaXYpx)
-				{
-					int displacementX,displacementY;
-				// one XOR for each quadrant
-					//lower right this is the Reference
-					displacementX=xTemplate;
-					displacementY=yTemplate;
-				double similarity = 1.0 - 
-					BufferedImageUtil.templateXOR(img, 
-							(displacementX  - templateWidth / 2 -offsetX), 
-							(displacementY  - templateHeight / 2 -offsetY), 
-							template, dump);
-					if (markpoint)
-						OMRUtils.markPointInImage(pageImage,displacementX,displacementY);
-					
-					if (maxsim == -1 || maxsim < similarity)
-					{
-						maxsim = similarity;
-						maxsimX = displacementX;
-						maxsimY = displacementY;
-					}
-					
-					// upper left
-					displacementX = 2 *  markCenterPx.x - xTemplate - deltaXYpx;
-					displacementY = 2 *  markCenterPx.y - yTemplate - deltaXYpx;
-					similarity = 1.0 - 
-						BufferedImageUtil.templateXOR(
-							img, 
-							displacementX - templateWidth / 2 -offsetX, 
-							displacementY - templateHeight / 2 -offsetY,
-							template, dump);
-					if (markpoint)
-						OMRUtils.markPointInImage(pageImage,displacementX, displacementY);
-					if (maxsim == -1 || maxsim < similarity)
-					{
-						maxsim = similarity;
-						maxsimX = displacementX;
-						maxsimY = displacementY;
-					}
-					// upper right
-					 displacementX=xTemplate;// +deltaXYpx;
-					 displacementY= 2 *  markCenterPx.y - yTemplate -deltaXYpx;
-					
-					similarity = 1.0 - 
-						BufferedImageUtil.templateXOR(
-								img, 
-								xTemplate - templateWidth / 2 -offsetX,
-								displacementY - templateHeight / 2-offsetY,
-								template, dump);
-					if (markpoint)
-						OMRUtils.markPointInImage(pageImage,displacementX, displacementY);
-					if (maxsim == -1 || maxsim < similarity)
-					{
-						maxsim = similarity;
-						maxsimX = displacementX;
-						maxsimY = displacementY;
-					}
-	
-					// bottom left
-					 displacementX=2 *  markCenterPx.x - xTemplate -deltaXYpx;
-					 displacementY= yTemplate;// + deltaXYpx;
-					
-					similarity = 1.0 - BufferedImageUtil.templateXOR(
-							img, 
-							displacementX  - templateWidth / 2 -offsetX,
-							displacementY - templateHeight/ 2-offsetY,
-							template, dump);
-	
-					if (markpoint)
-						OMRUtils.markPointInImage(pageImage,displacementX, displacementY);
-					if (maxsim == -1 || maxsim < similarity)
-					{
-						maxsim = similarity;
-						maxsimX = displacementX;
-						maxsimY = displacementY;
-					}
-				}
-			}
-			//TODO apply this condition in the loop 
-			double threshold = getAutoSimilarity() * (1 + SIMILARITY_PERCENT);
-			if (logger.isDebugEnabled())
-			{
-				logger.debug("isMark(int, int)-->(ms)"+(System.currentTimeMillis()-start)+" Simil:" + maxsim + " (threshold)" + threshold + ":" + maxsimX + "," + maxsimY + " supposed to be at->" + markCenterPx ); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-			}
-			if (maxsim > threshold)
-				return true;
-			else
-				return false;
+			return sampleAndLoopArea2(markArea, dump, img);
 		}
 		catch (RasterFormatException e)
 		{
@@ -278,6 +166,196 @@ public abstract class TemplateMarkScanner extends MarkScanner
 	
 	}
 
+	/**
+	 * @param markArea
+	 * @param dump
+	 * @param img
+	 * @return
+	 */
+	private boolean sampleAndLoopArea(Rectangle2D markArea, boolean dump, BufferedImage img)
+	{
+		long start;
+		// Start processing in pixels
+		Point2D markCenter=new Point();
+		markCenter.setLocation(markArea.getCenterX(),markArea.getCenterY());
+		
+		int templateWidth=template.getWidth();
+		int templateHeight=template.getHeight();
+		Point markCenterPx=pageImage.toPixels(markCenter);
+		Rectangle markAreaPx=pageImage.toPixels(markArea);
+
+		double maxDeltaX = markWidth * SCAN_PERCENT;
+		double maxDeltaY = markHeight * SCAN_PERCENT;
+		
+		int maxDeltaXpx = (int) (maxDeltaX*pageImage.getAllignmentInfo().getScaleX());
+		int maxDeltaYpx = (int) (maxDeltaY*pageImage.getAllignmentInfo().getScaleY());
+		
+		int deltaXYpx = (int) (Math.max(1, markWidth / SCAN_DELTA_DIVISOR)*pageImage.getAllignmentInfo().getScaleX());
+		
+		boolean markpoint = true;// for debugging the position of the templates.
+		start=System.currentTimeMillis();
+		int offsetX=markAreaPx.x;
+		int offsetY=markAreaPx.y;
+		
+		for (int xTemplate = markCenterPx.x; xTemplate <= markCenterPx.x + maxDeltaXpx; xTemplate += deltaXYpx)
+		{
+
+			for (int yTemplate = markCenterPx.y; yTemplate <= markCenterPx.y + maxDeltaYpx; yTemplate += deltaXYpx)
+			{
+				int displacementX,displacementY;
+			// one XOR for each quadrant
+				//lower right this is the Reference
+				displacementX=xTemplate;
+				displacementY=yTemplate;
+			double similarity = 1.0 - 
+				BufferedImageUtil.templateXOR(img, 
+						(displacementX  - templateWidth / 2 -offsetX), 
+						(displacementY  - templateHeight / 2 -offsetY), 
+						template, dump);
+				if (markpoint)
+					OMRUtils.markPointInImage(pageImage,displacementX,displacementY);
+				
+				if (maxsim == -1 || maxsim < similarity)
+				{
+					maxsim = similarity;
+					maxsimX = displacementX;
+					maxsimY = displacementY;
+				}
+				
+				// upper left
+				displacementX = 2 *  markCenterPx.x - xTemplate - deltaXYpx;
+				displacementY = 2 *  markCenterPx.y - yTemplate - deltaXYpx;
+				similarity = 1.0 - 
+					BufferedImageUtil.templateXOR(
+						img, 
+						displacementX - templateWidth / 2 -offsetX, 
+						displacementY - templateHeight / 2 -offsetY,
+						template, dump);
+				if (markpoint)
+					OMRUtils.markPointInImage(pageImage,displacementX, displacementY);
+				if (maxsim == -1 || maxsim < similarity)
+				{
+					maxsim = similarity;
+					maxsimX = displacementX;
+					maxsimY = displacementY;
+				}
+				// upper right
+				 displacementX=xTemplate;// +deltaXYpx;
+				 displacementY= 2 *  markCenterPx.y - yTemplate -deltaXYpx;
+				
+				similarity = 1.0 - 
+					BufferedImageUtil.templateXOR(
+							img, 
+							xTemplate - templateWidth / 2 -offsetX,
+							displacementY - templateHeight / 2-offsetY,
+							template, dump);
+				if (markpoint)
+					OMRUtils.markPointInImage(pageImage,displacementX, displacementY);
+				if (maxsim == -1 || maxsim < similarity)
+				{
+					maxsim = similarity;
+					maxsimX = displacementX;
+					maxsimY = displacementY;
+				}
+
+				// bottom left
+				 displacementX=2 *  markCenterPx.x - xTemplate -deltaXYpx;
+				 displacementY= yTemplate;// + deltaXYpx;
+				
+				similarity = 1.0 - BufferedImageUtil.templateXOR(
+						img, 
+						displacementX  - templateWidth / 2 -offsetX,
+						displacementY - templateHeight/ 2-offsetY,
+						template, dump);
+
+				if (markpoint)
+					OMRUtils.markPointInImage(pageImage,displacementX, displacementY);
+				if (maxsim == -1 || maxsim < similarity)
+				{
+					maxsim = similarity;
+					maxsimX = displacementX;
+					maxsimY = displacementY;
+				}
+			}
+		}
+		//TODO apply this condition in the loop 
+		double threshold = getAutoSimilarity() * (1 + SIMILARITY_PERCENT);
+		if (logger.isDebugEnabled())
+		{
+			logger.debug("isMark(int, int)-->(ms)"+(System.currentTimeMillis()-start)+" Simil:" + maxsim + " (threshold)" + threshold + ":" + maxsimX + "," + maxsimY + " supposed to be at->" + markCenterPx ); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+		}
+		if (maxsim > threshold)
+			return true;
+		else
+			return false;
+	}
+	/**
+	 * @param markArea
+	 * @param dump
+	 * @param img
+	 * @return
+	 */
+	private boolean sampleAndLoopArea2(Rectangle2D markArea, boolean dump, BufferedImage img)
+	{
+		long start;
+		// Start processing in pixels
+		Point2D markCenter=new Point();
+		markCenter.setLocation(markArea.getCenterX(),markArea.getCenterY());
+		
+		int templateWidth=template.getWidth();
+		int templateHeight=template.getHeight();
+		Point markCenterPx=pageImage.toPixels(markCenter);
+		Rectangle markAreaPx=pageImage.toPixels(markArea);
+
+		double maxDeltaX = markWidth * SCAN_PERCENT;
+		double maxDeltaY = markHeight * SCAN_PERCENT;
+		
+		int maxDeltaXpx = (int) (maxDeltaX*pageImage.getAllignmentInfo().getScaleX());
+		int maxDeltaYpx = (int) (maxDeltaY*pageImage.getAllignmentInfo().getScaleY());
+		
+		int deltaXYpx = (int) (Math.max(1, markWidth / SCAN_DELTA_DIVISOR)*pageImage.getAllignmentInfo().getScaleX());
+		
+		boolean markpoint = true;// for debugging the position of the templates.
+		start=System.currentTimeMillis();
+		int offsetX=markAreaPx.x;
+		int offsetY=markAreaPx.y;
+		
+		for (int xTemplate = markCenterPx.x- maxDeltaXpx; xTemplate <= markCenterPx.x + maxDeltaXpx; xTemplate += deltaXYpx)
+		{
+
+			for (int yTemplate = markCenterPx.y-maxDeltaYpx; yTemplate <= markCenterPx.y + maxDeltaYpx; yTemplate += deltaXYpx)
+			{
+				int displacementX,displacementY;
+		
+				displacementX=xTemplate;
+				displacementY=yTemplate;
+			double similarity = 1.0 - 
+				BufferedImageUtil.templateXOR(img, 
+						(displacementX  - templateWidth / 2 -offsetX), 
+						(displacementY  - templateHeight / 2 -offsetY), 
+						template, dump);
+				if (markpoint)
+					OMRUtils.markPointInImage(pageImage,displacementX,displacementY);
+				
+				if (maxsim == -1 || maxsim < similarity)
+				{
+					maxsim = similarity;
+					maxsimX = displacementX;
+					maxsimY = displacementY;
+				}
+			}
+		}
+		//TODO apply this condition in the loop 
+		double threshold = getAutoSimilarity() * (1 + SIMILARITY_PERCENT);
+		if (logger.isDebugEnabled())
+		{
+			logger.debug("isMark(int, int)-->(ms)"+(System.currentTimeMillis()-start)+" Simil:" + maxsim + " (threshold)" + threshold + ":" + maxsimX + "," + maxsimY + " supposed to be at->" + markCenterPx ); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+		}
+		if (maxsim > threshold)
+			return true;
+		else
+			return false;
+	}
 	@Override
 	protected Rectangle2D getExpandedArea(Rectangle2D rect)
 	{
@@ -306,6 +384,7 @@ public abstract class TemplateMarkScanner extends MarkScanner
 	@Override
 	public ScanResult scanAreaForFieldData(Rectangle2D coords) throws MarkScannerException
 	{
+		
 		boolean result=isMark(coords, dump);
 		ScanResult res=new ScanResult("SolidCircle",new Boolean(result));
 		return res;

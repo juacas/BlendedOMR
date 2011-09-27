@@ -75,8 +75,8 @@ import java.util.zip.ZipFile;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.uva.itast.blended.omr.align.AlignMarkDetector;
 import org.uva.itast.blended.omr.align.AlignMarkHoughDetector;
-import org.uva.itast.blended.omr.pages.AlignMarkDetector;
 import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.PagesCollection;
 import org.uva.itast.blended.omr.pages.ZippedImageFilePage;
@@ -607,9 +607,9 @@ public class OMRProcessor {
 					pageImage.freeMemory();
 					logger.info("Page  "+pageImage+" processed in "+(System.currentTimeMillis()-taskStart)+" ms."); //$NON-NLS-1$
 				}
-				catch (IOException e)
+				catch (Exception e)
 				{
-					logger.error(e);
+					logger.error("Unexpected error while logging results",e);
 				}
 
 			}

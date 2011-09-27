@@ -1,8 +1,9 @@
-package org.uva.itast.blended.omr.pages;
+package org.uva.itast.blended.omr.align;
 
 import java.io.IOException;
 
 import org.uva.itast.blended.omr.Field;
+import org.uva.itast.blended.omr.pages.PageImage;
 
 public interface AlignMarkDetector
 {

@@ -63,7 +63,7 @@ import javax.imageio.ImageIO;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.uva.itast.blended.omr.pages.AlignMarkDetector;
+import org.uva.itast.blended.omr.align.AlignMarkDetector;
 import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.PagePoint;
 import org.uva.itast.blended.omr.pages.SubImage;
@@ -313,13 +313,7 @@ public class OMRUtils
 	{
 
 		// se recorren todas las marcas de una pÃ¯Â¿Â½gina determinada
-		Hashtable<String, Field> campos=plantilla.getPage(plantilla.getSelectedPageNumber()).getFields(); // Hastable
-																											// para
-																											// almacenar
-																											// los
-																											// campos
-																											// que
-		// leemos del fichero de definiciÃ¯Â¿Â½n de
+		Hashtable<String, Field> campos=plantilla.getPage(plantilla.getSelectedPageNumber()).getFields(); // Hastable para los campos que leemos del fichero de definiciÃ¯Â¿Â½n de
 		// marcas
 		Collection<Field> campos_val=campos.values();
 

@@ -435,6 +435,10 @@ public abstract class PageImage
 	{
 		
 		Rectangle rect=this.toPixels(rectMM);
+		if (logger.isDebugEnabled())
+		{
+			logger.debug("Subimage "+ rectMM+" mm "+rect+" px.");
+		}
 		PagePoint upperLeft=new PagePoint(this, rectMM.getX(), rectMM.getY());
 		
 		Point reference=upperLeft.getPixelsPoint();

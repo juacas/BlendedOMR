@@ -134,6 +134,21 @@ public class TestMarkDetectionBlendedQuiz
 			fail("Can't configure test case."+e);
 		}
 	}
+	@Test
+	public void testBlendedMarkedGeographyScanned()
+	{
+		try
+		{
+		URL url=getClass().getClassLoader().getResource("EscaneoBlended_2011-09-20_Page_1.jpg");
+		testFile(url);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			fail("Can't configure test case."+e);
+		}
+	}
+	
 	/**
 	 * @param url
 	 * @throws URISyntaxException

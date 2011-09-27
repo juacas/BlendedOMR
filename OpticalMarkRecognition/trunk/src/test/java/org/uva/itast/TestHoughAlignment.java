@@ -17,10 +17,10 @@ import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 import org.uva.itast.blended.omr.OMRProcessor;
+import org.uva.itast.blended.omr.align.AlignMarkDetector;
 import org.uva.itast.blended.omr.align.AlignMarkHoughDetector;
-import org.uva.itast.blended.omr.pages.AlignMarkDetector;
-import org.uva.itast.blended.omr.pages.AlignmentResult;
-import org.uva.itast.blended.omr.pages.AlignmentResult.AlignmentPosition;
+import org.uva.itast.blended.omr.align.AlignmentResult;
+import org.uva.itast.blended.omr.align.AlignmentResult.AlignmentPosition;
 import org.uva.itast.blended.omr.pages.ImageFilePage;
 import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.PagePoint;
@@ -59,7 +59,7 @@ public void testFrameMarksDetection(double value) throws IOException
 
 	AlignmentResult detectedAlignmentInfo=detector.align(pageImage);
 	pageImage.outputMarkedPage(dir.getAbsolutePath());
-	Assert.assertEquals(value,detectedAlignmentInfo.getAlignmentSlope()*180/Math.PI,0.5);
+	Assert.assertEquals(value,-detectedAlignmentInfo.getAlignmentSlope()*180/Math.PI,0.5);
 	
 	AffineTransform transform=detectedAlignmentInfo.getAlignmentTransform();
 	
