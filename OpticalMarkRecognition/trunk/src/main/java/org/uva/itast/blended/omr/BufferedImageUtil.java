@@ -53,6 +53,7 @@
 package org.uva.itast.blended.omr;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -384,6 +385,26 @@ public class BufferedImageUtil
 			{
 				img.setRGB(x, y, (int) (ratio*img.getRGB(x, y)));
 			}
+	}
+
+/**
+ * Rotates 90, -90 deegrees
+ * @param imageToRotate
+ * @param degrees 90 or -90 rotation.
+ * @return
+ */
+	public static BufferedImage rotateImage(BufferedImage imageToRotate, float degrees)
+	{
+		if (degrees !=90.0 && degrees != -90.0)
+			throw new IllegalArgumentException("Only implemented +90 and -90 rotation");
+		
+		BufferedImage rotatedImage = new BufferedImage(imageToRotate.getHeight(null), imageToRotate.getWidth(null), imageToRotate.getType());
+
+	    Graphics2D g2d = (Graphics2D) rotatedImage.getGraphics();
+	    g2d.rotate(Math.toRadians(degrees));
+	    g2d.drawImage(imageToRotate, 0, -rotatedImage.getWidth(null), null);
+	   
+	    return rotatedImage;
 	}
 	
 }

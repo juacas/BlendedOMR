@@ -24,7 +24,7 @@ public abstract class TemplateMarkScanner extends MarkScanner
 	/**
 	 * 
 	 */
-	private static final double	SIMILARITY_PERCENT	=0.6d;
+	private static final double	SIMILARITY_PERCENT	=0.8d;
 	/**
 	 * 
 	 */
