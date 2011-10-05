@@ -58,6 +58,7 @@ import javax.imageio.ImageIO;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.uva.itast.blended.omr.BufferedImageUtil;
 import org.uva.itast.blended.omr.scanners.Size;
 
 public abstract class PageImage
@@ -103,11 +104,24 @@ public abstract class PageImage
 
 
 	/**
+	 * stores the {@link BufferedImage} of the page. It can be in portrait or in landscape proportions (90 degrees clockwise rotation).
 	 * @param imagen the imagen to set
+	 * The image is handled in portrait format.
+	 * If the Image has landscape proportions it is assumed to be clockwise rotated and this method rotates it.
+	 * 
 	 */
 	protected void setImage(BufferedImage imagen)
 	{
+		//
+		if (imagen.getHeight()<imagen.getWidth())
+		{
+		logger.debug("Rotating image. Original size was:"+imagen.getWidth()+"x"+imagen.getWidth()+" pixeles.");
+		this.image= BufferedImageUtil.rotateImage(imagen,-90);
+		}
+		else
+		{
 		this.image=imagen;
+		}
 		// configure alignment information
 		resetAlignmentInfo();
 	}
