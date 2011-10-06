@@ -52,6 +52,7 @@ package org.uva.itast.blended.omr.scanners;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
@@ -93,9 +94,12 @@ public final class BarcodeScanner extends MarkScanner
 	/**
 	 * 
 	 */
-	public String getParsedCode(Field campo) throws MarkScannerException
+	public String getParsedCode(Field field) throws MarkScannerException
 	{
-		return getParsedCode(scanField(campo));
+		String parsedCode=getParsedCode(scanField(field));
+		if (logger.isDebugEnabled())
+			markBarcode(field);
+		return parsedCode;
 	}
 	
 	/**
@@ -109,7 +113,6 @@ public final class BarcodeScanner extends MarkScanner
 		{
 		ParsedResult parsedResult = ResultParser.parseResult((Result) result.getResult());
 	      
-	      //System.out.println(imagen.toString() + " (format: " + result.getBarcodeFormat() +", type: " + parsedResult.getType() + "):\nRaw result:\n" + result.getText() +"\nParsed result:\n" + parsedResult.getDisplayResult());
 	    barcode = parsedResult.getDisplayResult();
 		}
 		else
@@ -247,9 +250,15 @@ public final class BarcodeScanner extends MarkScanner
 			g.drawRoundRect(expandedRect.x, expandedRect.y, expandedRect.width, expandedRect.height, 3, 3);
 			
 			
-			//g.setFont(new Font("Arial",Font.PLAIN,(int) (12/t.getScaleX())));
+			g.setFont(new Font("Arial",Font.BOLD,(int) (12/t.getScaleX())));
+			String message;
 			if (lastResult!=null)
-				g.drawString(((Result)lastResult.getResult()).getBarcodeFormat().toString()+"="+getParsedCode(lastResult), rect.x, rect.y);
+				message=((Result)lastResult.getResult()).getBarcodeFormat().toString()+"="+getParsedCode(lastResult);
+			else
+				message= "UNRECOGNIZED!";
+			g.drawString(message, rect.x, rect.y);
+			
+				
 		}
 		catch (Exception e)
 		{

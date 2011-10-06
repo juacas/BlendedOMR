@@ -122,5 +122,11 @@ public class SolidCircleMarkScanner extends TemplateMarkScanner{
 				markWidth + 1, markHeight + 1);
 	
 	}
+
+	@Override
+	public String getType()
+	{
+		return "SolidCircle";
+	}
 	
 }

@@ -107,10 +107,11 @@ public abstract class MarkScanner
 			 
 			  //se leen y almacenan las coordenadas
 			Rectangle2D coords = campo.getBBox();
-			
+			if (logger.isDebugEnabled())
+				logger.debug("Searching mark for field:"+campo);
 		    ScanResult result;
 			try
-			{
+			{	
 				result = scanAreaForFieldData(coords);
 			}
 			catch (MarkScannerException e)

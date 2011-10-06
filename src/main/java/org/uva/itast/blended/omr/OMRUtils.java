@@ -40,10 +40,11 @@ package org.uva.itast.blended.omr;
  * @package blended
  ***********************************************************************/
 
+import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
@@ -385,15 +386,15 @@ public class OMRUtils
 		try
 		{
 			field.setValue(barcodeScanner.getParsedCode(field));
-			barcodeScanner.markBarcode(field);
+			
 		}
 		catch (MarkScannerException e)
 		{
 			logger.warn("Field " + field + " can't be readed from image.");
 			field.setValue(null);
 			field.setValid(false);
-			if (logger.isDebugEnabled())
-				barcodeScanner.markBarcode(field);
+//			if (logger.isErrorEnabled())
+//				barcodeScanner.markBarcode(field);
 		}
 
 		// barcodeManipulator.markBarcode(campo);
@@ -422,7 +423,7 @@ public class OMRUtils
 
 		if (logger.isDebugEnabled())
 		{
-			logger.debug("searchMarkCircle - field name=" + field.getName() + " at position:" + field.getBBox()); //$NON-NLS-1$
+			logger.debug("START searchMarkCircle - field name=" + field.getName() + " at position:" + field.getBBox()); //$NON-NLS-1$
 		}
 		searchMark(pageImage, field, markScanner);
 	}
@@ -443,7 +444,7 @@ public class OMRUtils
 			{
 				if (logger.isDebugEnabled())
 				{
-					logger.debug("searchMarkCircle - " + field.getName() + " >>>>>>>Found mark at " + field.getBBox() + " (mm) :" + field); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+					logger.debug("RESULT: searchMark - " + field.getName() + " >>>>>>>Found mark at " + field.getBBox() + " (mm) :" + field); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 				}
 				field.setValue("true");
 				// si se ha encontrado la marca
@@ -585,8 +586,11 @@ public class OMRUtils
 	{
 		if (topleft == null || topright == null || bottomleft == null || bottomright == null)
 			return;
-		Graphics g=pageImage.getReportingGraphics();
+		
+		Graphics2D g=pageImage.getReportingGraphics();
+		AffineTransform t=g.getTransform();
 		g.setColor(color);
+		g.setStroke(new BasicStroke(1,BasicStroke.CAP_SQUARE,BasicStroke.JOIN_ROUND,1,new float[]{(float) (3/t.getScaleX()),(float) (6/t.getScaleY())},0));
 
 		// Point framePxUL=pageImage.toPixels(topleft.getX(), topleft.getY());
 		// Point framePxUR=pageImage.toPixels(topright.getX(), topright.getY());
