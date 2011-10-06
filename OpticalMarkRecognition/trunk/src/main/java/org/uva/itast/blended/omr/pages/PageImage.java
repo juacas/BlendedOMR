@@ -67,7 +67,7 @@ public abstract class PageImage
 	 * Logger for this class
 	 */
 	static final Log	logger	= LogFactory.getLog(PageImage.class);
-	private static final int	REPORTING_WIDTH	= 1024;
+	private static final int	REPORTING_WIDTH	= 800;
 	public static double		a4width		= 210;										// mm
 	public static double		a4height	= 297;										// mm
 	private BufferedImage	image;
@@ -113,7 +113,7 @@ public abstract class PageImage
 	protected void setImage(BufferedImage imagen)
 	{
 		//
-		if (imagen.getHeight()<imagen.getWidth())
+		if (imagen!=null && imagen.getHeight()<imagen.getWidth())
 		{
 		logger.debug("Rotating image. Original size was:"+imagen.getWidth()+"x"+imagen.getWidth()+" pixeles.");
 		this.image= BufferedImageUtil.rotateImage(imagen,-90);
@@ -203,8 +203,8 @@ public abstract class PageImage
 		if (this.reportImage==null)
 		{
 			// Create a fixed (smaller) resolution image
-			//int w=Math.min(REPORTING_WIDTH,getImage().getWidth());
-			int w=getImage().getWidth(); // scale 1
+			int w=Math.min(REPORTING_WIDTH,getImage().getWidth());
+			//int w=getImage().getWidth(); // scale 1
 			int h=getImage().getHeight()*w/getImage().getWidth();
 			
 			this.reportImage=new BufferedImage(w, h,BufferedImage.TYPE_INT_RGB);

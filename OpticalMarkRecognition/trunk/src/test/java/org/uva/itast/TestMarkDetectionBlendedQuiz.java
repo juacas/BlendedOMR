@@ -109,7 +109,22 @@ public class TestMarkDetectionBlendedQuiz
 	{
 		try
 		{
-		URL url=getClass().getClassLoader().getResource("Escaneo1_Cuestionario_Previo_a_Practica_1_de_Telematica-2011-06-28-12-49-44-6-PDF-Ab_Pagina1.jpg");
+		URL url=getClass().getClassLoader().getResource("Escaneo1_Cuestionario_Previo_Telematica-2011-06-28-12-49-44-6.jpg");
+		testFile(url);
+		
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			fail("Can't configure test case."+e);
+		}
+	}
+	@Test
+	public void testBlendedDoc229()
+	{
+		try
+		{
+		URL url=getClass().getClassLoader().getResource("page-229.jpg");
 		testFile(url);
 		
 		}

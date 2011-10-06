@@ -20,11 +20,14 @@ import org.uva.itast.blended.omr.pages.SubImage;
 
 public abstract class TemplateMarkScanner extends MarkScanner
 {
-
+	/**
+	 * Expansion percentage of the clipped area
+	 */
+	double EXTRASIZEFACTOR=1.5;
 	/**
 	 * 
 	 */
-	private static final double	SIMILARITY_PERCENT	=0.8d;
+	private static final double	SIMILARITY_PERCENT	=0.17d;
 	/**
 	 * 
 	 */
@@ -48,10 +51,10 @@ public abstract class TemplateMarkScanner extends MarkScanner
 	protected double	autoSimilarity;
 	private boolean	dump	=false;
 
-	public TemplateMarkScanner()
-	{
-		super();
-	}
+//	public TemplateMarkScanner()
+//	{
+//		super();
+//	}
 
 	public TemplateMarkScanner(OMRProcessor omr,PageImage pageimage,double markWidth,double markHeight,  boolean medianfilter)
 	{
@@ -61,7 +64,7 @@ public abstract class TemplateMarkScanner extends MarkScanner
 		this.markHeight = markWidth;
 		this.markWidth = markHeight;
 		Dimension2D dims= pageimage.sizeInPixels(new Size(markWidth, markHeight));
-		double EXTRASIZEFACTOR=1.15;
+		
 		int effectiveWidth=(int) (dims.getWidth() * EXTRASIZEFACTOR) + 1;
 		int effectiveHeight=(int) (dims.getHeight() * EXTRASIZEFACTOR) + 1;
 		
@@ -126,7 +129,7 @@ public abstract class TemplateMarkScanner extends MarkScanner
 			
 			//Gets a subimage from  x-maxDeltaX-template.getWidth(),y-maxDeltaY ->  x+maxDeltaY,y+maxDeltaY
 			// stores the offsetX and offsetY to use original images's coordinates
-//			markArea=getExpandedArea(markArea);
+			markArea=getExpandedArea(markArea);
 			
 			long start=System.currentTimeMillis();
 			SubImage subImage=this.pageImage.getSubimage(markArea, BufferedImage.TYPE_INT_RGB);
@@ -140,7 +143,7 @@ public abstract class TemplateMarkScanner extends MarkScanner
 			 {
 				start=System.currentTimeMillis();
 				img= medianFilter(subImage);
-				logger.debug("scanAreaForBarcode(MedianFilter area=" + subImage.getWidth()+"x"+subImage.getHeight() + ") In (ms) "+(System.currentTimeMillis()-start)); //$NON-NLS-1$ //$NON-NLS-2$
+				logger.debug("scanAreaForMark(MedianFilter area=" + subImage.getWidth()+"x"+subImage.getHeight() + ") In (ms) "+(System.currentTimeMillis()-start)); //$NON-NLS-1$ //$NON-NLS-2$
 				 
 				 if (logger.isDebugEnabled())
 					 OMRUtils.logSubImage(omr,"debug_median",img);
@@ -150,7 +153,7 @@ public abstract class TemplateMarkScanner extends MarkScanner
 			float maxLumin=medLum[2];
 			float minLumin=medLum[1];
 			float medLumin=medLum[0];
-			BufferedImageUtil.threshold(subImage, minLumin+(maxLumin-minLumin)/2);
+			BufferedImageUtil.threshold(subImage, minLumin+ (maxLumin-minLumin)/2);
 			
 			if (logger.isDebugEnabled())
 			{
@@ -334,7 +337,7 @@ public abstract class TemplateMarkScanner extends MarkScanner
 						(displacementX  - templateWidth / 2 -offsetX), 
 						(displacementY  - templateHeight / 2 -offsetY), 
 						template, dump);
-				if (markpoint)
+				if (logger.isDebugEnabled())
 					OMRUtils.markPointInImage(pageImage,displacementX,displacementY);
 				
 				if (maxsim == -1 || maxsim < similarity)
@@ -386,8 +389,13 @@ public abstract class TemplateMarkScanner extends MarkScanner
 	{
 		
 		boolean result=isMark(coords, dump);
-		ScanResult res=new ScanResult("SolidCircle",new Boolean(result));
+		ScanResult res=new ScanResult(this.getType(),new Boolean(result));
 		return res;
 	}
+/**
+ * 
+ * @return String with textual typing
+ */
+	public abstract String getType();
 
 }

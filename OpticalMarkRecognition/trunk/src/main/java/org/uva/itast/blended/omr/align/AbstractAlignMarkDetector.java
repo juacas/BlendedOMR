@@ -436,7 +436,7 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 			
 			// debug transformation
 			
-			if(logger.isDebugEnabled())
+			if(logger.isInfoEnabled())
 				{
 				PagePoint topLeft=new PagePoint(pageImage, etopleft.x, etopleft.y);
 				PagePoint topRight=new PagePoint(pageImage, etopright.x, etopright.y);
