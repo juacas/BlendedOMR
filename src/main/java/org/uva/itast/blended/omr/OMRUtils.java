@@ -330,7 +330,11 @@ public class OMRUtils
 			// vamos a buscar en los campos leÃ¯Â¿Â½dos, en marcas[] estÃ¯Â¿Â½n
 			// almacenadas las keys
 			if (field.getName().equals(TEMPLATEID_FIELDNAME)) // this field is known
+				{
+				field.setValue(plantilla.getTemplateID());
+				field.setValid(true);
 				continue;
+				}
 			scanField(omr, pageImage, field, medianfilter);
 		}
 

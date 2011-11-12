@@ -583,8 +583,7 @@ public class OMRProcessor {
 				selectTemplate(template);
 
 				// se procesa la pï¿½gina
-				OMRUtils.processPage(this,pageImage, isAutoalign(),
-						isMedianFilter(), outputdir, template);
+				OMRUtils.processPage(this,pageImage, isAutoalign(),	isMedianFilter(), outputdir, template);
 				
 				// se salvan los resultados en archivo
 				 templateResultsFile= OMRUtils.saveOMRResults(pageImage.getName(),
