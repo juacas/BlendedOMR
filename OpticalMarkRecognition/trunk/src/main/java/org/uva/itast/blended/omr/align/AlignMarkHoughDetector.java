@@ -69,7 +69,7 @@ public class AlignMarkHoughDetector extends AbstractAlignMarkDetector
 		PagePoint bottomleft= new PagePoint(expectedPoint.getPageImage(),expectedPoint.getX()-getBufferWidth(), expectedPoint.getY()+getBufferWidth());
 		PagePoint bottomright= new PagePoint(expectedPoint.getPageImage(),expectedPoint.getX()+getBufferWidth(), expectedPoint.getY()+getBufferWidth());
 		
-		OMRUtils.debugFrame(expectedPoint.getPageImage(), topleft, topright,bottomleft,bottomright,Color.BLUE,null);
+		OMRUtils.logFrame(expectedPoint.getPageImage(), topleft, topright,bottomleft,bottomright,Color.BLUE,null);
 		}
 		return;
 	}

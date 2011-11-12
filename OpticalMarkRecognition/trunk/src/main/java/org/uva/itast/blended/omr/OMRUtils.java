@@ -52,8 +52,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Collection;
@@ -64,7 +66,9 @@ import javax.imageio.ImageIO;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.uva.itast.blended.omr.align.AbstractAlignMarkDetector;
 import org.uva.itast.blended.omr.align.AlignMarkDetector;
+import org.uva.itast.blended.omr.align.AlignmentResult;
 import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.PagePoint;
 import org.uva.itast.blended.omr.pages.SubImage;
@@ -75,6 +79,10 @@ import org.uva.itast.blended.omr.scanners.ScanResult;
 import org.uva.itast.blended.omr.scanners.SolidCircleMarkScanner;
 import org.uva.itast.blended.omr.scanners.SolidSquareMarkScanner;
 
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.common.BitArray;
+import com.google.zxing.common.BitMatrix;
 import com.sun.pdfview.PDFFile;
 
 public class OMRUtils
@@ -204,8 +212,8 @@ public class OMRUtils
 			// pageImage.align(); //encapsula procesamiento y
 			// representaciÃ¯Â¿Â½n
 			AlignMarkDetector borderDetect=omr.getAlignMarkDetector();
-			borderDetect.align(pageImage);
-
+			AlignmentResult alignmentInfo=borderDetect.align(pageImage);
+			AbstractAlignMarkDetector.logTransformedFrame(pageImage, alignmentInfo);
 		}
 
 		long taskStart=System.currentTimeMillis();
@@ -314,15 +322,16 @@ public class OMRUtils
 	{
 
 		// se recorren todas las marcas de una pÃ¯Â¿Â½gina determinada
-		Hashtable<String, Field> campos=plantilla.getPage(plantilla.getSelectedPageNumber()).getFields(); // Hastable para los campos que leemos del fichero de definiciÃ¯Â¿Â½n de
 		// marcas
-		Collection<Field> campos_val=campos.values();
+		Collection<Field> fields=plantilla.getPage(plantilla.getSelectedPageNumber()).getFields().values();
 
-		for (Field campo : campos_val)
+		for (Field field : fields)
 		{
 			// vamos a buscar en los campos leÃ¯Â¿Â½dos, en marcas[] estÃ¯Â¿Â½n
 			// almacenadas las keys
-			scanField(omr, pageImage, campo, medianfilter);
+			if (field.getName().equals(TEMPLATEID_FIELDNAME)) // this field is known
+				continue;
+			scanField(omr, pageImage, field, medianfilter);
 		}
 
 		pageImage.labelPageAsProcessed();
@@ -534,7 +543,7 @@ public class OMRUtils
 		try
 		{
 
-			File testPath=new File(new File(omr.getOutputdir()), "output");
+			File testPath=getDebugOutputPath(omr);
 			File imgFile=new File(testPath, "debug_" + textId + System.currentTimeMillis() + ".png");
 
 			OMRUtils.saveImageToFile(subImage, imgFile.getAbsolutePath(), "PNG");
@@ -548,6 +557,16 @@ public class OMRUtils
 			e.printStackTrace();
 		}
 
+	}
+
+	/**
+	 * @param omr
+	 * @return
+	 */
+	public static File getDebugOutputPath(OMRProcessor omr)
+	{
+		File testPath=new File(new File(omr.getOutputdir()), "output");
+		return testPath;
 	}
 
 	public static void logSubImage(OMRProcessor omr, SubImage subImage)
@@ -576,12 +595,12 @@ public class OMRUtils
 	 */
 	public static void logFrame(PageImage pageImage, Rectangle2D markArea, Color color, String label)
 	{
-		OMRUtils.debugFrame(pageImage, new PagePoint(pageImage, markArea.getMinX(), markArea.getMinY()), new PagePoint(pageImage, markArea.getMaxX(),
+		OMRUtils.logFrame(pageImage, new PagePoint(pageImage, markArea.getMinX(), markArea.getMinY()), new PagePoint(pageImage, markArea.getMaxX(),
 			markArea.getMinY()), new PagePoint(pageImage, markArea.getMinX(), markArea.getMaxY()), new PagePoint(pageImage, markArea.getMaxX(),
 			markArea.getMaxY()), color, label);
 	}
 
-	public static void debugFrame(PageImage pageImage, PagePoint topleft, PagePoint topright, PagePoint bottomleft, PagePoint bottomright,
+	public static void logFrame(PageImage pageImage, PagePoint topleft, PagePoint topright, PagePoint bottomleft, PagePoint bottomright,
 		Color color, String label)
 	{
 		if (topleft == null || topright == null || bottomleft == null || bottomright == null)
@@ -627,4 +646,114 @@ public class OMRUtils
 		g.drawOval((int) (x - 1), (int) (y - 1), (int) (2), (int) (2));
 		// g.drawRect(i-w/2, j-h/2, w, h);
 	}
+	/**
+	 * ZXing dump image
+	 */
+	/**
+	   * Writes out a single PNG which is three times the width of the input image, containing from left
+	   * to right: the original image, the row sampling monochrome version, and the 2D sampling
+	   * monochrome version.
+	   */
+	  public static void dumpBlackPoint(URI uri, BufferedImage image, BinaryBitmap bitmap) {
+	    // TODO: Update to compare different Binarizer implementations.
+	    String inputName = uri.getPath();
+	    if (inputName.contains(".mono.png")) {
+	      return;
+	    }
+
+	    int width = bitmap.getWidth();
+	    int height = bitmap.getHeight();
+	    int stride = width * 3;
+	    int[] pixels = new int[stride * height];
+
+	    // The original image
+	    int[] argb = new int[width];
+	    for (int y = 0; y < height; y++) {
+	      image.getRGB(0, y, width, 1, argb, 0, width);
+	      System.arraycopy(argb, 0, pixels, y * stride, width);
+	    }
+
+	    // Row sampling
+	    BitArray row = new BitArray(width);
+	    for (int y = 0; y < height; y++) {
+	      try {
+	        row = bitmap.getBlackRow(y, row);
+	      } catch (NotFoundException nfe) {
+	        // If fetching the row failed, draw a red line and keep going.
+	        int offset = y * stride + width;
+	        for (int x = 0; x < width; x++) {
+	          pixels[offset + x] = 0xffff0000;
+	        }
+	        continue;
+	      }
+
+	      int offset = y * stride + width;
+	      for (int x = 0; x < width; x++) {
+	        if (row.get(x)) {
+	          pixels[offset + x] = 0xff000000;
+	        } else {
+	          pixels[offset + x] = 0xffffffff;
+	        }
+	      }
+	    }
+
+	    // 2D sampling
+	    try {
+	      for (int y = 0; y < height; y++) {
+	        BitMatrix matrix = bitmap.getBlackMatrix();
+	        int offset = y * stride + width * 2;
+	        for (int x = 0; x < width; x++) {
+	          if (matrix.get(x, y)) {
+	            pixels[offset + x] = 0xff000000;
+	          } else {
+	            pixels[offset + x] = 0xffffffff;
+	          }
+	        }
+	      }
+	    } catch (NotFoundException nfe) {
+	    }
+
+	    writeResultImage(stride, height, pixels, uri, inputName, ".mono.png");
+	  }
+	
+	  private static void writeResultImage(int stride, int height, int[] pixels, URI uri,
+	      String inputName, String suffix) {
+	    // Write the result
+	    BufferedImage result = new BufferedImage(stride, height, BufferedImage.TYPE_INT_ARGB);
+	    result.setRGB(0, 0, stride, height, pixels, 0, stride);
+
+	    // Use the current working directory for URLs
+	    String resultName = inputName;
+	    if ("http".equals(uri.getScheme())) {
+	      int pos = resultName.lastIndexOf('/');
+	      if (pos > 0) {
+	        resultName = '.' + resultName.substring(pos);
+	      }
+	    }
+	    int pos = resultName.lastIndexOf('.');
+	    if (pos > 0) {
+	      resultName = resultName.substring(0, pos);
+	    }
+	    resultName += suffix;
+	    OutputStream outStream = null;
+	    try {
+	      outStream = new FileOutputStream(resultName);
+	      ImageIO.write(result, "png", outStream);
+	    } catch (FileNotFoundException e) {
+	      System.err.println("Could not create " + resultName);
+	    } catch (IOException e) {
+	      System.err.println("Could not write to " + resultName);
+	    } finally {
+	      try {
+	        if (outStream != null) {
+	          outStream.close();
+	        }
+	      } catch (IOException ioe) {
+	        // continue
+	      }
+	    }
+	  }
+	  /**
+	   * ZXING dump
+	   */
 }

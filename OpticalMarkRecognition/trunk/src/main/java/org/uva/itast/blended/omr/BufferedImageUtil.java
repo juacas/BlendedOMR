@@ -62,6 +62,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.uva.itast.blended.omr.pages.SubImage;
 
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.common.HybridBinarizer;
+
 public class BufferedImageUtil
 {
 
@@ -322,6 +328,57 @@ public class BufferedImageUtil
 		}
 
 	}
+	/**
+	 * Makes a 2Dbinarization withZXING library
+	 * @param img
+	 */
+	public static void binarizeWithZxing(SubImage subImage)
+	{
+		BufferedImageLuminanceSource source=new BufferedImageLuminanceSource(subImage);
+		BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+		
+		// copy results in subImage
+		Rectangle captured=subImage.getCapturedBoundingBox();
+		Point reference=subImage.getReference();
+		int xstart=Math.max(captured.x - reference.x, 0);
+		int ystart=Math.max(captured.y - reference.y, 0);
+
+		BitMatrix blackMatrix;
+		try
+		{
+			blackMatrix=bitmap.getBlackMatrix();
+		}
+		catch (NotFoundException e)
+		{
+			throw new RuntimeException(e);
+		}
+		
+		for (int y=ystart; y < ystart + captured.height; y++)
+			for (int x=xstart; x < xstart + captured.width; x++)
+			{
+				if (blackMatrix.get(x, y))
+					subImage.setRGB(x, y, 0xff000000);
+				else
+					subImage.setRGB(x, y, 0xffffffff);
+			}
+		
+//		try
+//		{
+//			File testPath=File.createTempFile("Xzing", "png",OMRUtils.getDebugOutputPath(omr));
+//			if (logger.isDebugEnabled())
+//				OMRUtils.dumpBlackPoint(testPath.toURI(), subImage, bitmap);	
+//		}
+//		catch (IOException e)
+//		{
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+	}
+	/**
+	 * 
+	 * @param img
+	 * @param f
+	 */
 	public static void threshold(SubImage img, float f)
 	{
 		Rectangle captured=img.getCapturedBoundingBox();

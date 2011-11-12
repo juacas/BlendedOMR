@@ -67,7 +67,7 @@ public abstract class PageImage
 	 * Logger for this class
 	 */
 	static final Log	logger	= LogFactory.getLog(PageImage.class);
-	private static final int	REPORTING_WIDTH	= 800;
+	private static final int	REPORTING_WIDTH	= 1024;
 	public static double		a4width		= 210;										// mm
 	public static double		a4height	= 297;										// mm
 	private BufferedImage	image;
