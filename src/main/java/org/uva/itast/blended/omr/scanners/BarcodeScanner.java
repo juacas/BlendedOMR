@@ -68,13 +68,14 @@ import org.uva.itast.blended.omr.OMRUtils;
 import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.SubImage;
 
-import com.google.zxing.MonochromeBitmapSource;
+import com.google.zxing.BinaryBitmap;
 import com.google.zxing.MultiFormatReader;
 import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
-import com.google.zxing.client.j2se.BufferedImageMonochromeBitmapSource;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.client.result.ParsedResult;
 import com.google.zxing.client.result.ResultParser;
+import com.google.zxing.common.HybridBinarizer;
 
 public final class BarcodeScanner extends MarkScanner
 {
@@ -83,7 +84,7 @@ public final class BarcodeScanner extends MarkScanner
 	 */
 	static final Log	logger	= LogFactory.getLog(BarcodeScanner.class);
 
-	static final double	BARCODE_AREA_PERCENT	= 0.5d;
+	static final double	BARCODE_AREA_PERCENT	= 0.2d;
 
 	private BufferedImage	subimage;
 
@@ -92,13 +93,42 @@ public final class BarcodeScanner extends MarkScanner
 		super(omr,imagen,medianfilter);
 	}
 	/**
+	 * Iterate one more time expanding the scanned area with a smaller expansion percentage than other mark types
+	 * @see org.uva.itast.blended.omr.scanners.MarkScanner#scanField(org.uva.itast.blended.omr.Field)
+	 */
+	@Override
+	public ScanResult scanField(Field campo) throws MarkScannerException
+	{
+		
+		try
+		{
+			return super.scanField(campo);
+		}
+		catch (MarkScannerException e)
+		{
+			Rectangle2D expandedBbox=getExpandedArea(campo.getBBox(),BARCODE_AREA_PERCENT*2);
+			// Try with a wider area
+			logger.debug("Last attempt to read mark was in error: RETRY one more try with a wider area. Scanner reported:"+ e.getMessage());
+			ScanResult result=scanAreaForFieldData(expandedBbox);
+			this.lastResult=result;
+			return result;
+		}
+	}
+	/**
 	 * 
 	 */
 	public String getParsedCode(Field field) throws MarkScannerException
 	{
-		String parsedCode=getParsedCode(scanField(field));
+		String parsedCode;
+		try
+		{
+			parsedCode=getParsedCode(scanField(field));
+		}
+		finally
+		{
 		if (logger.isDebugEnabled())
 			markBarcode(field);
+		}
 		return parsedCode;
 	}
 	
@@ -128,13 +158,13 @@ public final class BarcodeScanner extends MarkScanner
 	 * @param rect
 	 * @return milimeteres
 	 */
-	protected Rectangle2D getExpandedArea(Rectangle2D rect)
+	protected Rectangle2D getExpandedArea(Rectangle2D rect, double percent)
 	{
 		Rectangle expandedRect=new Rectangle();
-		expandedRect.setFrame((rect.getX()-rect.getWidth()*(BARCODE_AREA_PERCENT)/2),
-						(rect.getY()-rect.getHeight()*(BARCODE_AREA_PERCENT)/2),
-						(rect.getWidth()*(1+BARCODE_AREA_PERCENT)),
-						(rect.getHeight()*(1+BARCODE_AREA_PERCENT)));
+		expandedRect.setFrame((rect.getX()-rect.getWidth()*(percent)/2),
+						(rect.getY()-rect.getHeight()*(percent)/2),
+						(rect.getWidth()*(1+percent)),
+						(rect.getHeight()*(1+percent)));
 		return expandedRect;
 	}
 	/**
@@ -143,10 +173,7 @@ public final class BarcodeScanner extends MarkScanner
 	 * @throws ReaderException
 	 */
 	public ScanResult scanAreaForFieldData(Rectangle2D rect)	throws MarkScannerException
-	{
-		//[JPC] Need to be TYPE_BYTE_GRAY 
-		  // BufferedImageMonochromeBitmapSource seems to work bad with TYPE_BYTERGB
-		  
+	{		  
 		 SubImage subimage;
 		try
 		{
@@ -164,14 +191,16 @@ public final class BarcodeScanner extends MarkScanner
 			  //Lanzar otra Excepcion
 			  throw new RuntimeException("Can't extract subimage from page.");
 			}
-		if (logger.isDebugEnabled())
-			OMRUtils.logSubImage(omr, "codebar2D",subimage);  
+//		if (logger.isDebugEnabled())
+//			OMRUtils.logSubImage(omr, "codebar2D",subimage);  
 		
-	    MonochromeBitmapSource source = new BufferedImageMonochromeBitmapSource(subimage);
+	  //  MonochromeBitmapSource source = new BufferedImageMonochromeBitmapSource(subimage);
+		BufferedImageLuminanceSource source=new BufferedImageLuminanceSource(subimage);
+	    BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
 	    Result result=null;
 		try
 		{
-			result = new MultiFormatReader().decode(source,null);
+			result = new MultiFormatReader().decode(bitmap,null);
 		}
 		catch (ReaderException e)
 		{
@@ -188,10 +217,12 @@ public final class BarcodeScanner extends MarkScanner
 				 if (logger.isDebugEnabled())
 					 OMRUtils.logSubImage(omr,"debug_median",medianed);
 				 
-				 source = new BufferedImageMonochromeBitmapSource(medianed);
-				 try
+				 source = new BufferedImageLuminanceSource(medianed);
+				 bitmap = new BinaryBitmap(new HybridBinarizer(source));
+
+				try
 				{
-					result = new MultiFormatReader().decode(source, null);
+					result = new MultiFormatReader().decode(bitmap, null);
 				}
 				catch (ReaderException e1)
 				{
@@ -234,7 +265,7 @@ public final class BarcodeScanner extends MarkScanner
 			//get bbox in pixels
 			Rectangle rect=pageImage.toPixels(campo.getBBox());
 			// expand the area for some tolerance
-			Rectangle2D expandedArea = getExpandedArea(campo.getBBox());
+			Rectangle2D expandedArea = getExpandedArea(campo.getBBox(), (float) BARCODE_AREA_PERCENT);
 			Rectangle expandedRect = pageImage.toPixels(expandedArea);
 			
 			Graphics2D g = pageImage.getReportingGraphics();
@@ -274,5 +305,19 @@ public final class BarcodeScanner extends MarkScanner
 			OMRUtils.logFrame(pageImage2, lastResult.getLocation(), Color.RED, "BarCodeDetected");
 		}
 		
+	}
+	/**
+	 * 
+	 * Generates an expanded boundingbox in milimeters
+	 * 
+	 * @see {@link #BARCODE_AREA_PERCENT}
+	 * @see {@value #BARCODE_AREA_PERCENT}
+	 * @param rect
+	 * @return milimeteres
+	 */
+	@Override
+	protected Rectangle2D getExpandedArea(Rectangle2D coords)
+	{
+		return getExpandedArea(coords, (float) BARCODE_AREA_PERCENT);
 	}
 }

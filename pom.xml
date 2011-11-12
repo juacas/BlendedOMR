@@ -182,6 +182,11 @@
 			<name>ITAST Maven</name>
 			<url>http://rep.idelab.uva.es/content/groups/public/</url>
 		</repository>
+		<repository>
+			<id>ZXING</id>
+			<name>Zxing library 1.6 binaries</name>
+			<url>http://mvn-adamgent.googlecode.com/svn/maven/release</url>
+		</repository>
 	</repositories>
 	<dependencies>
 		<dependency>
@@ -194,10 +199,16 @@
 			<artifactId>PDFGenerator</artifactId>
 			<version>1.0</version>
 		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>com.google.zxing</groupId> -->
+<!-- 			<artifactId>clientjavase</artifactId> -->
+<!-- 			<version>0.0.1</version> -->
+<!-- 			<scope>compile</scope> -->
+<!-- 		</dependency> -->
 		<dependency>
 			<groupId>com.google.zxing</groupId>
-			<artifactId>clientjavase</artifactId>
-			<version>0.0.1</version>
+			<artifactId>javase</artifactId>
+			<version>1.6</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>

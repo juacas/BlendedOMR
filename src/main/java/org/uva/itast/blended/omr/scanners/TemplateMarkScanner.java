@@ -148,17 +148,23 @@ public abstract class TemplateMarkScanner extends MarkScanner
 				 if (logger.isDebugEnabled())
 					 OMRUtils.logSubImage(omr,"debug_median",img);
 			 }
+			/**
+			 * Try XZing binarizer
+			 */
+			BufferedImageUtil.binarizeWithZxing(subImage);
 			
-			float medLum[]=BufferedImageUtil.statsLuminance(subImage, 1);
-			float maxLumin=medLum[2];
-			float minLumin=medLum[1];
-			float medLumin=medLum[0];
-			BufferedImageUtil.threshold(subImage, minLumin+ (maxLumin-minLumin)/2);
+//			float medLum[]=BufferedImageUtil.statsLuminance(subImage, 1);
+//			float maxLumin=medLum[2];
+//			float minLumin=medLum[1];
+//			float medLumin=medLum[0];
+//			BufferedImageUtil.threshold(subImage, minLumin+ (maxLumin-minLumin)/2);
+//			
 			
+			  
 			if (logger.isDebugEnabled())
 			{
 				OMRUtils.logSubImage(omr, subImage);
-				OMRUtils.logFrame(pageImage,markArea, Color.MAGENTA,"CircleMark");
+				OMRUtils.logFrame(pageImage,markArea, Color.GRAY,"");
 			}
 			return sampleAndLoopArea2(markArea, dump, img);
 		}
@@ -360,12 +366,12 @@ public abstract class TemplateMarkScanner extends MarkScanner
 			return false;
 	}
 	@Override
-	protected Rectangle2D getExpandedArea(Rectangle2D rect)
+	protected Rectangle2D getExpandedArea(Rectangle2D rect, double scanPercent)
 	{
 		Dimension2D templateDim = pageImage.sizeToMilimeters(new Size(template.getWidth(),  template.getHeight()));
 		
-		double maxDeltaX = markWidth * SCAN_PERCENT;
-		double maxDeltaY = markHeight * SCAN_PERCENT;
+		double maxDeltaX = markWidth * scanPercent;
+		double maxDeltaY = markHeight * scanPercent;
 		
 		double marginX = maxDeltaX+templateDim.getWidth();
 		double marginY = maxDeltaY+templateDim.getHeight();
@@ -377,6 +383,14 @@ public abstract class TemplateMarkScanner extends MarkScanner
 		return markArea;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.uva.itast.blended.omr.scanners.MarkScanner#getExpandedArea(java.awt.geom.Rectangle2D)
+	 */
+	@Override
+	protected Rectangle2D getExpandedArea(Rectangle2D coords)
+	{
+		return getExpandedArea(coords, SCAN_PERCENT);
+	}
 	@Override
 	public String getParsedCode(Field campo) throws MarkScannerException
 	{

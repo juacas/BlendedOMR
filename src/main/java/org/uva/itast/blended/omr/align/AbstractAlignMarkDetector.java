@@ -395,8 +395,8 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 			 */
 			if (logger.isDebugEnabled())
 			{
-				OMRUtils.debugFrame(pageImage, dtopleft, dtopright, dbottomleft, dbottomright, Color.GREEN, "Detected");
-				OMRUtils.debugFrame(pageImage, etopleft, etopright, ebottomleft, ebottomright, Color.BLUE, "Expected");
+				OMRUtils.logFrame(pageImage, dtopleft, dtopright, dbottomleft, dbottomright, Color.GREEN, "Detected");
+				OMRUtils.logFrame(pageImage, etopleft, etopright, ebottomleft, ebottomright, Color.BLUE, "Expected");
 			}
 			/**
 			 * End Log
@@ -435,23 +435,16 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 			pageImage.setAlignmentInfo(transform);
 			
 			// debug transformation
-			
-			if(logger.isInfoEnabled())
-				{
-				PagePoint topLeft=new PagePoint(pageImage, etopleft.x, etopleft.y);
-				PagePoint topRight=new PagePoint(pageImage, etopright.x, etopright.y);
-				PagePoint bottomLeft=new PagePoint(pageImage, ebottomleft.x, ebottomleft.y);
-				PagePoint bottomRight=new PagePoint(pageImage, ebottomright.x, ebottomright.y);
-				
-				PagePoint transCenter=new PagePoint(pageImage, expectedCenter.x, expectedCenter.y);
-				if (logger.isDebugEnabled())
+			if (logger.isDebugEnabled())
 					{
-					OMRUtils.debugFrame(pageImage, topLeft, topRight, bottomLeft, bottomRight, Color.RED,"Transformed Frame");
-					logger.debug("Detected topLeft:"+dtopleft);
-					logger.debug("Transformed topLeft:"+topLeft);
+					logTransformedFrame(pageImage,marcasalign);
+					
+					PagePoint transCenter=new PagePoint(pageImage, expectedCenter.x, expectedCenter.y);
 					logger.debug("Detected center:"+detectedCenter);
 					logger.debug("Transformed center:"+transCenter);
 					}
+			if(logger.isInfoEnabled())
+				{
 				logger.info("\tImage alligned in (ms)" + (System.currentTimeMillis() - taskStart)); //$NON-NLS-1$
 				}
 
@@ -461,6 +454,21 @@ public abstract class AbstractAlignMarkDetector implements AlignMarkDetector
 		else
 			return null;
 	}
+	
+public static void logTransformedFrame(PageImage pageImage, AlignmentResult marcasalign)
+	{
+	PagePoint etopleft=marcasalign.getExpected().get(AlignmentPosition.TOPLEFT);
+	PagePoint etopright=marcasalign.getExpected().get(AlignmentPosition.TOPRIGHT);
+	PagePoint ebottomleft=marcasalign.getExpected().get(AlignmentPosition.BOTTOMLEFT);
+	PagePoint ebottomright=marcasalign.getExpected().get(AlignmentPosition.BOTTOMRIGHT);
+	PagePoint topLeft=new PagePoint(pageImage, etopleft.x, etopleft.y);
+	PagePoint topRight=new PagePoint(pageImage, etopright.x, etopright.y);
+	PagePoint bottomLeft=new PagePoint(pageImage, ebottomleft.x, ebottomleft.y);
+	PagePoint bottomRight=new PagePoint(pageImage, ebottomright.x, ebottomright.y);
+	
+	OMRUtils.logFrame(pageImage, topLeft, topRight, bottomLeft, bottomRight, Color.RED,"Transformed Frame");
+	}
+
 /**
  * calculates the third corner of the rectangle in pixels
  * @param dbottomleft
