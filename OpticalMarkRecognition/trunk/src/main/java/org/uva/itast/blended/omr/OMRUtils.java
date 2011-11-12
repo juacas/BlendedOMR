@@ -331,7 +331,7 @@ public class OMRUtils
 			// almacenadas las keys
 			if (field.getName().equals(TEMPLATEID_FIELDNAME)) // this field is known
 				{
-				field.setValue(plantilla.getTemplateID());
+				field.setValue(plantilla.getTemplateID()+plantilla.getSelectedPageNumber());
 				field.setValid(true);
 				continue;
 				}
