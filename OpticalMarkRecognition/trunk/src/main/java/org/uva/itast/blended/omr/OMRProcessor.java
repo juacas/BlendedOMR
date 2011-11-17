@@ -594,7 +594,7 @@ public class OMRProcessor {
 			catch (Exception e)
 			{
 				// report files with errors
-				logger.error("processFileList(File[]) - Can't process page=" + pageImage.toString() ,e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$	
+				logger.error("processPages - Can't process page=" + pageImage.toString() ,e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$	
 				errors.add(pageImage);
 			}
 			finally
@@ -633,8 +633,11 @@ public class OMRProcessor {
 	private void logScanResults(OMRTemplate template, PageImage pageImg, File markedImageFile,File templateResultsFile) throws FileNotFoundException {
 		
 		String filePageName = pageImg.getName();
+		/**
+		 * Template may be undetected
+		 */
 		
-		String detectedTemplateId=template.getSelectedPage().getFields().get(OMRUtils.TEMPLATEID_FIELDNAME).getValue();
+		String detectedTemplateId=(template==null)?"Undetected":template.getSelectedPage().getFields().get(OMRUtils.TEMPLATEID_FIELDNAME).getValue();
 		String activityId = (template==null)?"Undetected":detectedTemplateId.substring(0, detectedTemplateId.length()-1); // crop page number
 
 		int pagenum=template==null?-1:template.getSelectedPageNumber();

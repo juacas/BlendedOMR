@@ -68,14 +68,12 @@ public abstract class TemplateMarkScanner extends MarkScanner
 		int effectiveWidth=(int) (dims.getWidth() * EXTRASIZEFACTOR) + 1;
 		int effectiveHeight=(int) (dims.getHeight() * EXTRASIZEFACTOR) + 1;
 		
-		if (logger.isDebugEnabled())
+		if (logger.isTraceEnabled())
 		{
-			logger.debug("TemplateMarkScanner(PageImage, double, double, boolean) - markWidth : " + markWidth); //$NON-NLS-1$
-			logger.debug("TemplateMarkScanner(PageImage, double, double, boolean) - markHeight : " + markHeight); //$NON-NLS-1$
-		
-			logger.debug("TemplateMarkScanner(PageImage, double, double, boolean) - dims.x : " + effectiveWidth); //$NON-NLS-1$
-			
-			logger.debug("TemplateMarkScanner(PageImage, double, double, boolean) - dims.y : " + effectiveHeight); //$NON-NLS-1$
+			logger.trace("TemplateMarkScanner(PageImage, double, double, boolean) - markWidth : " + markWidth); //$NON-NLS-1$
+			logger.trace("TemplateMarkScanner(PageImage, double, double, boolean) - markHeight : " + markHeight); //$NON-NLS-1$
+			logger.trace("TemplateMarkScanner(PageImage, double, double, boolean) - dims.x : " + effectiveWidth); //$NON-NLS-1$
+			logger.trace("TemplateMarkScanner(PageImage, double, double, boolean) - dims.y : " + effectiveHeight); //$NON-NLS-1$
 		}
 		
 		template = new BufferedImage(effectiveWidth,effectiveHeight,BufferedImage.TYPE_BYTE_BINARY);
@@ -133,7 +131,7 @@ public abstract class TemplateMarkScanner extends MarkScanner
 			
 			long start=System.currentTimeMillis();
 			SubImage subImage=this.pageImage.getSubimage(markArea, BufferedImage.TYPE_INT_RGB);
-			logger.debug("isMark(Point2D, boolean) - Subimage extracted in (ms)=" + (System.currentTimeMillis()-start)); //$NON-NLS-1$
+			logger.trace("isMark(Point2D, boolean) - Subimage extracted in (ms)=" + (System.currentTimeMillis()-start)); //$NON-NLS-1$
 			BufferedImage img=subImage;
 			
 			//if (logger.isDebugEnabled())
@@ -143,7 +141,7 @@ public abstract class TemplateMarkScanner extends MarkScanner
 			 {
 				start=System.currentTimeMillis();
 				img= medianFilter(subImage);
-				logger.debug("scanAreaForMark(MedianFilter area=" + subImage.getWidth()+"x"+subImage.getHeight() + ") In (ms) "+(System.currentTimeMillis()-start)); //$NON-NLS-1$ //$NON-NLS-2$
+				logger.trace("scanAreaForMark(MedianFilter area=" + subImage.getWidth()+"x"+subImage.getHeight() + ") In (ms) "+(System.currentTimeMillis()-start)); //$NON-NLS-1$ //$NON-NLS-2$
 				 
 				 if (logger.isDebugEnabled())
 					 OMRUtils.logSubImage(omr,"debug_median",img);
@@ -151,14 +149,15 @@ public abstract class TemplateMarkScanner extends MarkScanner
 			/**
 			 * Try XZing binarizer
 			 */
-			BufferedImageUtil.binarizeWithZxing(subImage);
+//			BufferedImageUtil.binarizeWithZxing(subImage);
 			
-//			float medLum[]=BufferedImageUtil.statsLuminance(subImage, 1);
-//			float maxLumin=medLum[2];
-//			float minLumin=medLum[1];
-//			float medLumin=medLum[0];
-//			BufferedImageUtil.threshold(subImage, minLumin+ (maxLumin-minLumin)/2);
-//			
+			float medLum[]=BufferedImageUtil.statsLuminance(subImage, 1);
+			float maxLumin=medLum[2];
+			float minLumin=medLum[1];
+			float medLumin=medLum[0];
+			float lumThreshold=maxLumin - (maxLumin-minLumin)/3;
+			BufferedImageUtil.threshold(subImage, lumThreshold);
+			
 			
 			  
 			if (logger.isDebugEnabled())
@@ -291,7 +290,7 @@ public abstract class TemplateMarkScanner extends MarkScanner
 		double threshold = getAutoSimilarity() * (1 + SIMILARITY_PERCENT);
 		if (logger.isDebugEnabled())
 		{
-			logger.debug("isMark(int, int)-->(ms)"+(System.currentTimeMillis()-start)+" Simil:" + maxsim + " (threshold)" + threshold + ":" + maxsimX + "," + maxsimY + " supposed to be at->" + markCenterPx ); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+			logger.debug("isMark-->(ms)"+(System.currentTimeMillis()-start)+" Simil:" + maxsim + " (threshold)" + threshold + ":" + maxsimX + "," + maxsimY + " supposed to be at->" + markCenterPx ); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 		}
 		if (maxsim > threshold)
 			return true;
@@ -358,7 +357,7 @@ public abstract class TemplateMarkScanner extends MarkScanner
 		double threshold = getAutoSimilarity() * (1 + SIMILARITY_PERCENT);
 		if (logger.isDebugEnabled())
 		{
-			logger.debug("isMark(int, int)-->(ms)"+(System.currentTimeMillis()-start)+" Simil:" + maxsim + " (threshold)" + threshold + ":" + maxsimX + "," + maxsimY + " supposed to be at->" + markCenterPx ); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+			logger.debug("isMark-->(ms)"+(System.currentTimeMillis()-start)+" Simil:" + maxsim + " (threshold)" + threshold + ":" + maxsimX + "," + maxsimY + " supposed to be at->" + markCenterPx ); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 		}
 		if (maxsim > threshold)
 			return true;
