@@ -126,7 +126,7 @@ public final class BarcodeScanner extends MarkScanner
 		}
 		finally
 		{
-		if (logger.isDebugEnabled())
+		if (logger.isInfoEnabled())
 			markBarcode(field);
 		}
 		return parsedCode;

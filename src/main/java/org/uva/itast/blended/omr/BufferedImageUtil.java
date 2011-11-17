@@ -336,6 +336,7 @@ public class BufferedImageUtil
 	{
 		BufferedImageLuminanceSource source=new BufferedImageLuminanceSource(subImage);
 		BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+//		BinaryBitmap bitmap = new BinaryBitmap(new GlobalHistogramBinarizer(source));
 		
 		// copy results in subImage
 		Rectangle captured=subImage.getCapturedBoundingBox();
