@@ -73,7 +73,7 @@ public class SolidSquareMarkScanner extends TemplateMarkScanner
 	 * @see org.uva.itast.blended.omr.scanners.TemplateMarkScanner#isMark(java.awt.geom.Rectangle2D, boolean)
 	 */
 	@Override
-	protected boolean isMark(Rectangle2D markArea, boolean dump) throws MarkScannerException
+	protected MarkDetectionStatus isMark(Rectangle2D markArea, boolean dump) throws MarkScannerException
 	{
 		if (logger.isDebugEnabled())
 			dump=true;
@@ -112,7 +112,7 @@ public class SolidSquareMarkScanner extends TemplateMarkScanner
 	/**
 	 * @param pageImage
 	 */
-	public void putEmphasisMarkOnImage(PageImage pageImage)
+	public void putEmphasisMarkOnImage(PageImage pageImage, Color color)
 	{
 		
 		Graphics2D g = pageImage.getReportingGraphics();
@@ -125,7 +125,7 @@ public class SolidSquareMarkScanner extends TemplateMarkScanner
 		Dimension2D markDimsPx=pageImage.sizeInPixels(new Size(markWidth,markHeight));
 		int markWidth=(int) markDimsPx.getWidth();
 		int markHeight=(int) markDimsPx.getHeight();
-		g.setColor(Color.RED);
+		g.setColor(color);
 		AffineTransform t=g.getTransform();
 		g.drawLine(maxsimX, maxsimY - markHeight / 2 - 1, maxsimX, maxsimY
 				- markHeight / 2 - (int)(20/t.getScaleY()));

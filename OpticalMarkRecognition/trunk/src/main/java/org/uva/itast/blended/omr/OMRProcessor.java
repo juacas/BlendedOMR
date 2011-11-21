@@ -202,7 +202,11 @@ public class OMRProcessor {
 		// read contents of templates
 		for (InputStream inputStream : contents)
 		{
-			addTemplate(new OMRTemplate(inputStream));
+			OMRTemplate template=new OMRTemplate(inputStream);
+			if (template.getTemplateID()!=null)
+				addTemplate(template);
+			else
+				logger.error("Template with bad ID found!!"+inputStream);
 		}
 	}
 	/**

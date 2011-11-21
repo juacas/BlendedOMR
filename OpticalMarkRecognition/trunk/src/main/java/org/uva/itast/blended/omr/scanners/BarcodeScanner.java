@@ -298,7 +298,7 @@ public final class BarcodeScanner extends MarkScanner
 		
 	}
 	@Override
-	public void putEmphasisMarkOnImage(PageImage pageImage2)
+	public void putEmphasisMarkOnImage(PageImage pageImage2, Color color)
 	{
 		if (lastResult!=null)
 		{
