@@ -73,6 +73,7 @@ import org.uva.itast.blended.omr.pages.PageImage;
 import org.uva.itast.blended.omr.pages.PagePoint;
 import org.uva.itast.blended.omr.pages.SubImage;
 import org.uva.itast.blended.omr.scanners.BarcodeScanner;
+import org.uva.itast.blended.omr.scanners.MarkDetectionStatus;
 import org.uva.itast.blended.omr.scanners.MarkScanner;
 import org.uva.itast.blended.omr.scanners.MarkScannerException;
 import org.uva.itast.blended.omr.scanners.ScanResult;
@@ -452,22 +453,30 @@ public class OMRUtils
 		{
 			ScanResult res=markScanner.scanField(field);
 
-			if ((Boolean) res.getResult()) // se busca la marca que se desea
-											// encontrar
+			MarkDetectionStatus result=(MarkDetectionStatus) res.getResult();
+			
+			switch(result)
 			{
+			case MARK:
 				if (logger.isDebugEnabled())
 				{
 					logger.debug("RESULT: searchMark - " + field.getName() + " >>>>>>>Found mark at " + field.getBBox() + " (mm) :" + field); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 				}
 				field.setValue("true");
+				field.setValid(true);
 				// si se ha encontrado la marca
-				markScanner.putEmphasisMarkOnImage(pageImage);
-			}
-			else
-			{
+				markScanner.putEmphasisMarkOnImage(pageImage, Color.RED);
+			break;
+			case NO_MARK:
 				field.setValue("false");
-			}
-			field.setValid(true);
+				field.setValid(true);
+			break;
+			case DOUBT_MARK:
+			default:
+				field.setValue("?");
+				field.setValid(false);
+				markScanner.putEmphasisMarkOnImage(pageImage, Color.GREEN);
+			}//switch
 		}
 		catch (MarkScannerException e)
 		{

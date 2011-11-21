@@ -28,6 +28,7 @@ public abstract class TemplateMarkScanner extends MarkScanner
 	 * 
 	 */
 	private static final double	SIMILARITY_PERCENT	=0.17d;
+	
 	/**
 	 * 
 	 */
@@ -113,7 +114,7 @@ public abstract class TemplateMarkScanner extends MarkScanner
 	 * @return
 	 * @throws MarkScannerException 
 	 */
-	protected boolean isMark(Rectangle2D markArea, boolean dump) throws MarkScannerException
+	protected MarkDetectionStatus isMark(Rectangle2D markArea, boolean dump) throws MarkScannerException
 	{
 		try
 		{
@@ -288,6 +289,7 @@ public abstract class TemplateMarkScanner extends MarkScanner
 		}
 		//TODO apply this condition in the loop 
 		double threshold = getAutoSimilarity() * (1 + SIMILARITY_PERCENT);
+		double doubtThreshold = getAutoSimilarity() * (1 + SIMILARITY_PERCENT/2);
 		if (logger.isDebugEnabled())
 		{
 			logger.debug("isMark-->(ms)"+(System.currentTimeMillis()-start)+" Simil:" + maxsim + " (threshold)" + threshold + ":" + maxsimX + "," + maxsimY + " supposed to be at->" + markCenterPx ); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
@@ -303,7 +305,7 @@ public abstract class TemplateMarkScanner extends MarkScanner
 	 * @param img
 	 * @return
 	 */
-	private boolean sampleAndLoopArea2(Rectangle2D markArea, boolean dump, BufferedImage img)
+	private MarkDetectionStatus sampleAndLoopArea2(Rectangle2D markArea, boolean dump, BufferedImage img)
 	{
 		long start;
 		// Start processing in pixels
@@ -355,14 +357,18 @@ public abstract class TemplateMarkScanner extends MarkScanner
 		}
 		//TODO apply this condition in the loop 
 		double threshold = getAutoSimilarity() * (1 + SIMILARITY_PERCENT);
+		double doubtThreshold = getAutoSimilarity() * (1 + SIMILARITY_PERCENT*3/4);
 		if (logger.isDebugEnabled())
 		{
 			logger.debug("isMark-->(ms)"+(System.currentTimeMillis()-start)+" Simil:" + maxsim + " (threshold)" + threshold + ":" + maxsimX + "," + maxsimY + " supposed to be at->" + markCenterPx ); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 		}
 		if (maxsim > threshold)
-			return true;
+			return MarkDetectionStatus.MARK;
 		else
-			return false;
+		if (maxsim> doubtThreshold)
+			return MarkDetectionStatus.DOUBT_MARK;
+		else
+			return MarkDetectionStatus.NO_MARK;
 	}
 	@Override
 	protected Rectangle2D getExpandedArea(Rectangle2D rect, double scanPercent)
@@ -401,8 +407,18 @@ public abstract class TemplateMarkScanner extends MarkScanner
 	public ScanResult scanAreaForFieldData(Rectangle2D coords) throws MarkScannerException
 	{
 		
-		boolean result=isMark(coords, dump);
-		ScanResult res=new ScanResult(this.getType(),new Boolean(result));
+		MarkDetectionStatus result=isMark(coords, dump);
+//		String value;
+//		switch (result) {
+//		case NO_MARK: value="false";
+//			break;
+//		case DOUBT_MARK: value="?";
+//			break;
+//		case MARK:	value="true";
+//			break;
+//		default: value="?";
+//		}
+		ScanResult res=new ScanResult(this.getType(),result);
 		return res;
 	}
 /**

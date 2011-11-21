@@ -52,6 +52,7 @@
 
 package org.uva.itast.blended.omr.scanners;
 
+import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -202,7 +203,8 @@ public abstract class MarkScanner
 	 * Create an emphasized indication in the {@link PageImage} reporting image
 	 * 
 	 * @param pageImage2
+	 * @param color TODO
 	 */
-	abstract public void putEmphasisMarkOnImage(PageImage pageImage2);
+	abstract public void putEmphasisMarkOnImage(PageImage pageImage2, Color color);
 
 }

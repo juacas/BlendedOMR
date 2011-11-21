@@ -47,6 +47,9 @@ public class ScanResult
 {
 
 	private String	scanner;
+	/**
+	 * {@link MarkDetectionStatus} or a {@link String}
+	 */
 	private Object	result;
 	private Rectangle2D location=null;
 	/**
