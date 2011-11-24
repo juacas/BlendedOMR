@@ -62,7 +62,9 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -653,6 +655,7 @@ public class OMRProcessor {
 		out.println("OutputImagePath="+markedImageFile.getAbsolutePath());
 		out.println("ActivityCode="+activityId);
 		out.println("ParsedResults="+templateResultsFile);
+		out.println("Timestamp="+DateFormat.getTimeInstance().format(new Date()));
 		out.close();
 	}
 	/**
