@@ -648,7 +648,8 @@ public class OMRProcessor {
 
 		int pagenum=template==null?-1:template.getSelectedPageNumber();
 		File logfile=new File(getOutputdir(),"log.txt");
-		PrintWriter out = new PrintWriter(new FileOutputStream(logfile,true));
+		// Overwrite previous reports
+		PrintWriter out = new PrintWriter(new FileOutputStream(logfile,false));
 		out.println("[Job]");
 		out.println("SourceFile="+filePageName);
 		out.println("PageIndex="+pagenum);
