@@ -108,23 +108,24 @@ public abstract class MarkScanner
 	 */
 	public ScanResult scanField(Field campo) throws MarkScannerException
 	{
-
 		// se leen y almacenan las coordenadas
 		Rectangle2D coords=campo.getBBox();
-		if (logger.isDebugEnabled())
-			logger.debug("Searching mark for field:" + campo);
+		
 		ScanResult result;
 		try
 		{
 			result=scanAreaForFieldData(coords);
+			if (logger.isDebugEnabled())
+				logger.debug("Searching mark for field:" + campo+" = "+result.getResult());
 		}
 		catch (MarkScannerException e)
 		{
 			Rectangle2D expandedBbox=getExpandedArea(coords);
 			// Try with a wider area
-			logger.debug("Last attempt to read mark was in error: RETRY a wider area...");
+			logger.debug("Searching mark for field:" + campo+" was in error:"+e.getMessage()+"RETRY a wider area...");
 			result=scanAreaForFieldData(expandedBbox);
-
+			if (logger.isDebugEnabled())
+				logger.debug("===> Second try:Searching mark for field:" + campo+" = "+result.getResult());
 		}
 		this.lastResult=result;
 		return result;
