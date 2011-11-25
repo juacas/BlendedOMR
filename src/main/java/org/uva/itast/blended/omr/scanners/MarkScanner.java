@@ -115,8 +115,8 @@ public abstract class MarkScanner
 		try
 		{
 			result=scanAreaForFieldData(coords);
-			if (logger.isDebugEnabled())
-				logger.debug("Searching mark for field:" + campo+" = "+result.getResult());
+			if (logger.isTraceEnabled())
+				logger.trace("Searching mark for field:" + campo+" = "+result.getResult());
 		}
 		catch (MarkScannerException e)
 		{

@@ -226,9 +226,9 @@ public final class BarcodeScanner extends MarkScanner
 				}
 				catch (ReaderException e1)
 				{
-					 if (logger.isErrorEnabled())
+					 if (logger.isDebugEnabled())
 						 {
-						 logger.error("Can't recognize any code in the field located at: "+rect+"(see debug output image)",e1);
+						 logger.debug("Can't recognize any code in the field located at: "+rect+"(see debug output image)",e1);
 						 OMRUtils.logSubImage(this.omr,"debug_monochrome_barcode",subimage);
 						 }
 					throw new MarkScannerException(e1);
@@ -239,8 +239,8 @@ public final class BarcodeScanner extends MarkScanner
 			 }
 		else
 		{
-				if (logger.isErrorEnabled()) {
-					logger.error(
+				if (logger.isDebugEnabled()) {
+					logger.debug(
 							"Can't recognize any code in the field located at: "
 									+ rect + "(see debug output image)", e);
 					OMRUtils.logSubImage(this.omr,"debug_monochrome_barcode", subimage);
