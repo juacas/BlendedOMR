@@ -251,7 +251,9 @@ public class OMRUtils
 		 * TemplateID.
 		 */
 
-		for (OMRTemplate aTemplate : templates.values())
+		// TODO do not iterate every template assume every template has template in the same place
+		//for (OMRTemplate aTemplate : templates.values())
+		OMRTemplate aTemplate=templates.values().iterator().next();
 		{
 			PageTemplate firstPage=aTemplate.getPage(1);
 			aTemplate.setSelectedPage(1);
@@ -264,11 +266,10 @@ public class OMRUtils
 				String templateId=field.getValue();
 				int pageNumber;
 
-				logger.info("TemplateId readed=" + templateId);
-
 				// extract the page number
 				if (templateId != null)
 				{
+				
 					pageNumber=Integer.parseInt(templateId.substring(templateId.length() - 1));
 					templateId=templateId.substring(0, templateId.length() - 1);
 
@@ -287,21 +288,19 @@ public class OMRUtils
 					else
 					// return current template instead
 					{
-						logger
-							.warn(
-								"findBestSuitedTemplate: Using a default template for id =" + templateId + "! May render unexpected results if documents have different structure!!", null); //$NON-NLS-1$
+						logger.warn("findBestSuitedTemplate: Using a default template for id =" + templateId + "! May render unexpected results if documents have different structure!!"); //$NON-NLS-1$
 						return aTemplate;
 					}
 
 				}
 				else
 				{
-					logger.debug("findBestSuitedTemplate- Template " + TEMPLATEID_FIELDNAME + " has no value.", null); //$NON-NLS-1$
+					logger.debug("findBestSuitedTemplate- Template " + TEMPLATEID_FIELDNAME + " has no value."); //$NON-NLS-1$
 				}
 
 			}
 
-			logger.debug("findBestSuitedTemplate- Template do not have a " + TEMPLATEID_FIELDNAME + " field. Try the next.", null); //$NON-NLS-1$
+			logger.debug("findBestSuitedTemplate- Template do not have a " + TEMPLATEID_FIELDNAME + " field. Try the next."); //$NON-NLS-1$
 		}
 		throw new RuntimeException("No " + TEMPLATEID_FIELDNAME + " field found! in the templates in use.");
 
@@ -404,9 +403,10 @@ public class OMRUtils
 		}
 		catch (MarkScannerException e)
 		{
-			logger.warn("Field " + field + " can't be readed from image.");
+			
 			field.setValue(null);
 			field.setValid(false);
+			logger.debug("Field " + field + " can't be readed from image.");
 //			if (logger.isErrorEnabled())
 //				barcodeScanner.markBarcode(field);
 		}
