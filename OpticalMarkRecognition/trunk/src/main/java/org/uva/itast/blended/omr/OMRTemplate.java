@@ -61,11 +61,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Vector;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 public class OMRTemplate {
 	
 	// to identificate and index the templates with it
 	String templateID;
-	
+	private static Log logger= LogFactory.getLog(OMRTemplate.class);
 	private Vector<PageTemplate> paginas=new Vector<PageTemplate>();	//instanciamos el vector paginas;
 
 	private int selectedPageNumber;
@@ -112,11 +115,19 @@ public class OMRTemplate {
 				else
             	if(line.startsWith("[Page"))            			//se identifica la p�gina
             	{
-            		String num=line.substring(5,line.length()-1);	//Obtener i de [Pagei]
-            		int numpag=Integer.parseInt(num);
-            		PageTemplate pagina = new PageTemplate(numpag);		//se crea una nueva p�gina, par�metros: definitionfile e i, este �ltimo indica el n�mero de p�gina
-        			pagina.leerMarcas(in);							//se leen las marcas
-        			paginas.add(numpag-1, pagina);					//se guardan a partir del elemento 0 (numpag-1)
+            		
+						String num=line.substring(5,line.length()-1);	//Obtener i de [Pagei]
+						int numpag=Integer.parseInt(num);
+						PageTemplate pagina = new PageTemplate(numpag);		//se crea una nueva p�gina, par�metros: definitionfile e i, este �ltimo indica el n�mero de p�gina
+					try
+					{	
+						pagina.leerMarcas(in);							//se leen las marcas
+						paginas.add(numpag-1, pagina);					//se guardan a partir del elemento 0 (numpag-1)
+					}
+					catch (Exception e)
+					{
+						logger.error("Template "+this.templateID+" page "+numpag+" has a format error!",e);
+					}
             	}
             }
 		in.close();

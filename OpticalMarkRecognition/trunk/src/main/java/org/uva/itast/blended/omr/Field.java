@@ -55,6 +55,7 @@
 package org.uva.itast.blended.omr;
 
 import java.awt.geom.Rectangle2D;
+import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 public class Field {
@@ -100,35 +101,45 @@ public class Field {
 	
 	/**
 	 * Constructor de la clase Campo, almacena los datos contenidos en line, seg�n sean de cada tipo de los que almacena Campo
-	 * @param line
+	 * @param line string with the format NAME[TYPE]=coord,coord,coord,coord
 	 * @throws NullPointerException
 	 */
-    public Field(String line) throws NullPointerException{
-        StringTokenizer st = new StringTokenizer(line, "[");
-        nombre = st.nextToken();
-        String sig = st.nextToken();
-        StringTokenizer st2 = new StringTokenizer(sig, "[]=");
-        String tipos = st2.nextToken();
-        String coord = st2.nextToken();
-        coords=coord.split(",");
-        double coordenadas[]=new double[4];
-        for(int i=0; i<coords.length; i++) coordenadas[i]=Double.parseDouble(coords[i]);
-        Rectangle2D bbox=new Rectangle2D.Double(coordenadas[0],coordenadas[1],coordenadas[2],coordenadas[3]);
-        setBBox(bbox);
-        
-        setValue("");
-        
-        if(tipos.equalsIgnoreCase("CIRCLE")) {
-            this.tipo = CIRCLE;
-        } else  if(tipos.equalsIgnoreCase("SQUARE")) {
-            this.tipo = SQUARE;
-        }else if(tipos.equalsIgnoreCase("CODEBAR")) {
-            this.tipo = CODEBAR;
-        }else if(tipos.equalsIgnoreCase("FRAME")) {
-            this.tipo = FRAME;
-        }
-        else
-        	throw new IllegalArgumentException("Field type unsupported in:\""+ line+"\"");
+    public Field(String line) throws IllegalArgumentException
+    {
+        try
+		{
+			StringTokenizer st = new StringTokenizer(line, "[");
+			
+			
+			nombre = st.nextToken();
+			String sig = st.nextToken();
+			StringTokenizer st2 = new StringTokenizer(sig, "[]=");
+			String tipos = st2.nextToken();
+			String coord = st2.nextToken();
+			coords=coord.split(",");
+			double coordenadas[]=new double[4];
+			for(int i=0; i<coords.length; i++) coordenadas[i]=Double.parseDouble(coords[i]);
+			Rectangle2D bbox=new Rectangle2D.Double(coordenadas[0],coordenadas[1],coordenadas[2],coordenadas[3]);
+			setBBox(bbox);
+			
+			setValue("");
+			
+			if(tipos.equalsIgnoreCase("CIRCLE")) {
+			    this.tipo = CIRCLE;
+			} else  if(tipos.equalsIgnoreCase("SQUARE")) {
+			    this.tipo = SQUARE;
+			}else if(tipos.equalsIgnoreCase("CODEBAR")) {
+			    this.tipo = CODEBAR;
+			}else if(tipos.equalsIgnoreCase("FRAME")) {
+			    this.tipo = FRAME;
+			}
+			else
+				throw new IllegalArgumentException("Field type unsupported in:\""+ line+"\"");
+		}
+		catch (NoSuchElementException e) // Tokenizer did not work
+		{
+			throw new IllegalArgumentException("Syntax error with field:"+line+" can't build Field definition.",e);
+		}
     }
     
     /**
