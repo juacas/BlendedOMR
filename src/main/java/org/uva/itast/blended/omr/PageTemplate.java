@@ -93,13 +93,14 @@ public class PageTemplate {
 	 * @param in
 	 * @throws IOException 
 	 */
-	public void leerMarcas(BufferedReader in) throws IOException{
+	public void leerMarcas(BufferedReader in) throws IOException
+	{
 		
 		String line;
 		
         	in.mark(20);		//marcamos para recordar la posici�n anterior donde termino la lectura de in
             while((line = in.readLine()) != null && !line.equals("") ) {
-            	if(line.startsWith("[Page"))			//etiqueta de principio de p�gina
+            	if(line.startsWith("[Page") )			//etiqueta de principio de p�gina	
             	{
 				if (logger.isDebugEnabled())
 				{
@@ -110,11 +111,20 @@ public class PageTemplate {
             	}
             	else									//lectura de fields de una l�nea
             	{
-            		Field campo = new Field(line);
-                    fields.put(campo.getName(), campo);
-                	marcas.add(campo.getName());		//almacenamos en el array marcas[] la clave
+            		Field campo;
+					try
+					{
+						campo=new Field(line);
+						fields.put(campo.getName(), campo);
+						marcas.add(campo.getName());		//almacenamos en el array marcas[] la clave
+					}
+					catch (IllegalArgumentException e) // bad field especification
+					{
+						logger.warn("Field ignored.",e);
+					}
+                    
             	}
-            	in.mark(20);
+            	in.mark(20); // mark position for next page
             }
        
 	}
